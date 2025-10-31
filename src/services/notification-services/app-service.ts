@@ -1,0 +1,152 @@
+/* eslint-disable import/no-named-as-default-member */
+import 'dotenv/config';
+import type amqplib from 'amqplib';
+import amqplibModule from 'amqplib';
+import type { Application, Request, Response } from 'express';
+import express, { json } from 'express';
+
+interface Notification {
+  to: string;
+  subject: string;
+  text: string;
+}
+
+interface Config {
+  rabbitmqUrl: string;
+  queueName: string;
+  port: number;
+  maxRetries: number;
+  retryDelayMs: number;
+}
+
+interface QueueConnection {
+  connection: amqplib.ChannelModel | null;
+  channel: amqplib.Channel | null;
+}
+
+export function getConfig(): Config {
+  return {
+    rabbitmqUrl: process.env.RABBITMQ_URL || 'amqps://USERNAME:PASSWORD@your-rabbitmq-host:5671',
+    queueName: process.env.QUEUE_NAME || 'notifications',
+    port: Number(process.env.PORT) || 4000,
+    maxRetries: Number(process.env.RABBITMQ_MAX_RETRIES) || 5,
+    retryDelayMs: Number(process.env.RABBITMQ_RETRY_DELAY_MS) || 3000,
+  };
+}
+
+export function validateNotification(data: unknown): data is Notification {
+  const record = data as Record<string, unknown>;
+  return (
+    typeof record.to === 'string' &&
+    record.to.trim().length > 0 &&
+    typeof record.subject === 'string' &&
+    record.subject.trim().length > 0 &&
+    typeof record.text === 'string' &&
+    record.text.trim().length > 0
+  );
+}
+
+export async function connectToQueue(
+  config: Config,
+  connection: QueueConnection,
+): Promise<amqplib.Channel> {
+  if (!connection.channel) {
+    let lastError: Error | null = null;
+
+    for (let attempt = 1; attempt <= config.maxRetries; attempt++) {
+      try {
+        console.log(
+          `Attempting to connect to RabbitMQ (attempt ${attempt}/${config.maxRetries})...`,
+        );
+        connection.connection = await amqplibModule.connect(config.rabbitmqUrl);
+        connection.channel = await connection.connection.createChannel();
+        await connection.channel.assertQueue(config.queueName, { durable: true });
+        console.log('Successfully connected to RabbitMQ');
+        return connection.channel;
+      } catch (error) {
+        lastError = error as Error;
+        console.error(`RabbitMQ connection attempt ${attempt} failed:`, error);
+
+        if (attempt < config.maxRetries) {
+          console.log(`Retrying in ${config.retryDelayMs}ms...`);
+          await new Promise((resolve) => setTimeout(resolve, config.retryDelayMs));
+        }
+      }
+    }
+
+    throw new Error(
+      `Failed to connect to RabbitMQ after ${config.maxRetries} attempts: ${lastError?.message}`,
+    );
+  }
+  return connection.channel;
+}
+
+export function createNotificationHandler(
+  config: Config,
+  connection: QueueConnection,
+): (req: Request, res: Response) => Promise<void> {
+  return async (req: Request, res: Response): Promise<void> => {
+    try {
+      if (!validateNotification(req.body)) {
+        res.status(400).json({
+          error: 'Invalid request: to, subject, and text are required and cannot be empty',
+        });
+        return;
+      }
+
+      const channel = await connectToQueue(config, connection);
+      channel.sendToQueue(config.queueName, Buffer.from(JSON.stringify(req.body)), {
+        persistent: true,
+      });
+      res.json({ message: 'Notification queued successfully' });
+    } catch (error) {
+      const err = error as Error;
+      const body = req.body as Record<string, unknown>;
+      console.error('[ERROR]', new Date().toISOString(), 'Failed to queue notification:', {
+        error: err.message,
+        stack: err.stack,
+        request: { to: body?.to, subject: body?.subject },
+      });
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  };
+}
+
+export function createApp(config: Config, connection: QueueConnection): Application {
+  const app = express();
+  app.use(json({ limit: '1mb' }));
+  app.post('/notify', createNotificationHandler(config, connection));
+  return app;
+}
+
+// Run if this is the main module
+if (require.main === module) {
+  const config = getConfig();
+  const connection: QueueConnection = { connection: null, channel: null };
+  const app = createApp(config, connection);
+
+  const gracefulShutdown = async (signal: string): Promise<void> => {
+    console.log(`\n${signal} received, shutting down gracefully...`);
+    try {
+      if (connection.channel) await connection.channel.close();
+      if (connection.connection) await connection.connection.close();
+      console.log('Connections closed successfully');
+      process.exit(0);
+    } catch (error) {
+      console.error('Error during shutdown:', error);
+      process.exit(1);
+    }
+  };
+
+  process.on('SIGINT', (): void => {
+    void gracefulShutdown('SIGINT');
+  });
+
+  process.on('SIGTERM', (): void => {
+    void gracefulShutdown('SIGTERM');
+  });
+
+  app.listen(config.port, () => {
+    console.log(`App-Service running on port ${config.port}`);
+  });
+}
