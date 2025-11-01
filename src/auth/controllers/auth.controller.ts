@@ -5,6 +5,10 @@ import { config } from '../config/env.config';
 import { User } from '../types/user.types';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../utils/jwt.utils';
 
+interface RefreshTokenRequestBody {
+  refreshToken: string;
+}
+
 const oauth2Client = new OAuth2Client(
   config.googleClientId,
   config.googleClientSecret,
@@ -81,7 +85,10 @@ export const googleCallback = async (req: Request, res: Response): Promise<void>
 };
 
 // Step 3: Refresh access token
-export const refreshAccessToken = (req: Request, res: Response): void => {
+export const refreshAccessToken = (
+  req: Request<object, object, RefreshTokenRequestBody>,
+  res: Response,
+): void => {
   try {
     const { refreshToken } = req.body;
 
@@ -95,9 +102,7 @@ export const refreshAccessToken = (req: Request, res: Response): void => {
 
     // Generate new access token
     const newAccessToken = generateAccessToken({
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       userId: decoded.userId,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       email: decoded.email,
     });
 
