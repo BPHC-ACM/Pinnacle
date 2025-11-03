@@ -1,0 +1,3 @@
+echo "Running Prisma migrations after merge..."
+pnpm prisma migrate dev --skip-generate
+pnpm prisma generate

@@ -2,9 +2,52 @@
 
 ## Setup
 
+### 1. Install Dependencies
+
 ```bash
 pnpm install
 pnpm run prepare
+```
+
+### 2. Environment Variables
+
+Copy the example environment file and update with your values:
+
+```bash
+cp .env.example .env
+```
+
+Update the following variables in `.env`:
+
+- `GOOGLE_CLIENT_ID` - Your Google OAuth Client ID
+- `GOOGLE_CLIENT_SECRET` - Your Google OAuth Client Secret
+- `JWT_SECRET` - A secure random string for JWT signing
+- `JWT_REFRESH_SECRET` - A secure random string for refresh token signing
+
+### 3. Database Setup
+
+Start the PostgreSQL database using Docker:
+
+```bash
+docker compose -f docker.compose.yml up -d
+```
+
+Run Prisma migrations:
+
+```bash
+pnpm prisma migrate dev
+```
+
+Generate Prisma Client:
+
+```bash
+pnpm prisma generate
+```
+
+To stop the database:
+
+```bash
+docker compose -f docker.compose.yml down
 ```
 
 ## Commands
