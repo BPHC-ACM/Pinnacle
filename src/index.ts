@@ -7,6 +7,7 @@ import { config } from './auth/config/env.config';
 import authRoutes from './auth/routes/auth.routes';
 import companyRoutes from './routes/company.routes';
 import userDetailsRoutes from './routes/user-details.routes';
+import resumeRoutes from './services/resume-service/routes/resume.routes';
 
 // Load environment variables
 dotenv.config();
@@ -22,6 +23,7 @@ app.use(cookieParser());
 app.use('/auth', authRoutes);
 app.use('/api/user-details', userDetailsRoutes);
 app.use('/api/companies', companyRoutes);
+app.use('/api/resume', resumeRoutes);
 
 // Health check
 app.get('/health', (_req: Request, res: Response) => {
