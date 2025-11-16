@@ -5,6 +5,8 @@ import express, { type Request, type Response } from 'express';
 
 import { config } from './auth/config/env.config';
 import authRoutes from './auth/routes/auth.routes';
+import companyRoutes from './routes/company.routes';
+import userDetailsRoutes from './routes/user-details.routes';
 
 // Load environment variables
 dotenv.config();
@@ -18,6 +20,8 @@ app.use(cookieParser());
 
 // Routes
 app.use('/auth', authRoutes);
+app.use('/api/user-details', userDetailsRoutes);
+app.use('/api/companies', companyRoutes);
 
 // Health check
 app.get('/health', (_req: Request, res: Response) => {

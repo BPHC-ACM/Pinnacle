@@ -1,3 +1,4 @@
+#!/bin/bash
 commit_msg=$(cat "$1")
 pattern="^(feat|fix|docs|style|refactor|test|chore|perf|ci|build|revert)(\(.+\))?: .{1,}"
 
