@@ -1,10 +1,11 @@
 import PDFDocument from 'pdfkit';
+
 import {
-  UserProfile,
-  Experience,
-  Education,
-  Project,
-  Skill,
+  type UserProfile,
+  type Experience,
+  type Education,
+  type Project,
+  type Skill,
 } from '../../../types/user-details.types';
 
 interface ResumeData {
@@ -23,7 +24,7 @@ export const generateResumePDF = (resumeData: ResumeData): Promise<Buffer> => {
     const chunks: Buffer[] = [];
 
     // Collect PDF data
-    doc.on('data', (chunk) => chunks.push(chunk));
+    doc.on('data', (chunk: Buffer) => chunks.push(chunk));
     doc.on('end', () => resolve(Buffer.concat(chunks)));
     doc.on('error', reject);
 
@@ -59,7 +60,7 @@ export const generateResumePDF = (resumeData: ResumeData): Promise<Buffer> => {
       education.forEach((edu) => {
         doc.fontSize(12).font('Helvetica-Bold').text(edu.institution);
         doc.fontSize(10).font('Helvetica').text(`${edu.degree} in ${edu.field}`);
-        doc.text(`${edu.startDate} - ${edu.endDate || 'Present'}`);
+        doc.text(`${edu.startDate} - ${edu.endDate ?? 'Present'}`);
         if (edu.gpa) {
           doc.text(`GPA: ${edu.gpa}`);
         }
@@ -81,7 +82,7 @@ export const generateResumePDF = (resumeData: ResumeData): Promise<Buffer> => {
       experiences.forEach((exp) => {
         doc.fontSize(12).font('Helvetica-Bold').text(exp.position);
         doc.fontSize(10).font('Helvetica-Oblique').text(exp.company);
-        doc.font('Helvetica').text(`${exp.startDate} - ${exp.endDate || 'Present'}`);
+        doc.font('Helvetica').text(`${exp.startDate} - ${exp.endDate ?? 'Present'}`);
         doc.moveDown(0.3);
 
         if (exp.description) {

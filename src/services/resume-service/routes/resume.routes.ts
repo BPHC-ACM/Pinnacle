@@ -1,4 +1,5 @@
 import { Router } from 'express';
+
 import { authenticateToken } from '../../../auth/middleware/auth.middleware';
 import { generateResume } from '../controllers/resume.controller';
 

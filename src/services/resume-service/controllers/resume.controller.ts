@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+
 import { UserService } from '../../user-service/user.service';
 import { generateResumePDF } from '../utils/pdf.utils';
 
@@ -7,7 +8,9 @@ const userService = new UserService();
 /**
  * Validates that user has minimum required fields for resume generation
  */
-const validateRequiredFields = (profile: any): { valid: boolean; missing: string[] } => {
+const validateRequiredFields = (
+  profile: { name?: string; email?: string },
+): { valid: boolean; missing: string[] } => {
   const missing: string[] = [];
 
   // Required fields for a basic resume
@@ -41,7 +44,7 @@ export const generateResume = async (req: Request, res: Response): Promise<void>
     }
 
     // Authorization: Users can only generate their own resume, admins can generate any
-    if (userId !== authenticatedUserId && req.user?.role !== 'ADMIN') {
+    if (userId !== authenticatedUserId && req.user?.role !== 'ADMIN' as const) {
       res.status(403).json({
         error: 'Forbidden: You can only generate your own resume',
       });
