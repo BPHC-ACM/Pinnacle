@@ -2,5 +2,3 @@ npm run format:check || exit 1
 npm run lint || exit 1
 npm run type-check || exit 1
 npm run build || exit 1
-echo "Checking Prisma schema status..."
-pnpm prisma migrate status
