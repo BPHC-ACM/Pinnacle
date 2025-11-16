@@ -20,6 +20,7 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
     req.user = {
       id: decoded.userId,
       email: decoded.email,
+      role: decoded.role,
       name: '', // You'd fetch from DB
       googleId: '',
     };

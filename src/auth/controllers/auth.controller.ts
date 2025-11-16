@@ -1,8 +1,8 @@
-import type { Request, Response } from 'express';
+import { Request, Response } from 'express';
 import { OAuth2Client } from 'google-auth-library';
 
 import { config } from '../config/env.config';
-import type { User } from '../types/user.types';
+import { User, UserRole } from '../types/user.types';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../utils/jwt.utils';
 
 interface RefreshTokenRequestBody {
@@ -15,9 +15,7 @@ const oauth2Client = new OAuth2Client(
   config.googleRedirectUri,
 );
 
-// GET /auth/google/login
-// Body: none
-// Returns: { authUrl: string }
+// Step 1: Generate Google OAuth URL
 export const googleLogin = (_req: Request, res: Response): void => {
   const authUrl = oauth2Client.generateAuthUrl({
     access_type: 'offline',
@@ -44,7 +42,7 @@ export const googleCallback = async (req: Request, res: Response): Promise<void>
 
     // Get user info from Google
     const ticket = await oauth2Client.verifyIdToken({
-      idToken: tokens.id_token ?? '',
+      idToken: tokens.id_token!,
       audience: config.googleClientId,
     });
 
@@ -55,11 +53,12 @@ export const googleCallback = async (req: Request, res: Response): Promise<void>
       return;
     }
 
-    // Create user object (in production, save to database)
+    // Create user object (in production, save/fetch from database to get actual role)
     const user: User = {
       id: payload.sub,
-      email: payload.email ?? '',
-      name: payload.name ?? '',
+      email: payload.email!,
+      name: payload.name!,
+      role: UserRole.USER, // Default role, fetch from DB in production
       picture: payload.picture,
       googleId: payload.sub,
     };
@@ -68,11 +67,13 @@ export const googleCallback = async (req: Request, res: Response): Promise<void>
     const accessToken = generateAccessToken({
       userId: user.id,
       email: user.email,
+      role: user.role,
     });
 
     const refreshToken = generateRefreshToken({
       userId: user.id,
       email: user.email,
+      role: user.role,
     });
 
     // In production, save refreshToken to database
@@ -102,10 +103,11 @@ export const refreshAccessToken = (
     // Verify refresh token
     const decoded = verifyRefreshToken(refreshToken);
 
-    // Generate new access token
+    // Generate new access token (role is already in the decoded token)
     const newAccessToken = generateAccessToken({
       userId: decoded.userId,
       email: decoded.email,
+      role: decoded.role,
     });
 
     res.json({ accessToken: newAccessToken });
