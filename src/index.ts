@@ -7,6 +7,7 @@ import pinoHttp from 'pino-http';
 import { config } from './auth/config/env.config';
 import authRoutes from './auth/routes/auth.routes';
 import { logger } from './config/logger.config';
+import applicationRoutes from './routes/application.routes';
 import companyRoutes from './routes/company.routes';
 import userDetailsRoutes from './routes/user-details.routes';
 import resumeRoutes from './services/resume-service/routes/resume.routes';
@@ -27,6 +28,7 @@ app.use('/auth', authRoutes);
 app.use('/api/user-details', userDetailsRoutes);
 app.use('/api/companies', companyRoutes);
 app.use('/api/resume', resumeRoutes);
+app.use('/api', applicationRoutes);
 
 // Health check
 app.get('/health', (_req: Request, res: Response) => {
