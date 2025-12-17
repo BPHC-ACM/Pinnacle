@@ -3,6 +3,8 @@ import * as amqplib from 'amqplib';
 import type { Application, Request, Response } from 'express';
 import express, { json } from 'express';
 
+import { logger } from '../../config/logger.config';
+
 interface Notification {
   to: string;
   subject: string;
@@ -53,7 +55,7 @@ export async function connectToQueue(
 
     for (let attempt = 1; attempt <= config.maxRetries; attempt++) {
       try {
-        console.log(
+        logger.info(
           `Attempting to connect to RabbitMQ (attempt ${attempt}/${config.maxRetries})...`,
         );
         const conn = await amqplib.connect(config.rabbitmqUrl);
@@ -61,14 +63,14 @@ export async function connectToQueue(
         await chan.assertQueue(config.queueName, { durable: true });
         connection.connection = conn;
         connection.channel = chan;
-        console.log('Successfully connected to RabbitMQ');
+        logger.info('Successfully connected to RabbitMQ');
         return connection.channel;
       } catch (error) {
         lastError = error as Error;
-        console.error(`RabbitMQ connection attempt ${attempt} failed:`, error);
+        logger.error({ err: error, attempt }, `RabbitMQ connection attempt ${attempt} failed`);
 
         if (attempt < config.maxRetries) {
-          console.log(`Retrying in ${config.retryDelayMs}ms...`);
+          logger.info(`Retrying in ${config.retryDelayMs}ms...`);
           await new Promise((resolve) => setTimeout(resolve, config.retryDelayMs));
         }
       }
@@ -100,13 +102,14 @@ export function createNotificationHandler(
       });
       res.json({ message: 'Notification queued successfully' });
     } catch (error) {
-      const err = error as Error;
       const body = req.body as Record<string, unknown>;
-      console.error('[ERROR]', new Date().toISOString(), 'Failed to queue notification:', {
-        error: err.message,
-        stack: err.stack,
-        request: { to: body?.to, subject: body?.subject },
-      });
+      logger.error(
+        {
+          err: error,
+          request: { to: body?.to, subject: body?.subject },
+        },
+        'Failed to queue notification',
+      );
       res.status(500).json({ error: 'Internal server error' });
     }
   };
@@ -126,14 +129,14 @@ if (require.main === module) {
   const app = createApp(config, connection);
 
   const gracefulShutdown = async (signal: string): Promise<void> => {
-    console.log(`\n${signal} received, shutting down gracefully...`);
+    logger.info(`${signal} received, shutting down gracefully...`);
     try {
       if (connection.channel) await connection.channel.close();
       if (connection.connection) await connection.connection.close();
-      console.log('Connections closed successfully');
+      logger.info('Connections closed successfully');
       process.exit(0);
     } catch (error) {
-      console.error('Error during shutdown:', error);
+      logger.error({ err: error }, 'Error during shutdown');
       process.exit(1);
     }
   };
@@ -147,6 +150,6 @@ if (require.main === module) {
   });
 
   app.listen(config.port, () => {
-    console.log(`App-Service running on port ${config.port}`);
+    logger.info(`App-Service running on port ${config.port}`);
   });
 }

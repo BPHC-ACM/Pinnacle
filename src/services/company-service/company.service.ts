@@ -1,3 +1,4 @@
+import { logger } from '../../config/logger.config';
 import prisma from '../../db/client';
 import type {
   CreateCompanyRequest,
@@ -20,7 +21,9 @@ export class CompanyService {
   }
 
   async createCompany(data: CreateCompanyRequest): Promise<Company> {
-    return prisma.company.create({ data }) as Promise<Company>;
+    const company = (await prisma.company.create({ data })) as Company;
+    logger.info({ companyId: company.id, name: company.name }, 'Company created');
+    return company;
   }
 
   async updateCompany(id: string, data: UpdateCompanyRequest): Promise<Company | null> {
@@ -32,10 +35,12 @@ export class CompanyService {
   async deleteCompany(id: string): Promise<Company | null> {
     const company = await prisma.company.findFirst({ where: { id, deletedAt: null } });
     if (!company) return null;
-    return prisma.company.update({
+    const deleted = (await prisma.company.update({
       where: { id },
       data: { deletedAt: new Date() },
-    }) as Promise<Company>;
+    })) as Company;
+    logger.info({ companyId: id, name: deleted.name }, 'Company soft deleted');
+    return deleted;
   }
 
   async searchCompanies(query: string): Promise<Company[]> {

@@ -1,6 +1,7 @@
-import { Request, Response } from 'express';
+import type { Request, Response } from 'express';
 import { OAuth2Client } from 'google-auth-library';
 
+import { logger } from '../../config/logger.config';
 import { config } from '../config/env.config';
 import { User, UserRole } from '../types/user.types';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../utils/jwt.utils';
@@ -63,6 +64,8 @@ export const googleCallback = async (req: Request, res: Response): Promise<void>
       googleId: payload.sub,
     };
 
+    logger.info({ userId: user.id, email: user.email }, 'User authenticated via Google OAuth');
+
     // Generate JWT tokens
     const accessToken = generateAccessToken({
       userId: user.id,
@@ -82,7 +85,7 @@ export const googleCallback = async (req: Request, res: Response): Promise<void>
       `${config.frontendUrl}/auth/callback?access_token=${accessToken}&refresh_token=${refreshToken}`,
     );
   } catch (error) {
-    console.error('Google OAuth error:', error);
+    logger.error({ err: error }, 'Google OAuth authentication failed');
     res.status(500).json({ error: 'Authentication failed' });
   }
 };
@@ -110,8 +113,10 @@ export const refreshAccessToken = (
       role: decoded.role,
     });
 
+    logger.debug({ userId: decoded.userId }, 'Access token refreshed');
     res.json({ accessToken: newAccessToken });
-  } catch {
+  } catch (error) {
+    logger.warn({ err: error }, 'Invalid refresh token provided');
     res.status(403).json({ error: 'Invalid refresh token' });
   }
 };

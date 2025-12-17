@@ -2,6 +2,8 @@ import 'dotenv/config';
 import * as amqp from 'amqplib';
 import * as nodemailer from 'nodemailer';
 
+import { logger } from '../../config/logger.config';
+
 interface Notification {
   to: string;
   subject: string;
@@ -68,10 +70,10 @@ export async function processMessage(
   try {
     const notification = JSON.parse(msg.content.toString()) as Notification;
     await sendEmail(transporter, notification, emailFrom);
-    console.log('Email sent to:', notification.to);
+    logger.info({ to: notification.to }, 'Email sent successfully');
     channel.ack(msg);
   } catch (error) {
-    console.error('Failed to send email:', error);
+    logger.error({ err: error }, 'Failed to send email');
     channel.nack(msg, false, true);
   }
 }
@@ -80,7 +82,7 @@ export async function startWorker(config: Config): Promise<void> {
   const transporter = createTransporter(config);
   const channel = await connectToQueue(config);
 
-  console.log('Notification worker started');
+  logger.info('Notification worker started');
 
   await channel.consume(config.queueName, (msg: amqp.ConsumeMessage | null) => {
     if (!msg) return;
@@ -99,8 +101,8 @@ export async function shutdown(
 // Run if this is the main module
 if (require.main === module) {
   const config = getConfig();
-  void startWorker(config).catch((error) => {
-    console.error('Worker failed:', error);
+  startWorker(config).catch((error: Error) => {
+    logger.error({ err: error }, 'Worker failed');
     process.exit(1);
   });
 }

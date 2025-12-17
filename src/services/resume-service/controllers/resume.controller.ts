@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 
 import type { CreateResumeRequest, UpdateResumeRequest } from '../../../types/resume.types';
+import { logger } from '../../../config/logger.config';
 import { UserService } from '../../user-service/user.service';
 import resumeService from '../resume.service';
 import { generateResumePDF } from '../utils/pdf.utils';
@@ -318,7 +319,7 @@ export const generateResume = async (req: Request, res: Response): Promise<void>
     // Send PDF buffer
     res.send(pdfBuffer);
   } catch (error) {
-    console.error('Error generating resume:', error);
+    logger.error({ err: error }, 'Failed to generate resume');
     res.status(500).json({ error: 'Failed to generate resume' });
   }
 };

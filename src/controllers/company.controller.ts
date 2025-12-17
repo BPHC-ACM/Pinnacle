@@ -1,9 +1,10 @@
 import type { Request, Response } from 'express';
 
+import { logger } from '../config/logger.config';
 import companyService from '../services/company-service/company.service';
 
 const handleError = (res: Response, error: unknown, message: string): void => {
-  console.error('Error:', error);
+  logger.error({ err: error }, message);
   res.status(500).json({ error: message });
 };
 

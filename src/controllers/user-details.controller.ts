@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express';
 
+import { logger } from '../config/logger.config';
 import userService from '../services/user-service/user.service';
 import type {
   UpdateUserProfileRequest,
@@ -18,7 +19,7 @@ import type {
 } from '../types/user-details.types';
 
 const handleError = (res: Response, error: unknown, message: string): void => {
-  console.error('Error:', error);
+  logger.error({ err: error }, message);
   res.status(500).json({ error: message });
 };
 

@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 
+import { logger } from '../../config/logger.config';
 import { verifyAccessToken } from '../utils/jwt.utils';
 
 export const authenticateToken = (req: Request, res: Response, next: NextFunction): void => {
@@ -9,6 +10,10 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
     const token = authHeader?.split(' ')[1]; // "Bearer TOKEN"
 
     if (!token) {
+      logger.warn(
+        { path: req.path, method: req.method },
+        'Authentication failed: No token provided',
+      );
       res.status(401).json({ error: 'Access token required' });
       return;
     }
@@ -26,7 +31,8 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
     };
 
     next();
-  } catch {
+  } catch (error) {
+    logger.warn({ err: error, path: req.path }, 'Invalid or expired token');
     res.status(403).json({ error: 'Invalid or expired token' });
   }
 };

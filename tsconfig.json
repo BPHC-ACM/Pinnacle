@@ -2,10 +2,9 @@
   "compilerOptions": {
     "target": "ES2022",
     "lib": ["ES2022"],
-    "types": ["node"],
-    "module": "commonjs",
+    "module": "node16",
     "rootDir": "./src",
-    "moduleResolution": "node",
+    "moduleResolution": "node16",
     "baseUrl": "./",
     "paths": {
       "@/*": ["src/*"]
@@ -22,6 +21,6 @@
     "noUncheckedIndexedAccess": true,
     "skipLibCheck": true
   },
-  "include": ["src/**/*", "prisma"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "prisma.config.ts", "eslint.config.mjs", "src/generated/**"]
 }

@@ -1,5 +1,6 @@
 import PDFDocument from 'pdfkit';
 
+import { logger } from '../../../config/logger.config';
 import {
   type UserProfile,
   type Experience,
@@ -18,6 +19,9 @@ interface ResumeData {
 
 export const generateResumePDF = (resumeData: ResumeData): Promise<Buffer> => {
   return new Promise((resolve, reject) => {
+    const startTime = Date.now();
+    logger.debug({ userId: resumeData.profile.id }, 'Starting PDF generation');
+
     const doc = new PDFDocument({ margin: 50 });
     const { profile, experiences, education, skills, projects } = resumeData;
 
@@ -25,8 +29,19 @@ export const generateResumePDF = (resumeData: ResumeData): Promise<Buffer> => {
 
     // Collect PDF data
     doc.on('data', (chunk: Buffer) => chunks.push(chunk));
-    doc.on('end', () => resolve(Buffer.concat(chunks)));
-    doc.on('error', reject);
+    doc.on('end', () => {
+      const duration = Date.now() - startTime;
+      const buffer = Buffer.concat(chunks);
+      logger.info(
+        { userId: profile.id, duration, sizeBytes: buffer.length },
+        'PDF generated successfully',
+      );
+      resolve(buffer);
+    });
+    doc.on('error', (err) => {
+      logger.error({ err, userId: profile.id }, 'PDF generation failed');
+      reject(err instanceof Error ? err : new Error(String(err)));
+    });
 
     // Header - Personal Info
     doc.fontSize(24).font('Helvetica-Bold').text(profile.name, { align: 'center' });
