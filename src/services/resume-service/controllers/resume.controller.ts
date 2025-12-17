@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 
-import type { CreateResumeRequest, UpdateResumeRequest } from '../../../types/resume.types';
 import { logger } from '../../../config/logger.config';
+import type { CreateResumeRequest, UpdateResumeRequest } from '../../../types/resume.types';
 import { UserService } from '../../user-service/user.service';
 import resumeService from '../resume.service';
 import { generateResumePDF } from '../utils/pdf.utils';
