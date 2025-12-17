@@ -63,70 +63,70 @@ export interface ResumePreviewData {
     id: string;
     email: string;
     name: string;
-    picture?: string;
-    phone?: string;
-    location?: string;
-    linkedin?: string;
-    github?: string;
-    website?: string;
-    bio?: string;
-    title?: string;
-    summary?: string;
+    picture: string | null;
+    phone: string | null;
+    location: string | null;
+    linkedin: string | null;
+    github: string | null;
+    website: string | null;
+    bio: string | null;
+    title: string | null;
+    summary: string | null;
   };
-  experiences: Array<{
+  experiences: {
     id: string;
     company: string;
     position: string;
     location: string;
     startDate: string;
-    endDate?: string;
+    endDate: string | null;
     current: boolean;
-    description?: string;
+    description: string | null;
     highlights: string[];
     order: number;
-  }>;
-  education: Array<{
+  }[];
+  education: {
     id: string;
     institution: string;
     degree: string;
     field: string;
     location: string;
     startDate: string;
-    endDate?: string;
-    gpa?: string;
+    endDate: string | null;
+    gpa: string | null;
     achievements: string[];
     order: number;
-  }>;
-  skills: Array<{
+  }[];
+  skills: {
     id: string;
     category: string;
     items: string[];
     order: number;
-  }>;
-  projects: Array<{
+  }[];
+  projects: {
     id: string;
     name: string;
     description: string;
     technologies: string[];
-    url?: string;
-    github?: string;
+    url: string | null;
+    github: string | null;
     highlights: string[];
     order: number;
-  }>;
-  certifications: Array<{
+  }[];
+  certifications: {
     id: string;
     name: string;
     issuer: string;
     date: string;
-    url?: string;
+    url: string | null;
     order: number;
-  }>;
-  languages: Array<{
+  }[];
+  languages: {
     id: string;
     name: string;
     proficiency: string;
     order: number;
-  }>;
+  }[];
 }
 
 // Available templates

@@ -18,7 +18,7 @@ export class ResumeService {
       orderBy: { updatedAt: 'desc' },
     });
 
-    return resumes.map((resume) => ({
+    return resumes.map((resume: { data: unknown } & Omit<SavedResume, 'data'>) => ({
       ...resume,
       data: resume.data as SavedResume['data'],
     }));
@@ -36,7 +36,7 @@ export class ResumeService {
 
     return {
       ...resume,
-      data: resume.data as SavedResume['data'],
+      data: resume.data as unknown as SavedResume['data'],
     };
   }
 
@@ -55,7 +55,7 @@ export class ResumeService {
 
     return {
       ...resume,
-      data: resume.data as SavedResume['data'],
+      data: resume.data as unknown as SavedResume['data'],
     };
   }
 
@@ -84,7 +84,7 @@ export class ResumeService {
 
     return {
       ...resume,
-      data: resume.data as SavedResume['data'],
+      data: resume.data as unknown as SavedResume['data'],
     };
   }
 

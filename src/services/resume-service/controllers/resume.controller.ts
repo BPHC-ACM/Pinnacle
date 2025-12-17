@@ -59,7 +59,7 @@ export const getResumePreviewData = async (req: Request, res: Response): Promise
  * @desc Get available resume templates
  * @access Private (requires authentication)
  */
-export const getTemplates = async (_req: Request, res: Response): Promise<void> => {
+export const getTemplates = (_req: Request, res: Response): void => {
   try {
     const templates = resumeService.getAvailableTemplates();
     res.json(templates);
