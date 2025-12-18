@@ -84,6 +84,9 @@ importers:
       '@types/pdfkit':
         specifier: ^0.17.3
         version: 0.17.3
+      '@types/pino-http':
+        specifier: ^6.1.0
+        version: 6.1.0
       '@typescript-eslint/eslint-plugin':
         specifier: ^8.46.2
         version: 8.46.2(@typescript-eslint/parser@8.46.2(eslint@9.39.0(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.0(jiti@2.6.1))(typescript@5.9.3)
@@ -775,6 +778,10 @@ packages:
 
   '@types/pdfkit@0.17.3':
     resolution: {integrity: sha512-E4tp2qFaghqfS4K5TR4Gn1uTIkg0UAkhUgvVIszr5cS6ZmbioPWEkvhNDy3GtR9qdKC8DLQAnaaMlTcf346VsA==}
+
+  '@types/pino-http@6.1.0':
+    resolution: {integrity: sha512-rjPOSk2yI0714Pi8LdjIhDynXWqOvswmjRiTHj/1TOh1+0R26aKJ8vAVZRc4Ky5dQ5M5Bly1vrV/Klew6lThkA==}
+    deprecated: This is a stub types definition. pino-http provides its own type definitions, so you do not need this installed.
 
   '@types/qs@6.14.0':
     resolution: {integrity: sha512-eOunJqu0K1923aExK6y8p6fsihYEn/BYuQ4g0CxAAgFc4b/ZLN4CrsRZ55srTdqoiLzU2B2evC+apEIxprEzkQ==}
@@ -3513,6 +3520,10 @@ snapshots:
   '@types/pdfkit@0.17.3':
     dependencies:
       '@types/node': 22.18.13
+
+  '@types/pino-http@6.1.0':
+    dependencies:
+      pino-http: 11.0.0
 
   '@types/qs@6.14.0': {}
 
