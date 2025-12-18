@@ -226,3 +226,77 @@ model trial {
   name  String
   email String @unique
 }
+
+enum ApplicationStatus {
+  APPLIED
+  SHORTLISTED
+  INTERVIEWING
+  REJECTED
+  HIRED
+  WITHDRAWN
+}
+
+enum JobStatus {
+  OPEN
+  CLOSED
+  PAUSED
+}
+
+model Job {
+  id          String    @id @default(uuid())
+  companyId   String
+  
+  title       String
+  description String?
+  location    String?
+  type        String?   // Full-time, Part-time, Internship
+  salary      String?
+  deadline    DateTime?
+  status      JobStatus @default(OPEN)
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+  
+  questions    JobQuestion[]
+  applications Application[]
+  
+  @@index([companyId])
+  @@index([status])
+  @@index([deletedAt])
+}
+
+model JobQuestion {
+  id        String   @id @default(uuid())
+  jobId     String
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  
+  question  String
+  required  Boolean  @default(true)
+  order     Int      @default(0)
+  
+  createdAt DateTime @default(now())
+  
+  @@index([jobId])
+}
+
+model Application {
+  id          String            @id @default(uuid())
+  userId      String
+  jobId       String
+  job         Job               @relation(fields: [jobId], references: [id])
+  resumeId    String?           // Selected resume version
+  
+  status      ApplicationStatus @default(APPLIED)
+  coverLetter String?
+  answers     Json?             // Answers to job questions { questionId: answer }
+  
+  appliedAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  withdrawnAt DateTime?
+  
+  @@unique([userId, jobId])     // Prevent duplicate applications
+  @@index([userId])
+  @@index([jobId])
+  @@index([status])
+}
