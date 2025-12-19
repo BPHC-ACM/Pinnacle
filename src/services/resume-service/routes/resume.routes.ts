@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-import { authenticateToken } from '../../../auth/middleware/auth.middleware';
+import { authenticateToken } from '../../../auth/middleware';
 import {
   generateResume,
   generateMyResume,
