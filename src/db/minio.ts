@@ -10,5 +10,4 @@ const minioConfig: MinioConfig = {
   secretKey: process.env.MINIO_SECRET_KEY ?? 'minio123',
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
 export const minioClient = new Client(minioConfig);
