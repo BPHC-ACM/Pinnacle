@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-import { authenticateToken } from '../auth/middleware/auth.middleware';
+import { authenticateToken, isAdmin } from '../auth/middleware';
 import {
   createJob,
   getJob,
@@ -15,17 +15,17 @@ import {
 
 const router = Router();
 
-// Job routes
-router.post('/jobs', authenticateToken, createJob);
+// Job routes (admin only)
+router.post('/jobs', authenticateToken, isAdmin, createJob);
 router.get('/jobs', getJobs);
 router.get('/jobs/:id', getJob);
-router.patch('/jobs/:id/close', authenticateToken, closeJob);
+router.patch('/jobs/:id/close', authenticateToken, isAdmin, closeJob);
 
 // Application routes
 router.post('/jobs/:jobId/apply', authenticateToken, apply);
 router.get('/applications', authenticateToken, getUserApplications);
-router.get('/jobs/:jobId/applications', authenticateToken, getJobApplications);
-router.patch('/applications/:id/status', authenticateToken, updateApplicationStatus);
+router.get('/jobs/:jobId/applications', authenticateToken, isAdmin, getJobApplications);
+router.patch('/applications/:id/status', authenticateToken, isAdmin, updateApplicationStatus);
 router.post('/applications/:id/withdraw', authenticateToken, withdrawApplication);
 
 export default router;
