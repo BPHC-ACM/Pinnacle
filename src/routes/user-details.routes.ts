@@ -1,6 +1,6 @@
-import express from 'express';
+import express, { type RequestHandler } from 'express';
 
-import { authenticateToken } from '../auth/middleware';
+import { authenticateToken, sensitiveEndpointRateLimiter } from '../auth/middleware';
 import * as userDetailsController from '../controllers/user-details.controller';
 
 const router = express.Router();
@@ -13,8 +13,12 @@ router.use(authenticateToken);
 // GET /api/user-details/profile - Get user profile
 router.get('/profile', userDetailsController.getUserProfile);
 
-// PATCH /api/user-details/profile - Update user profile
-router.patch('/profile', userDetailsController.updateUserProfile);
+// PATCH /api/user-details/profile - Update user profile (with rate limiting)
+router.patch(
+  '/profile',
+  sensitiveEndpointRateLimiter as RequestHandler,
+  userDetailsController.updateUserProfile,
+);
 
 // EXPERIENCE ROUTES
 
