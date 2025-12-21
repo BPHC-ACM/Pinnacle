@@ -1,8 +1,8 @@
 import type { Request } from 'express';
-import { rateLimit } from 'express-rate-limit';
+import { rateLimit, type RateLimitRequestHandler } from 'express-rate-limit';
 
 // Rate limiter for authentication endpoints.
-export const authRateLimiter = rateLimit({
+export const authRateLimiter: RateLimitRequestHandler = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 5,
   message: {
@@ -14,7 +14,7 @@ export const authRateLimiter = rateLimit({
 });
 
 // Rate limiter for sensitive endpoints (e.g., applications, profile updates).
-export const sensitiveEndpointRateLimiter = rateLimit({
+export const sensitiveEndpointRateLimiter: RateLimitRequestHandler = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 30,
   message: {
@@ -26,7 +26,7 @@ export const sensitiveEndpointRateLimiter = rateLimit({
 });
 
 // General-purpose rate limiter for most API endpoints.
-export const generalApiRateLimiter = rateLimit({
+export const generalApiRateLimiter: RateLimitRequestHandler = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
   message: {
@@ -38,7 +38,7 @@ export const generalApiRateLimiter = rateLimit({
 });
 
 // Strict rate limiter for administrative actions.
-export const adminRateLimiter = rateLimit({
+export const adminRateLimiter: RateLimitRequestHandler = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 20,
   message: {
