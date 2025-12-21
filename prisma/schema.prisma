@@ -188,10 +188,27 @@ model Resume {
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+
+  file       ResumeFile?
+
   deletedAt DateTime? // Soft delete
 
   @@index([userId])
   @@index([deletedAt])
+}
+
+model ResumeFile{
+  id         String   @id @default(uuid())
+  resumeId   String   @unique
+
+  bucket     String
+  objectKey  String
+  mimeType   String
+  size       Int
+
+  createdAt DateTime @default(now())
+
+  resume     Resume   @relation(fields: [resumeId], references: [id], onDelete: Cascade)
 }
 
 model Company {
