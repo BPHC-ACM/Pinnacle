@@ -6,6 +6,7 @@ import type {
   ApplyRequest,
   UpdateApplicationStatusRequest,
 } from '../types/application.types';
+import { parsePagination } from '../types/pagination.types';
 
 export const createJob = async (req: Request, res: Response): Promise<void> => {
   const data = req.body as CreateJobRequest;
@@ -28,7 +29,8 @@ export const getJob = async (req: Request, res: Response): Promise<void> => {
 };
 
 export const getJobs = async (req: Request, res: Response): Promise<void> => {
-  const jobs = await applicationService.getJobs(req.query.companyId as string | undefined);
+  const params = parsePagination(req.query as Record<string, unknown>);
+  const jobs = await applicationService.getJobs(req.query.companyId as string | undefined, params);
   res.json(jobs);
 };
 
@@ -75,7 +77,8 @@ export const getUserApplications = async (req: Request, res: Response): Promise<
     return;
   }
 
-  const applications = await applicationService.getUserApplications(userId);
+  const params = parsePagination(req.query as Record<string, unknown>);
+  const applications = await applicationService.getUserApplications(userId, params);
   res.json(applications);
 };
 
@@ -85,7 +88,8 @@ export const getJobApplications = async (req: Request, res: Response): Promise<v
     res.status(400).json({ error: 'Job ID required' });
     return;
   }
-  const applications = await applicationService.getJobApplications(jobId);
+  const params = parsePagination(req.query as Record<string, unknown>);
+  const applications = await applicationService.getJobApplications(jobId, params);
   res.json(applications);
 };
 

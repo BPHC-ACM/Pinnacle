@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 
 import { logger } from '../../../config/logger.config';
+import { parsePagination } from '../../../types/pagination.types';
 import type { CreateResumeRequest, UpdateResumeRequest } from '../../../types/resume.types';
 import { UserService } from '../../user-service/user.service';
 import resumeService from '../resume.service';
@@ -84,7 +85,8 @@ export const getSavedResumes = async (req: Request, res: Response): Promise<void
       return;
     }
 
-    const resumes = await resumeService.getSavedResumes(userId);
+    const params = parsePagination(req.query as Record<string, unknown>);
+    const resumes = await resumeService.getSavedResumes(userId, params);
     res.json(resumes);
   } catch (error) {
     console.error('Error fetching saved resumes:', error);

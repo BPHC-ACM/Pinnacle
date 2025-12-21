@@ -2,15 +2,17 @@ import type { Request, Response } from 'express';
 
 import { logger } from '../config/logger.config';
 import companyService from '../services/company-service/company.service';
+import { parsePagination } from '../types/pagination.types';
 
 const handleError = (res: Response, error: unknown, message: string): void => {
   logger.error({ err: error }, message);
   res.status(500).json({ error: message });
 };
 
-export async function getAllCompanies(_req: Request, res: Response): Promise<void> {
+export async function getAllCompanies(req: Request, res: Response): Promise<void> {
   try {
-    res.json(await companyService.getAllCompanies());
+    const params = parsePagination(req.query as Record<string, unknown>);
+    res.json(await companyService.getAllCompanies(params));
   } catch (error) {
     handleError(res, error, 'Failed to fetch companies');
   }
@@ -94,7 +96,8 @@ export async function searchCompanies(req: Request, res: Response): Promise<void
       res.status(400).json({ error: 'Search query is required' });
       return;
     }
-    res.json(await companyService.searchCompanies(q));
+    const params = parsePagination(req.query as Record<string, unknown>);
+    res.json(await companyService.searchCompanies(q, params));
   } catch (error) {
     handleError(res, error, 'Failed to search companies');
   }
