@@ -1,6 +1,6 @@
-import express from 'express';
+import express, { type RequestHandler } from 'express';
 
-import { authenticateToken, isAdmin } from '../auth/middleware';
+import { authenticateToken, isAdmin, adminRateLimiter } from '../auth/middleware';
 import * as companyController from '../controllers/company.controller';
 
 const router = express.Router();
@@ -19,13 +19,13 @@ router.get('/search', companyController.searchCompanies);
 // GET /api/companies/:id - Get company by ID
 router.get('/:id', companyController.getCompany);
 
-// POST /api/companies - Create company (admin only)
-router.post('/', isAdmin, companyController.createCompany);
+// POST /api/companies - Create company (admin only with rate limiting)
+router.post('/', adminRateLimiter as RequestHandler, isAdmin, companyController.createCompany);
 
-// PATCH /api/companies/:id - Update company (admin only)
-router.patch('/:id', isAdmin, companyController.updateCompany);
+// PATCH /api/companies/:id - Update company (admin only with rate limiting)
+router.patch('/:id', adminRateLimiter as RequestHandler, isAdmin, companyController.updateCompany);
 
-// DELETE /api/companies/:id - Soft delete company (admin only)
-router.delete('/:id', isAdmin, companyController.deleteCompany);
+// DELETE /api/companies/:id - Soft delete company (admin only with rate limiting)
+router.delete('/:id', adminRateLimiter as RequestHandler, isAdmin, companyController.deleteCompany);
 
 export default router;

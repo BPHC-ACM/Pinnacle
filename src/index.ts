@@ -5,6 +5,7 @@ import express, { type Request, type Response } from 'express';
 import pinoHttp from 'pino-http';
 
 import { config } from './auth/config/env.config';
+import { generalApiRateLimiter } from './auth/middleware/rate-limit.middleware';
 import authRoutes from './auth/routes/auth.routes';
 import { logger } from './config/logger.config';
 import applicationRoutes from './routes/application.routes';
@@ -23,6 +24,12 @@ app.use(cors({ origin: config.frontendUrl, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 app.use(pinoHttp({ logger }));
+
+// Apply general rate limiting to all API routes
+app.use('/api', generalApiRateLimiter);
+
+// Trust the first hop from the proxy (AWS Load Balancer)
+app.set('trust proxy', 1);
 
 // Routes
 app.use('/auth', authRoutes);
