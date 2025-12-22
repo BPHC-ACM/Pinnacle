@@ -9,6 +9,7 @@ Users can now generate resume PDFs and store them in Minio cloud storage. Each s
 ## Database Schema
 
 ### ResumeFile Model
+
 ```prisma
 model ResumeFile {
   id         String   @id @default(uuid())
@@ -25,9 +26,11 @@ model ResumeFile {
 ## API Endpoints
 
 ### 1. Generate and Store Resume PDF
+
 **POST** `/api/resume/generate/:userId`
 
 **Body:**
+
 ```json
 {
   "resumeId": "uuid-of-saved-resume",
@@ -36,6 +39,7 @@ model ResumeFile {
 ```
 
 **Response (when saved to storage):**
+
 ```json
 {
   "message": "Resume generated and saved successfully",
@@ -46,14 +50,17 @@ model ResumeFile {
 ```
 
 **Response (direct download):**
+
 - Returns PDF file directly if `saveToStorage` is false or `resumeId` is not provided
 
 ### 2. Get Resume Download URL
+
 **GET** `/api/resume/download/:resumeId`
 
 Returns a presigned URL valid for 1 hour to download the stored PDF.
 
 **Response:**
+
 ```json
 {
   "downloadUrl": "https://presigned-url...",
@@ -62,9 +69,11 @@ Returns a presigned URL valid for 1 hour to download the stored PDF.
 ```
 
 ### 3. Get Resume File Metadata
+
 **GET** `/api/resume/file-info/:resumeId`
 
 **Response:**
+
 ```json
 {
   "id": "uuid",
@@ -78,11 +87,13 @@ Returns a presigned URL valid for 1 hour to download the stored PDF.
 ```
 
 ### 4. Delete Resume PDF
+
 **DELETE** `/api/resume/file/:resumeId`
 
 Deletes the PDF file from storage and removes the ResumeFile record.
 
 **Response:**
+
 ```json
 {
   "message": "Resume PDF deleted successfully"
@@ -90,18 +101,22 @@ Deletes the PDF file from storage and removes the ResumeFile record.
 ```
 
 ### 5. Get Saved Resumes (Updated)
+
 **GET** `/api/resume/saved`
 
 Now includes `file` property with metadata if PDF is stored.
 
 **Response:**
+
 ```json
 [
   {
     "id": "uuid",
     "title": "Software Engineer Resume",
     "template": "modern",
-    "data": { /* resume data */ },
+    "data": {
+      /* resume data */
+    },
     "file": {
       "id": "uuid",
       "bucket": "resumes",
@@ -117,6 +132,7 @@ Now includes `file` property with metadata if PDF is stored.
 ## Usage Examples
 
 ### Example 1: Generate and Save Resume
+
 ```javascript
 // 1. Create a saved resume first
 const resume = await fetch('/api/resume/saved', {
@@ -125,8 +141,10 @@ const resume = await fetch('/api/resume/saved', {
   body: JSON.stringify({
     title: 'My Resume',
     template: 'modern',
-    data: { /* resume data */ }
-  })
+    data: {
+      /* resume data */
+    },
+  }),
 });
 const { id: resumeId } = await resume.json();
 
@@ -136,15 +154,16 @@ const response = await fetch('/api/resume/generate/my-user-id', {
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
     resumeId,
-    saveToStorage: true
-  })
+    saveToStorage: true,
+  }),
 });
 
 const { downloadUrl } = await response.json();
-console.log('PDF stored! Download URL:', downloadUrl);
+logger.info({ downloadUrl }, 'PDF stored! Download URL');
 ```
 
 ### Example 2: Download Stored Resume
+
 ```javascript
 // Get download URL
 const response = await fetch('/api/resume/download/resume-uuid');
@@ -155,15 +174,16 @@ window.open(downloadUrl, '_blank');
 ```
 
 ### Example 3: Check if Resume has PDF
+
 ```javascript
 const response = await fetch('/api/resume/saved');
 const resumes = await response.json();
 
-resumes.forEach(resume => {
+resumes.forEach((resume) => {
   if (resume.file) {
-    console.log(`${resume.title} has PDF (${resume.file.size} bytes)`);
+    logger.info({ title: resume.title, size: resume.file.size }, 'Resume has PDF');
   } else {
-    console.log(`${resume.title} has no PDF`);
+    logger.info({ title: resume.title }, 'Resume has no PDF');
   }
 });
 ```
@@ -171,9 +191,11 @@ resumes.forEach(resume => {
 ## Storage Service Architecture
 
 ### ResumeStorageService
+
 Located at: `src/services/resume-service/storage/resume-storage.service.ts`
 
 **Methods:**
+
 - `uploadResumePDF(resumeId, pdfBuffer, fileName)` - Upload PDF to Minio
 - `getResumeDownloadUrl(resumeId, expiresInSeconds)` - Get presigned download URL
 - `deleteResumePDF(resumeId)` - Delete PDF from storage
@@ -181,7 +203,9 @@ Located at: `src/services/resume-service/storage/resume-storage.service.ts`
 - `hasStoredPDF(resumeId)` - Check if PDF exists
 
 ### File Naming Convention
+
 PDFs are stored with unique keys:
+
 ```
 {resumeId}/{timestamp}-{hash}-{filename}.pdf
 ```
@@ -200,6 +224,7 @@ MINIO_SECRET_KEY=minio123
 ## Minio Configuration
 
 Default configuration in `src/db/minio.ts`:
+
 ```typescript
 {
   endPoint: 'localhost',
@@ -216,7 +241,7 @@ Default configuration in `src/db/minio.ts`:
 
 2. **Presigned URLs**: Download URLs expire after 1 hour for security. Call the endpoint again to get a fresh URL.
 
-3. **Storage vs Direct Download**: 
+3. **Storage vs Direct Download**:
    - Use `saveToStorage: true` when user wants to keep the PDF for later
    - Use `saveToStorage: false` or omit for one-time generation/download
 
@@ -227,11 +252,13 @@ Default configuration in `src/db/minio.ts`:
 ## Migration
 
 Run the migration to create the `ResumeFile` table:
+
 ```bash
 pnpm prisma migrate dev
 ```
 
 Ensure Minio is running:
+
 ```bash
 docker-compose up -d
 ```
