@@ -2,6 +2,15 @@ import type { Request, Response } from 'express';
 
 import { logger } from '../config/logger.config';
 import userService from '../services/user-service/user.service';
+import type { PaginatedResponse } from '../types/pagination.types';
+import type {
+  Experience,
+  Education,
+  Skill,
+  Project,
+  Certification,
+  Language,
+} from '../types/user-details.types';
 
 /**
  * @route GET /api/dashboard
@@ -18,16 +27,31 @@ export async function getDashboardData(req: Request, res: Response): Promise<voi
     }
 
     // Fetch all data in parallel for better performance
-    const [profile, experiences, education, skills, projects, certifications, languages] =
-      await Promise.all([
-        userService.getUserProfile(userId),
-        userService.getExperiences(userId),
-        userService.getEducation(userId),
-        userService.getSkills(userId),
-        userService.getProjects(userId),
-        userService.getCertifications(userId),
-        userService.getLanguages(userId),
-      ]);
+    const [
+      profile,
+      experiencesResult,
+      educationResult,
+      skillsResult,
+      projectsResult,
+      certificationsResult,
+      languagesResult,
+    ]: [
+      Awaited<ReturnType<typeof userService.getUserProfile>>,
+      PaginatedResponse<Experience>,
+      PaginatedResponse<Education>,
+      PaginatedResponse<Skill>,
+      PaginatedResponse<Project>,
+      PaginatedResponse<Certification>,
+      PaginatedResponse<Language>,
+    ] = await Promise.all([
+      userService.getUserProfile(userId),
+      userService.getExperiences(userId),
+      userService.getEducation(userId),
+      userService.getSkills(userId),
+      userService.getProjects(userId),
+      userService.getCertifications(userId),
+      userService.getLanguages(userId),
+    ]);
 
     if (!profile) {
       res.status(404).json({ error: 'User not found' });
@@ -36,20 +60,20 @@ export async function getDashboardData(req: Request, res: Response): Promise<voi
 
     res.json({
       profile,
-      experiences,
-      education,
-      skills,
-      projects,
-      certifications,
-      languages,
+      experiences: experiencesResult.data,
+      education: educationResult.data,
+      skills: skillsResult.data,
+      projects: projectsResult.data,
+      certifications: certificationsResult.data,
+      languages: languagesResult.data,
       // Include counts for quick reference
       counts: {
-        experiences: experiences.length,
-        education: education.length,
-        skills: skills.length,
-        projects: projects.length,
-        certifications: certifications.length,
-        languages: languages.length,
+        experiences: experiencesResult.meta.total,
+        education: educationResult.meta.total,
+        skills: skillsResult.meta.total,
+        projects: projectsResult.meta.total,
+        certifications: certificationsResult.meta.total,
+        languages: languagesResult.meta.total,
       },
     });
   } catch (error) {
@@ -73,25 +97,37 @@ export async function getDashboardStats(req: Request, res: Response): Promise<vo
     }
 
     // Fetch all data in parallel
-    const [experiences, education, skills, projects, certifications, languages] = await Promise.all(
-      [
-        userService.getExperiences(userId),
-        userService.getEducation(userId),
-        userService.getSkills(userId),
-        userService.getProjects(userId),
-        userService.getCertifications(userId),
-        userService.getLanguages(userId),
-      ],
-    );
+    const [
+      experiencesResult,
+      educationResult,
+      skillsResult,
+      projectsResult,
+      certificationsResult,
+      languagesResult,
+    ]: [
+      PaginatedResponse<Experience>,
+      PaginatedResponse<Education>,
+      PaginatedResponse<Skill>,
+      PaginatedResponse<Project>,
+      PaginatedResponse<Certification>,
+      PaginatedResponse<Language>,
+    ] = await Promise.all([
+      userService.getExperiences(userId),
+      userService.getEducation(userId),
+      userService.getSkills(userId),
+      userService.getProjects(userId),
+      userService.getCertifications(userId),
+      userService.getLanguages(userId),
+    ]);
 
     res.json({
-      experiences: experiences.length,
-      education: education.length,
-      skills: skills.length,
-      skillItems: skills.reduce((acc, skill) => acc + skill.items.length, 0),
-      projects: projects.length,
-      certifications: certifications.length,
-      languages: languages.length,
+      experiences: experiencesResult.meta.total,
+      education: educationResult.meta.total,
+      skills: skillsResult.meta.total,
+      skillItems: skillsResult.data.reduce((acc, skill) => acc + skill.items.length, 0),
+      projects: projectsResult.meta.total,
+      certifications: certificationsResult.meta.total,
+      languages: languagesResult.meta.total,
     });
   } catch (error) {
     logger.error({ err: error }, 'Error fetching dashboard stats');

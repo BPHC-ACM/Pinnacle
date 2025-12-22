@@ -1,4 +1,5 @@
 import prisma from '../../db/client';
+import type { PaginationParams, PaginatedResponse } from '../../types/pagination.types';
 import type {
   SavedResume,
   CreateResumeRequest,
@@ -12,17 +13,29 @@ export class ResumeService {
   /**
    * Get all saved resumes for a user
    */
-  async getSavedResumes(userId: string): Promise<SavedResume[]> {
-    const resumes = await prisma.resume.findMany({
-      where: { userId, deletedAt: null },
-      include: { file: true },
-      orderBy: { updatedAt: 'desc' },
-    });
+  async getSavedResumes(
+    userId: string,
+    params?: PaginationParams,
+  ): Promise<PaginatedResponse<SavedResume>> {
+    const { page = 1, limit = 20, sortBy = 'updatedAt', sortOrder = 'desc' } = params ?? {};
+    const where = { userId, deletedAt: null };
+    const [resumes, total] = await Promise.all([
+      prisma.resume.findMany({
+        where,
+        orderBy: { [sortBy]: sortOrder },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.resume.count({ where }),
+    ]);
 
-    return resumes.map((resume: { data: unknown } & Omit<SavedResume, 'data'>) => ({
-      ...resume,
-      data: resume.data as SavedResume['data'],
-    }));
+    return {
+      data: resumes.map((resume: { data: unknown } & Omit<SavedResume, 'data'>) => ({
+        ...resume,
+        data: resume.data as SavedResume['data'],
+      })),
+      meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    };
   }
 
   /**
@@ -31,7 +44,6 @@ export class ResumeService {
   async getSavedResume(userId: string, resumeId: string): Promise<SavedResume | null> {
     const resume = await prisma.resume.findFirst({
       where: { id: resumeId, userId, deletedAt: null },
-      include: { file: true },
     });
 
     if (!resume) return null;

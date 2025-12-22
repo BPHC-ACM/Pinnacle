@@ -8,6 +8,7 @@ import type {
   BulkStatusUpdateRequest,
   ApplicationStatus,
 } from '../types/application.types';
+import { parsePagination } from '../types/pagination.types';
 
 // ==================== DASHBOARD ====================
 
@@ -26,8 +27,8 @@ export const getAllJobs = async (req: Request, res: Response): Promise<void> => 
     fromDate: req.query.fromDate ? new Date(req.query.fromDate as string) : undefined,
     toDate: req.query.toDate ? new Date(req.query.toDate as string) : undefined,
   };
-
-  const jobs = await applicationService.getAllJobsWithStats(filters);
+  const params = parsePagination(req.query as Record<string, unknown>);
+  const jobs = await applicationService.getAllJobsWithStats(filters, params);
   res.json(jobs);
 };
 
@@ -137,8 +138,8 @@ export const getAllApplications = async (req: Request, res: Response): Promise<v
     fromDate: req.query.fromDate ? new Date(req.query.fromDate as string) : undefined,
     toDate: req.query.toDate ? new Date(req.query.toDate as string) : undefined,
   };
-
-  const applications = await applicationService.getAllApplications(filters);
+  const params = parsePagination(req.query as Record<string, unknown>);
+  const applications = await applicationService.getAllApplications(filters, params);
   res.json(applications);
 };
 
@@ -231,7 +232,7 @@ export const getJobApplicationsAdmin = async (req: Request, res: Response): Prom
     res.status(400).json({ error: 'Job ID required' });
     return;
   }
-
-  const applications = await applicationService.getAllApplications({ jobId });
+  const params = parsePagination(req.query as Record<string, unknown>);
+  const applications = await applicationService.getAllApplications({ jobId }, params);
   res.json(applications);
 };

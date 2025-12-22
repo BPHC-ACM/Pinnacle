@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 
 import { logger } from '../config/logger.config';
 import userService from '../services/user-service/user.service';
+import { parsePagination } from '../types/pagination.types';
 import type {
   UpdateUserProfileRequest,
   CreateExperienceRequest,
@@ -70,7 +71,8 @@ export async function getExperiences(req: Request, res: Response): Promise<void>
   try {
     const userId = getUserId(req, res);
     if (!userId) return;
-    res.json(await userService.getExperiences(userId));
+    const params = parsePagination(req.query as Record<string, unknown>);
+    res.json(await userService.getExperiences(userId, params));
   } catch (error) {
     handleError(res, error, 'Failed to fetch experiences');
   }
@@ -130,7 +132,8 @@ export async function getEducation(req: Request, res: Response): Promise<void> {
   try {
     const userId = getUserId(req, res);
     if (!userId) return;
-    res.json(await userService.getEducation(userId));
+    const params = parsePagination(req.query as Record<string, unknown>);
+    res.json(await userService.getEducation(userId, params));
   } catch (error) {
     handleError(res, error, 'Failed to fetch education');
   }
@@ -190,7 +193,8 @@ export async function getSkills(req: Request, res: Response): Promise<void> {
   try {
     const userId = getUserId(req, res);
     if (!userId) return;
-    res.json(await userService.getSkills(userId));
+    const params = parsePagination(req.query as Record<string, unknown>);
+    res.json(await userService.getSkills(userId, params));
   } catch (error) {
     handleError(res, error, 'Failed to fetch skills');
   }
@@ -244,7 +248,8 @@ export async function getProjects(req: Request, res: Response): Promise<void> {
   try {
     const userId = getUserId(req, res);
     if (!userId) return;
-    res.json(await userService.getProjects(userId));
+    const params = parsePagination(req.query as Record<string, unknown>);
+    res.json(await userService.getProjects(userId, params));
   } catch (error) {
     handleError(res, error, 'Failed to fetch projects');
   }
@@ -298,7 +303,8 @@ export async function getCertifications(req: Request, res: Response): Promise<vo
   try {
     const userId = getUserId(req, res);
     if (!userId) return;
-    res.json(await userService.getCertifications(userId));
+    const params = parsePagination(req.query as Record<string, unknown>);
+    res.json(await userService.getCertifications(userId, params));
   } catch (error) {
     handleError(res, error, 'Failed to fetch certifications');
   }
@@ -358,7 +364,8 @@ export async function getLanguages(req: Request, res: Response): Promise<void> {
   try {
     const userId = getUserId(req, res);
     if (!userId) return;
-    res.json(await userService.getLanguages(userId));
+    const params = parsePagination(req.query as Record<string, unknown>);
+    res.json(await userService.getLanguages(userId, params));
   } catch (error) {
     handleError(res, error, 'Failed to fetch languages');
   }

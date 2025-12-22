@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 
 import applicationService from '../services/application-service/application.service';
 import type { UpdateApplicationStatusRequest } from '../types/application.types';
+import { parsePagination } from '../types/pagination.types';
 
 export const getUserApplications = async (req: Request, res: Response): Promise<void> => {
   const userId = req.user?.id;
@@ -10,7 +11,8 @@ export const getUserApplications = async (req: Request, res: Response): Promise<
     return;
   }
 
-  const applications = await applicationService.getUserApplications(userId);
+  const params = parsePagination(req.query as Record<string, unknown>);
+  const applications = await applicationService.getUserApplications(userId, params);
   res.json(applications);
 };
 
