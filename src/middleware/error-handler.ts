@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 
+import { logger } from '@/config/logger.config';
 import { AppError } from '@/types/errors.types';
 
 export default function errorHandler(
@@ -16,16 +17,18 @@ export default function errorHandler(
       msg: err.publicMessage,
     });
 
-    console.error(err);
+    logger.error(err, 'Application error occurred');
+
     return;
   }
-  //   Throw a 500 by default in case of improper error handling
+
+  logger.error(err, 'Improper use of errors please throw an instance of AppError');
+
+  // Throw a 500 by default in case of improper error handling
   res.status(500).json({
     error: 'Internal server error',
     msg: 'Something went wrong',
   });
 
-  console.error('Improper use of errors please throw an instance of AppError');
-  console.error(err);
   return;
 }

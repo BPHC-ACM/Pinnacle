@@ -51,7 +51,7 @@ export const getResumePreviewData = async (req: Request, res: Response): Promise
 
     res.json(previewData);
   } catch (error) {
-    console.error('Error fetching resume preview data:', error);
+    logger.error({ err: error }, 'Error fetching resume preview data');
     res.status(500).json({ error: 'Failed to fetch resume preview data' });
   }
 };
@@ -66,7 +66,7 @@ export const getTemplates = (_req: Request, res: Response): void => {
     const templates = resumeService.getAvailableTemplates();
     res.json(templates);
   } catch (error) {
-    console.error('Error fetching templates:', error);
+    logger.error({ err: error }, 'Error fetching templates');
     res.status(500).json({ error: 'Failed to fetch templates' });
   }
 };
@@ -88,7 +88,7 @@ export const getSavedResumes = async (req: Request, res: Response): Promise<void
     const resumes = await resumeService.getSavedResumes(userId);
     res.json(resumes);
   } catch (error) {
-    console.error('Error fetching saved resumes:', error);
+    logger.error({ err: error }, 'Error fetching saved resumes');
     res.status(500).json({ error: 'Failed to fetch saved resumes' });
   }
 };
@@ -122,7 +122,7 @@ export const getSavedResume = async (req: Request, res: Response): Promise<void>
 
     res.json(resume);
   } catch (error) {
-    console.error('Error fetching saved resume:', error);
+    logger.error({ err: error }, 'Error fetching saved resume');
     res.status(500).json({ error: 'Failed to fetch saved resume' });
   }
 };
@@ -165,7 +165,7 @@ export const createSavedResume = async (req: Request, res: Response): Promise<vo
     const resume = await resumeService.createResume(userId, data);
     res.status(201).json(resume);
   } catch (error) {
-    console.error('Error creating saved resume:', error);
+    logger.error({ err: error }, 'Error creating saved resume');
     res.status(500).json({ error: 'Failed to create saved resume' });
   }
 };
@@ -210,7 +210,7 @@ export const updateSavedResume = async (req: Request, res: Response): Promise<vo
 
     res.json(resume);
   } catch (error) {
-    console.error('Error updating saved resume:', error);
+    logger.error({ err: error }, 'Error updating saved resume');
     res.status(500).json({ error: 'Failed to update saved resume' });
   }
 };
@@ -244,7 +244,7 @@ export const deleteSavedResume = async (req: Request, res: Response): Promise<vo
 
     res.status(204).send();
   } catch (error) {
-    console.error('Error deleting saved resume:', error);
+    logger.error({ err: error }, 'Error deleting saved resume');
     res.status(500).json({ error: 'Failed to delete saved resume' });
   }
 };

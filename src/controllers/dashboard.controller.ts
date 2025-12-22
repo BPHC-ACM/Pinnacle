@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express';
 
+import { logger } from '../config/logger.config';
 import userService from '../services/user-service/user.service';
 
 /**
@@ -52,7 +53,7 @@ export async function getDashboardData(req: Request, res: Response): Promise<voi
       },
     });
   } catch (error) {
-    console.error('Error fetching dashboard data:', error);
+    logger.error({ err: error }, 'Error fetching dashboard data');
     res.status(500).json({ error: 'Failed to fetch dashboard data' });
   }
 }
@@ -93,7 +94,7 @@ export async function getDashboardStats(req: Request, res: Response): Promise<vo
       languages: languages.length,
     });
   } catch (error) {
-    console.error('Error fetching dashboard stats:', error);
+    logger.error({ err: error }, 'Error fetching dashboard stats');
     res.status(500).json({ error: 'Failed to fetch dashboard stats' });
   }
 }
@@ -161,7 +162,7 @@ export async function getProfileCompletion(req: Request, res: Response): Promise
           : 'Your profile is complete!',
     });
   } catch (error) {
-    console.error('Error fetching profile completion:', error);
+    logger.error({ err: error }, 'Error fetching profile completion');
     res.status(500).json({ error: 'Failed to fetch profile completion' });
   }
 }
