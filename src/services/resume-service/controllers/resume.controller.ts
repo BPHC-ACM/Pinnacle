@@ -4,6 +4,7 @@ import { logger } from '../../../config/logger.config';
 import type { CreateResumeRequest, UpdateResumeRequest } from '../../../types/resume.types';
 import { UserService } from '../../user-service/user.service';
 import resumeService from '../resume.service';
+import resumeStorageService from '../storage/resume-storage.service';
 import { generateResumePDF } from '../utils/pdf.utils';
 
 const userService = new UserService();
@@ -250,13 +251,17 @@ export const deleteSavedResume = async (req: Request, res: Response): Promise<vo
 
 /**
  * @route POST /api/resume/generate/:userId
- * @desc Generate a PDF resume for a user
+ * @desc Generate a PDF resume for a user and store it in Minio
  * @access Private (requires authentication)
  */
 export const generateResume = async (req: Request, res: Response): Promise<void> => {
   try {
     const { userId } = req.params;
     const authenticatedUserId = req.user?.id;
+    const { resumeId, saveToStorage = true } = req.body as {
+      resumeId?: string;
+      saveToStorage?: boolean;
+    };
 
     if (!userId) {
       res.status(400).json({ error: 'User ID is required' });
@@ -308,15 +313,36 @@ export const generateResume = async (req: Request, res: Response): Promise<void>
       projects,
     });
 
-    // Set headers for PDF download
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader(
-      'Content-Disposition',
-      `attachment; filename="${profile.name.replace(/\s+/g, '_')}_Resume.pdf"`,
-    );
-    res.setHeader('Content-Length', pdfBuffer.length);
+    const fileName = `${profile.name.replace(/\s+/g, '_')}_Resume`;
 
-    // Send PDF buffer
+    // If resumeId provided and saveToStorage is true, save to Minio
+    if (resumeId && saveToStorage) {
+      try {
+        const { fileId, downloadUrl } = await resumeStorageService.uploadResumePDF(
+          resumeId,
+          pdfBuffer,
+          fileName,
+        );
+
+        logger.info({ userId, resumeId, fileId }, 'Resume PDF saved to storage');
+
+        res.json({
+          message: 'Resume generated and saved successfully',
+          fileId,
+          downloadUrl,
+          resumeId,
+        });
+        return;
+      } catch (error) {
+        logger.error({ err: error, userId, resumeId }, 'Failed to save resume to storage');
+        // Continue to send PDF directly as fallback
+      }
+    }
+
+    // Default: Send PDF directly as download
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}.pdf"`);
+    res.setHeader('Content-Length', pdfBuffer.length);
     res.send(pdfBuffer);
   } catch (error) {
     logger.error({ err: error }, 'Failed to generate resume');
@@ -340,4 +366,127 @@ export const generateMyResume = async (req: Request, res: Response): Promise<voi
   // Set userId in params and call the main generate function
   req.params.userId = userId;
   await generateResume(req, res);
+};
+
+/**
+ * @route GET /api/resume/download/:resumeId
+ * @desc Get download URL for a stored resume PDF
+ * @access Private (requires authentication)
+ */
+export const getResumeDownloadUrl = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.user?.id;
+    const { resumeId } = req.params;
+
+    if (!userId) {
+      res.status(401).json({ error: 'Authentication required' });
+      return;
+    }
+
+    if (!resumeId) {
+      res.status(400).json({ error: 'Resume ID is required' });
+      return;
+    }
+
+    // Verify resume belongs to user
+    const resume = await resumeService.getSavedResume(userId, resumeId);
+    if (!resume) {
+      res.status(404).json({ error: 'Resume not found' });
+      return;
+    }
+
+    // Get download URL
+    const downloadUrl = await resumeStorageService.getResumeDownloadUrl(resumeId);
+    if (!downloadUrl) {
+      res.status(404).json({ error: 'Resume PDF not found in storage' });
+      return;
+    }
+
+    res.json({ downloadUrl, expiresIn: 3600 });
+  } catch (error) {
+    logger.error({ err: error }, 'Failed to get resume download URL');
+    res.status(500).json({ error: 'Failed to get resume download URL' });
+  }
+};
+
+/**
+ * @route DELETE /api/resume/file/:resumeId
+ * @desc Delete stored resume PDF file
+ * @access Private (requires authentication)
+ */
+export const deleteResumeFile = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.user?.id;
+    const { resumeId } = req.params;
+
+    if (!userId) {
+      res.status(401).json({ error: 'Authentication required' });
+      return;
+    }
+
+    if (!resumeId) {
+      res.status(400).json({ error: 'Resume ID is required' });
+      return;
+    }
+
+    // Verify resume belongs to user
+    const resume = await resumeService.getSavedResume(userId, resumeId);
+    if (!resume) {
+      res.status(404).json({ error: 'Resume not found' });
+      return;
+    }
+
+    // Delete file from storage
+    const success = await resumeStorageService.deleteResumePDF(resumeId);
+    if (!success) {
+      res.status(404).json({ error: 'Resume PDF not found in storage' });
+      return;
+    }
+
+    res.json({ message: 'Resume PDF deleted successfully' });
+  } catch (error) {
+    logger.error({ err: error }, 'Failed to delete resume file');
+    res.status(500).json({ error: 'Failed to delete resume file' });
+  }
+};
+
+/**
+ * @route GET /api/resume/file-info/:resumeId
+ * @desc Get metadata about stored resume PDF
+ * @access Private (requires authentication)
+ */
+export const getResumeFileInfo = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.user?.id;
+    const { resumeId } = req.params;
+
+    if (!userId) {
+      res.status(401).json({ error: 'Authentication required' });
+      return;
+    }
+
+    if (!resumeId) {
+      res.status(400).json({ error: 'Resume ID is required' });
+      return;
+    }
+
+    // Verify resume belongs to user
+    const resume = await resumeService.getSavedResume(userId, resumeId);
+    if (!resume) {
+      res.status(404).json({ error: 'Resume not found' });
+      return;
+    }
+
+    // Get file metadata
+    const fileInfo = await resumeStorageService.getResumeFileMetadata(resumeId);
+    if (!fileInfo) {
+      res.status(404).json({ error: 'Resume PDF not found in storage' });
+      return;
+    }
+
+    res.json(fileInfo);
+  } catch (error) {
+    logger.error({ err: error }, 'Failed to get resume file info');
+    res.status(500).json({ error: 'Failed to get resume file info' });
+  }
 };

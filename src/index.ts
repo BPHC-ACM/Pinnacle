@@ -12,12 +12,14 @@ import { config } from './auth/config/env.config';
 import { generalApiRateLimiter } from './auth/middleware/rate-limit.middleware';
 import authRoutes from './auth/routes/auth.routes';
 import { logger } from './config/logger.config';
+import adminRoutes from './routes/admin.routes';
 import applicationRoutes from './routes/application.routes';
 import companyRoutes from './routes/company.routes';
 import dashboardRoutes from './routes/dashboard.routes';
 import jobRoutes from './routes/job.routes';
 import userDetailsRoutes from './routes/user-details.routes';
 import resumeRoutes from './services/resume-service/routes/resume.routes';
+import { initializeStorage } from './services/storage-service/storage-init';
 
 // Load environment variables
 dotenv.config();
@@ -44,6 +46,7 @@ app.use('/api/resume', resumeRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/jobs', jobRoutes);
 app.use('/api/applications', applicationRoutes);
+app.use('/api/admin', adminRoutes);
 
 // API Documentation endpoint (via Swagger UI)
 try {
@@ -60,6 +63,9 @@ try {
 app.get('/health', (_req: Request, res: Response) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
+
+// Initialize storage on startup
+void initializeStorage();
 
 // Start server
 app.listen(config.port, () => {
