@@ -12,6 +12,7 @@ import { config } from './auth/config/env.config';
 import { generalApiRateLimiter } from './auth/middleware/rate-limit.middleware';
 import authRoutes from './auth/routes/auth.routes';
 import { logger } from './config/logger.config';
+import errorHandler from './middleware/error-handler';
 import adminRoutes from './routes/admin.routes';
 import applicationRoutes from './routes/application.routes';
 import companyRoutes from './routes/company.routes';
@@ -31,6 +32,7 @@ app.use(cors({ origin: config.frontendUrl, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 app.use(pinoHttp({ logger }));
+app.use(errorHandler);
 
 // Apply general rate limiting to all API routes
 app.use('/api', generalApiRateLimiter);
