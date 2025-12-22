@@ -7,6 +7,7 @@ import pinoHttp from 'pino-http';
 import { config } from './auth/config/env.config';
 import authRoutes from './auth/routes/auth.routes';
 import { logger } from './config/logger.config';
+import adminRoutes from './routes/admin.routes';
 import applicationRoutes from './routes/application.routes';
 import companyRoutes from './routes/company.routes';
 import dashboardRoutes from './routes/dashboard.routes';
@@ -115,9 +116,32 @@ app.get('/api', (_req: Request, res: Response) => {
           'GET /profile-completion': 'Get profile completion percentage',
         },
       },
+      admin: {
+        base: '/api/admin',
+        description: 'All routes require authentication and admin role',
+        routes: {
+          'GET /dashboard': 'Get admin dashboard statistics',
+          'POST /jobs': 'Create a new job posting',
+          'GET /jobs': 'List all jobs with application stats',
+          'GET /jobs/:id': 'Get single job details',
+          'PATCH /jobs/:id': 'Update job details',
+          'DELETE /jobs/:id': 'Soft delete a job',
+          'PATCH /jobs/:id/pause': 'Pause a job',
+          'PATCH /jobs/:id/reopen': 'Reopen a closed/paused job',
+          'GET /jobs/:id/export': 'Export all applications for a job',
+          'GET /jobs/:jobId/applications': 'Get all applications for a job',
+          'GET /applications': 'List all applications with filters',
+          'GET /applications/:id': 'Get application with full details',
+          'PATCH /applications/:id/status': 'Update application status',
+          'POST /applications/bulk-status': 'Bulk update application statuses',
+          'DELETE /applications/:id': 'Delete an application',
+          'GET /applications/:id/profile': 'Get applicant full profile',
+        },
+      },
     },
   });
 });
+app.use('/api/admin', adminRoutes);
 app.use('/api', applicationRoutes);
 
 // Health check
