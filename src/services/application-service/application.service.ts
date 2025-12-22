@@ -478,12 +478,15 @@ export class ApplicationService {
         title: job.title,
         companyId: job.companyId,
         status: job.status,
-      },
-      questions: job.questions,
+        createdAt: job.createdAt,
+        updatedAt: job.updatedAt,
+      } as Job,
       applications: applications.map((app) => ({
         ...app,
+        resumeId: app.resumeId ?? undefined,
+        coverLetter: app.coverLetter ?? undefined,
         user: userMap.get(app.userId),
-      })),
+      })) as Application[],
     };
   }
 }

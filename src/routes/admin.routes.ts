@@ -1,6 +1,7 @@
 import { Router, type RequestHandler } from 'express';
 
-import { authenticateToken, isAdmin } from '@/auth/middleware/auth.middleware';
+import { authenticateToken } from '@/auth/middleware/auth.middleware';
+import { isAdmin } from '@/auth/middleware/admin.middleware';
 import {
   // Dashboard
   getAdminDashboard,
