@@ -15,6 +15,7 @@ import type {
   JobWithStats,
   AdminDashboardStats,
 } from '../../types/application.types';
+import type { PaginationParams, PaginatedResponse } from '../../types/pagination.types';
 
 export class ApplicationService {
   async createJob(data: CreateJobRequest): Promise<Job> {
@@ -45,12 +46,23 @@ export class ApplicationService {
     }) as unknown as Promise<Job | null>;
   }
 
-  async getJobs(companyId?: string): Promise<Job[]> {
-    return prisma.job.findMany({
-      where: { deletedAt: null, ...(companyId && { companyId }) },
-      include: { questions: { orderBy: { order: 'asc' } } },
-      orderBy: { createdAt: 'desc' },
-    }) as unknown as Promise<Job[]>;
+  async getJobs(companyId?: string, params?: PaginationParams): Promise<PaginatedResponse<Job>> {
+    const { page = 1, limit = 20, sortBy = 'createdAt', sortOrder = 'desc' } = params ?? {};
+    const where = { deletedAt: null, ...(companyId && { companyId }) };
+    const [data, total] = await Promise.all([
+      prisma.job.findMany({
+        where,
+        include: { questions: { orderBy: { order: 'asc' } } },
+        orderBy: { [sortBy]: sortOrder },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.job.count({ where }),
+    ]);
+    return {
+      data: data as unknown as Job[],
+      meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    };
   }
 
   async closeJob(id: string): Promise<Job | null> {
@@ -114,18 +126,46 @@ export class ApplicationService {
     }) as unknown as Promise<Application | null>;
   }
 
-  async getUserApplications(userId: string): Promise<Application[]> {
-    return prisma.application.findMany({
-      where: { userId },
-      orderBy: { appliedAt: 'desc' },
-    }) as unknown as Promise<Application[]>;
+  async getUserApplications(
+    userId: string,
+    params?: PaginationParams,
+  ): Promise<PaginatedResponse<Application>> {
+    const { page = 1, limit = 20, sortBy = 'appliedAt', sortOrder = 'desc' } = params ?? {};
+    const where = { userId };
+    const [data, total] = await Promise.all([
+      prisma.application.findMany({
+        where,
+        orderBy: { [sortBy]: sortOrder },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.application.count({ where }),
+    ]);
+    return {
+      data: data as unknown as Application[],
+      meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    };
   }
 
-  async getJobApplications(jobId: string): Promise<Application[]> {
-    return prisma.application.findMany({
-      where: { jobId },
-      orderBy: { appliedAt: 'desc' },
-    }) as unknown as Promise<Application[]>;
+  async getJobApplications(
+    jobId: string,
+    params?: PaginationParams,
+  ): Promise<PaginatedResponse<Application>> {
+    const { page = 1, limit = 20, sortBy = 'appliedAt', sortOrder = 'desc' } = params ?? {};
+    const where = { jobId };
+    const [data, total] = await Promise.all([
+      prisma.application.findMany({
+        where,
+        orderBy: { [sortBy]: sortOrder },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.application.count({ where }),
+    ]);
+    return {
+      data: data as unknown as Application[],
+      meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    };
   }
 
   async updateStatus(id: string, status: ApplicationStatus): Promise<Application | null> {
@@ -186,27 +226,32 @@ export class ApplicationService {
   // Get all applications with filters (Admin)
   async getAllApplications(
     filters: AdminApplicationFilters = {},
-  ): Promise<ApplicationWithDetails[]> {
+    params?: PaginationParams,
+  ): Promise<PaginatedResponse<ApplicationWithDetails>> {
+    const { page = 1, limit = 20, sortBy = 'appliedAt', sortOrder = 'desc' } = params ?? {};
     const { status, jobId, companyId, fromDate, toDate, search } = filters;
 
-    const applications = await prisma.application.findMany({
-      where: {
-        ...(status && { status }),
-        ...(jobId && { jobId }),
-        ...(companyId && { job: { companyId } }),
-        ...(fromDate && { appliedAt: { gte: fromDate } }),
-        ...(toDate && { appliedAt: { lte: toDate } }),
-        ...(search && {
-          OR: [{ job: { title: { contains: search, mode: 'insensitive' } } }],
-        }),
-      },
-      include: {
-        job: {
-          include: { questions: true },
-        },
-      },
-      orderBy: { appliedAt: 'desc' },
-    });
+    const where = {
+      ...(status && { status }),
+      ...(jobId && { jobId }),
+      ...(companyId && { job: { companyId } }),
+      ...(fromDate && { appliedAt: { gte: fromDate } }),
+      ...(toDate && { appliedAt: { lte: toDate } }),
+      ...(search && {
+        OR: [{ job: { title: { contains: search, mode: 'insensitive' as const } } }],
+      }),
+    };
+
+    const [applications, total] = await Promise.all([
+      prisma.application.findMany({
+        where,
+        include: { job: { include: { questions: true } } },
+        orderBy: { [sortBy]: sortOrder },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.application.count({ where }),
+    ]);
 
     // Fetch user details separately since User is not directly related to Application in schema
     const userIds = [...new Set(applications.map((app) => app.userId))];
@@ -231,11 +276,16 @@ export class ApplicationService {
     });
     const resumeMap = new Map(resumes.map((r) => [r.id, r]));
 
-    return applications.map((app) => ({
+    const data = applications.map((app) => ({
       ...app,
       user: userMap.get(app.userId),
       resume: app.resumeId ? resumeMap.get(app.resumeId) : undefined,
     })) as unknown as ApplicationWithDetails[];
+
+    return {
+      data,
+      meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    };
   }
 
   // Get single application with full details (Admin)
@@ -278,24 +328,35 @@ export class ApplicationService {
   }
 
   // Get all jobs with application stats (Admin)
-  async getAllJobsWithStats(filters: AdminJobFilters = {}): Promise<JobWithStats[]> {
+  async getAllJobsWithStats(
+    filters: AdminJobFilters = {},
+    params?: PaginationParams,
+  ): Promise<PaginatedResponse<JobWithStats>> {
+    const { page = 1, limit = 20, sortBy = 'createdAt', sortOrder = 'desc' } = params ?? {};
     const { status, companyId, fromDate, toDate, search } = filters;
 
-    const jobs = await prisma.job.findMany({
-      where: {
-        deletedAt: null,
-        ...(status && { status }),
-        ...(companyId && { companyId }),
-        ...(fromDate && { createdAt: { gte: fromDate } }),
-        ...(toDate && { createdAt: { lte: toDate } }),
-        ...(search && { title: { contains: search, mode: 'insensitive' } }),
-      },
-      include: {
-        questions: { orderBy: { order: 'asc' } },
-        _count: { select: { applications: true } },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+    const where = {
+      deletedAt: null,
+      ...(status && { status }),
+      ...(companyId && { companyId }),
+      ...(fromDate && { createdAt: { gte: fromDate } }),
+      ...(toDate && { createdAt: { lte: toDate } }),
+      ...(search && { title: { contains: search, mode: 'insensitive' as const } }),
+    };
+
+    const [jobs, total] = await Promise.all([
+      prisma.job.findMany({
+        where,
+        include: {
+          questions: { orderBy: { order: 'asc' } },
+          _count: { select: { applications: true } },
+        },
+        orderBy: { [sortBy]: sortOrder },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.job.count({ where }),
+    ]);
 
     // Get application stats for each job
     const jobsWithStats = await Promise.all(
@@ -323,7 +384,10 @@ export class ApplicationService {
       }),
     );
 
-    return jobsWithStats as unknown as JobWithStats[];
+    return {
+      data: jobsWithStats as unknown as JobWithStats[],
+      meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    };
   }
 
   // Update job details (Admin)

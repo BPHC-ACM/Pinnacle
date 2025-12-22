@@ -1,4 +1,5 @@
 import prisma from '../../db/client';
+import type { PaginationParams, PaginatedResponse } from '../../types/pagination.types';
 import type {
   UserProfile,
   UpdateUserProfileRequest,
@@ -54,11 +55,25 @@ export class UserService {
   }
 
   // Experience
-  async getExperiences(userId: string): Promise<Experience[]> {
-    return (await prisma.experience.findMany({
-      where: { userId, deletedAt: null },
-      orderBy: { order: 'asc' },
-    })) as Experience[];
+  async getExperiences(
+    userId: string,
+    params?: PaginationParams,
+  ): Promise<PaginatedResponse<Experience>> {
+    const { page = 1, limit = 20, sortBy = 'order', sortOrder = 'asc' } = params ?? {};
+    const where = { userId, deletedAt: null };
+    const [data, total] = await Promise.all([
+      prisma.experience.findMany({
+        where,
+        orderBy: { [sortBy]: sortOrder },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.experience.count({ where }),
+    ]);
+    return {
+      data: data as Experience[],
+      meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    };
   }
 
   async createExperience(userId: string, data: CreateExperienceRequest): Promise<Experience> {
@@ -97,11 +112,25 @@ export class UserService {
   }
 
   // Education
-  async getEducation(userId: string): Promise<Education[]> {
-    return (await prisma.education.findMany({
-      where: { userId, deletedAt: null },
-      orderBy: { order: 'asc' },
-    })) as Education[];
+  async getEducation(
+    userId: string,
+    params?: PaginationParams,
+  ): Promise<PaginatedResponse<Education>> {
+    const { page = 1, limit = 20, sortBy = 'order', sortOrder = 'asc' } = params ?? {};
+    const where = { userId, deletedAt: null };
+    const [data, total] = await Promise.all([
+      prisma.education.findMany({
+        where,
+        orderBy: { [sortBy]: sortOrder },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.education.count({ where }),
+    ]);
+    return {
+      data: data as Education[],
+      meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    };
   }
 
   async createEducation(userId: string, data: CreateEducationRequest): Promise<Education> {
@@ -134,11 +163,22 @@ export class UserService {
   }
 
   // Skills
-  async getSkills(userId: string): Promise<Skill[]> {
-    return (await prisma.skill.findMany({
-      where: { userId, deletedAt: null },
-      orderBy: { order: 'asc' },
-    })) as Skill[];
+  async getSkills(userId: string, params?: PaginationParams): Promise<PaginatedResponse<Skill>> {
+    const { page = 1, limit = 20, sortBy = 'order', sortOrder = 'asc' } = params ?? {};
+    const where = { userId, deletedAt: null };
+    const [data, total] = await Promise.all([
+      prisma.skill.findMany({
+        where,
+        orderBy: { [sortBy]: sortOrder },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.skill.count({ where }),
+    ]);
+    return {
+      data: data as Skill[],
+      meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    };
   }
 
   async createSkill(userId: string, data: CreateSkillRequest): Promise<Skill> {
@@ -163,11 +203,25 @@ export class UserService {
   }
 
   // Projects
-  async getProjects(userId: string): Promise<Project[]> {
-    return (await prisma.project.findMany({
-      where: { userId, deletedAt: null },
-      orderBy: { order: 'asc' },
-    })) as Project[];
+  async getProjects(
+    userId: string,
+    params?: PaginationParams,
+  ): Promise<PaginatedResponse<Project>> {
+    const { page = 1, limit = 20, sortBy = 'order', sortOrder = 'asc' } = params ?? {};
+    const where = { userId, deletedAt: null };
+    const [data, total] = await Promise.all([
+      prisma.project.findMany({
+        where,
+        orderBy: { [sortBy]: sortOrder },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.project.count({ where }),
+    ]);
+    return {
+      data: data as Project[],
+      meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    };
   }
 
   async createProject(userId: string, data: CreateProjectRequest): Promise<Project> {
@@ -202,11 +256,25 @@ export class UserService {
   }
 
   // Certifications
-  async getCertifications(userId: string): Promise<Certification[]> {
-    return (await prisma.certification.findMany({
-      where: { userId, deletedAt: null },
-      orderBy: { order: 'asc' },
-    })) as Certification[];
+  async getCertifications(
+    userId: string,
+    params?: PaginationParams,
+  ): Promise<PaginatedResponse<Certification>> {
+    const { page = 1, limit = 20, sortBy = 'order', sortOrder = 'asc' } = params ?? {};
+    const where = { userId, deletedAt: null };
+    const [data, total] = await Promise.all([
+      prisma.certification.findMany({
+        where,
+        orderBy: { [sortBy]: sortOrder },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.certification.count({ where }),
+    ]);
+    return {
+      data: data as Certification[],
+      meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    };
   }
 
   async createCertification(
@@ -242,11 +310,25 @@ export class UserService {
   }
 
   // Languages
-  async getLanguages(userId: string): Promise<Language[]> {
-    return (await prisma.language.findMany({
-      where: { userId, deletedAt: null },
-      orderBy: { order: 'asc' },
-    })) as Language[];
+  async getLanguages(
+    userId: string,
+    params?: PaginationParams,
+  ): Promise<PaginatedResponse<Language>> {
+    const { page = 1, limit = 20, sortBy = 'order', sortOrder = 'asc' } = params ?? {};
+    const where = { userId, deletedAt: null };
+    const [data, total] = await Promise.all([
+      prisma.language.findMany({
+        where,
+        orderBy: { [sortBy]: sortOrder },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.language.count({ where }),
+    ]);
+    return {
+      data: data as Language[],
+      meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    };
   }
 
   async createLanguage(userId: string, data: CreateLanguageRequest): Promise<Language> {
