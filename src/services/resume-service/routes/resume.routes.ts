@@ -11,6 +11,9 @@ import {
   createSavedResume,
   updateSavedResume,
   deleteSavedResume,
+  getResumeDownloadUrl,
+  deleteResumeFile,
+  getResumeFileInfo,
 } from '../controllers/resume.controller';
 
 const router = Router();
@@ -96,5 +99,32 @@ router.post('/generate', generateMyResume);
  * @security Users can only generate their own resume (admins can generate any)
  */
 router.post('/generate/:userId', generateResume);
+
+/**
+ * @route GET /api/resume/download/:resumeId
+ * @desc Get download URL for a stored resume PDF
+ * @param resumeId - The ID of the saved resume
+ * @returns Download URL (presigned, expires in 1 hour)
+ * @access Private (requires JWT authentication)
+ */
+router.get('/download/:resumeId', getResumeDownloadUrl);
+
+/**
+ * @route GET /api/resume/file-info/:resumeId
+ * @desc Get metadata about stored resume PDF file
+ * @param resumeId - The ID of the saved resume
+ * @returns File metadata (size, mimeType, createdAt, etc.)
+ * @access Private (requires JWT authentication)
+ */
+router.get('/file-info/:resumeId', getResumeFileInfo);
+
+/**
+ * @route DELETE /api/resume/file/:resumeId
+ * @desc Delete stored resume PDF file from storage
+ * @param resumeId - The ID of the saved resume
+ * @returns Success message
+ * @access Private (requires JWT authentication)
+ */
+router.delete('/file/:resumeId', deleteResumeFile);
 
 export default router;

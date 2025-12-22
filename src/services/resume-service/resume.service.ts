@@ -15,6 +15,7 @@ export class ResumeService {
   async getSavedResumes(userId: string): Promise<SavedResume[]> {
     const resumes = await prisma.resume.findMany({
       where: { userId, deletedAt: null },
+      include: { file: true },
       orderBy: { updatedAt: 'desc' },
     });
 
@@ -30,6 +31,7 @@ export class ResumeService {
   async getSavedResume(userId: string, resumeId: string): Promise<SavedResume | null> {
     const resume = await prisma.resume.findFirst({
       where: { id: resumeId, userId, deletedAt: null },
+      include: { file: true },
     });
 
     if (!resume) return null;

@@ -19,6 +19,7 @@ import dashboardRoutes from './routes/dashboard.routes';
 import jobRoutes from './routes/job.routes';
 import userDetailsRoutes from './routes/user-details.routes';
 import resumeRoutes from './services/resume-service/routes/resume.routes';
+import { initializeStorage } from './services/storage-service/storage-init';
 
 // Load environment variables
 dotenv.config();
@@ -62,6 +63,9 @@ try {
 app.get('/health', (_req: Request, res: Response) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
+
+// Initialize storage on startup
+initializeStorage();
 
 // Start server
 app.listen(config.port, () => {
