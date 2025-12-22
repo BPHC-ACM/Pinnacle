@@ -1,5 +1,5 @@
-import { minioClient } from '@/db/minio';
 import { logger } from '@/config/logger.config';
+import { minioClient } from '@/db/minio';
 
 const RESUME_BUCKET = 'resumes';
 

@@ -1,6 +1,6 @@
-import { Router } from 'express';
+import { Router, type RequestHandler } from 'express';
 
-import { authenticateToken, isAdmin } from '../auth/middleware';
+import { authenticateToken, isAdmin } from '@/auth/middleware/auth.middleware';
 import {
   // Dashboard
   getAdminDashboard,
@@ -20,13 +20,13 @@ import {
   deleteApplication,
   getApplicantProfile,
   getJobApplicationsAdmin,
-} from '../controllers/admin.controller';
-import { createJob } from '../controllers/application.controller';
+} from '@/controllers/admin.controller';
+import { createJob } from '@/controllers/job.controller';
 
 const router = Router();
 
 // All admin routes require authentication and admin role
-router.use(authenticateToken, isAdmin);
+router.use(authenticateToken as RequestHandler, isAdmin as RequestHandler);
 
 // ==================== DASHBOARD ====================
 router.get('/dashboard', getAdminDashboard);

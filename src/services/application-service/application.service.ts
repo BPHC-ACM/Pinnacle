@@ -1,3 +1,5 @@
+import type { User } from '@prisma/client';
+
 import { logger } from '../../config/logger.config';
 import prisma from '../../db/client';
 import type {
@@ -182,7 +184,9 @@ export class ApplicationService {
   }
 
   // Get all applications with filters (Admin)
-  async getAllApplications(filters: AdminApplicationFilters = {}): Promise<ApplicationWithDetails[]> {
+  async getAllApplications(
+    filters: AdminApplicationFilters = {},
+  ): Promise<ApplicationWithDetails[]> {
     const { status, jobId, companyId, fromDate, toDate, search } = filters;
 
     const applications = await prisma.application.findMany({
@@ -193,9 +197,7 @@ export class ApplicationService {
         ...(fromDate && { appliedAt: { gte: fromDate } }),
         ...(toDate && { appliedAt: { lte: toDate } }),
         ...(search && {
-          OR: [
-            { job: { title: { contains: search, mode: 'insensitive' } } },
-          ],
+          OR: [{ job: { title: { contains: search, mode: 'insensitive' } } }],
         }),
       },
       include: {
@@ -222,7 +224,7 @@ export class ApplicationService {
     const userMap = new Map(users.map((u) => [u.id, u]));
 
     // Fetch resume details
-    const resumeIds = applications.filter((a) => a.resumeId).map((a) => a.resumeId as string);
+    const resumeIds = applications.filter((a) => a.resumeId).map((a) => a.resumeId!);
     const resumes = await prisma.resume.findMany({
       where: { id: { in: resumeIds } },
       select: { id: true, title: true },
@@ -270,8 +272,8 @@ export class ApplicationService {
 
     return {
       ...application,
-      user: user || undefined,
-      resume: resume || undefined,
+      user: user ?? undefined,
+      resume: resume ?? undefined,
     } as unknown as ApplicationWithDetails;
   }
 
@@ -310,12 +312,12 @@ export class ApplicationService {
           ...job,
           applicationStats: {
             total: job._count.applications,
-            applied: statMap['APPLIED'] || 0,
-            shortlisted: statMap['SHORTLISTED'] || 0,
-            interviewing: statMap['INTERVIEWING'] || 0,
-            rejected: statMap['REJECTED'] || 0,
-            hired: statMap['HIRED'] || 0,
-            withdrawn: statMap['WITHDRAWN'] || 0,
+            applied: statMap.APPLIED ?? 0,
+            shortlisted: statMap.SHORTLISTED ?? 0,
+            interviewing: statMap.INTERVIEWING ?? 0,
+            rejected: statMap.REJECTED ?? 0,
+            hired: statMap.HIRED ?? 0,
+            withdrawn: statMap.WITHDRAWN ?? 0,
           },
         };
       }),
@@ -388,7 +390,7 @@ export class ApplicationService {
   }
 
   // Get applicant's full profile for an application (Admin)
-  async getApplicantProfile(applicationId: string) {
+  async getApplicantProfile(applicationId: string): Promise<User | null> {
     const app = await prisma.application.findUnique({ where: { id: applicationId } });
     if (!app) return null;
 
@@ -440,7 +442,9 @@ export class ApplicationService {
   }
 
   // Export applications data for a job (Admin)
-  async exportJobApplications(jobId: string) {
+  async exportJobApplications(
+    jobId: string,
+  ): Promise<{ job: Job; applications: Application[] } | null> {
     const job = await prisma.job.findFirst({
       where: { id: jobId, deletedAt: null },
       include: { questions: true },

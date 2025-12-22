@@ -65,7 +65,7 @@ app.get('/health', (_req: Request, res: Response) => {
 });
 
 // Initialize storage on startup
-initializeStorage();
+void initializeStorage();
 
 // Start server
 app.listen(config.port, () => {

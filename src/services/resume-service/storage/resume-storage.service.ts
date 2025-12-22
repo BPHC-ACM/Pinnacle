@@ -1,5 +1,7 @@
 import crypto from 'crypto';
 
+import type { ResumeFile } from '@prisma/client';
+
 import { logger } from '@/config/logger.config';
 import prisma from '@/db/client';
 import { MinioBucketStorage } from '@/services/storage-service/minio-service';
@@ -35,7 +37,7 @@ export class ResumeStorageService {
         // Delete old file from Minio
         try {
           await resumeStorage.delete(existing.objectKey);
-        } catch (error) {
+        } catch {
           logger.warn({ objectKey: existing.objectKey }, 'Failed to delete old resume file');
         }
 
@@ -133,7 +135,7 @@ export class ResumeStorageService {
   /**
    * Get resume file metadata
    */
-  async getResumeFileMetadata(resumeId: string) {
+  getResumeFileMetadata(resumeId: string): Promise<ResumeFile | null> {
     return prisma.resumeFile.findUnique({
       where: { resumeId },
     });
