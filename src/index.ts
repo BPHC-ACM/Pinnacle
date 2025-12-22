@@ -7,6 +7,7 @@ import pinoHttp from 'pino-http';
 import { config } from './auth/config/env.config';
 import authRoutes from './auth/routes/auth.routes';
 import { logger } from './config/logger.config';
+import errorHandler from './middleware/error-handler';
 import applicationRoutes from './routes/application.routes';
 import companyRoutes from './routes/company.routes';
 import dashboardRoutes from './routes/dashboard.routes';
@@ -23,6 +24,7 @@ app.use(cors({ origin: config.frontendUrl, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 app.use(pinoHttp({ logger }));
+app.use(errorHandler);
 
 // Routes
 app.use('/auth', authRoutes);
