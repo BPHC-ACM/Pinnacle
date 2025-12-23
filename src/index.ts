@@ -32,7 +32,6 @@ app.use(cors({ origin: config.frontendUrl, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 app.use(pinoHttp({ logger }));
-app.use(errorHandler);
 
 // Apply general rate limiting to all API routes
 app.use('/api', generalApiRateLimiter);
@@ -65,6 +64,9 @@ try {
 app.get('/health', (_req: Request, res: Response) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
+
+// Error handler must be registered AFTER all routes
+app.use(errorHandler);
 
 // Initialize storage on startup
 void initializeStorage();
