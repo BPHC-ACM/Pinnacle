@@ -2,6 +2,22 @@ import express, { type RequestHandler } from 'express';
 
 import { authenticateToken, sensitiveEndpointRateLimiter } from '../auth/middleware';
 import * as userDetailsController from '../controllers/user-details.controller';
+import { validateBody } from '../middleware/validate.middleware';
+import {
+  updateUserProfileSchema,
+  createExperienceSchema,
+  updateExperienceSchema,
+  createEducationSchema,
+  updateEducationSchema,
+  createSkillSchema,
+  updateSkillSchema,
+  createProjectSchema,
+  updateProjectSchema,
+  createCertificationSchema,
+  updateCertificationSchema,
+  createLanguageSchema,
+  updateLanguageSchema,
+} from '../types/user-details.types';
 
 const router = express.Router();
 
@@ -17,6 +33,7 @@ router.get('/profile', userDetailsController.getUserProfile);
 router.patch(
   '/profile',
   sensitiveEndpointRateLimiter as RequestHandler,
+  validateBody(updateUserProfileSchema),
   userDetailsController.updateUserProfile,
 );
 
@@ -26,10 +43,18 @@ router.patch(
 router.get('/experiences', userDetailsController.getExperiences);
 
 // POST /api/user-details/experiences - Create experience
-router.post('/experiences', userDetailsController.createExperience);
+router.post(
+  '/experiences',
+  validateBody(createExperienceSchema),
+  userDetailsController.createExperience,
+);
 
 // PATCH /api/user-details/experiences/:id - Update experience
-router.patch('/experiences/:id', userDetailsController.updateExperience);
+router.patch(
+  '/experiences/:id',
+  validateBody(updateExperienceSchema),
+  userDetailsController.updateExperience,
+);
 
 // DELETE /api/user-details/experiences/:id - Soft delete experience
 router.delete('/experiences/:id', userDetailsController.deleteExperience);
@@ -40,10 +65,18 @@ router.delete('/experiences/:id', userDetailsController.deleteExperience);
 router.get('/education', userDetailsController.getEducation);
 
 // POST /api/user-details/education - Create education
-router.post('/education', userDetailsController.createEducation);
+router.post(
+  '/education',
+  validateBody(createEducationSchema),
+  userDetailsController.createEducation,
+);
 
 // PATCH /api/user-details/education/:id - Update education
-router.patch('/education/:id', userDetailsController.updateEducation);
+router.patch(
+  '/education/:id',
+  validateBody(updateEducationSchema),
+  userDetailsController.updateEducation,
+);
 
 // DELETE /api/user-details/education/:id - Soft delete education
 router.delete('/education/:id', userDetailsController.deleteEducation);
@@ -54,10 +87,10 @@ router.delete('/education/:id', userDetailsController.deleteEducation);
 router.get('/skills', userDetailsController.getSkills);
 
 // POST /api/user-details/skills - Create skill
-router.post('/skills', userDetailsController.createSkill);
+router.post('/skills', validateBody(createSkillSchema), userDetailsController.createSkill);
 
 // PATCH /api/user-details/skills/:id - Update skill
-router.patch('/skills/:id', userDetailsController.updateSkill);
+router.patch('/skills/:id', validateBody(updateSkillSchema), userDetailsController.updateSkill);
 
 // DELETE /api/user-details/skills/:id - Soft delete skill
 router.delete('/skills/:id', userDetailsController.deleteSkill);
@@ -68,10 +101,14 @@ router.delete('/skills/:id', userDetailsController.deleteSkill);
 router.get('/projects', userDetailsController.getProjects);
 
 // POST /api/user-details/projects - Create project
-router.post('/projects', userDetailsController.createProject);
+router.post('/projects', validateBody(createProjectSchema), userDetailsController.createProject);
 
 // PATCH /api/user-details/projects/:id - Update project
-router.patch('/projects/:id', userDetailsController.updateProject);
+router.patch(
+  '/projects/:id',
+  validateBody(updateProjectSchema),
+  userDetailsController.updateProject,
+);
 
 // DELETE /api/user-details/projects/:id - Soft delete project
 router.delete('/projects/:id', userDetailsController.deleteProject);
@@ -82,10 +119,18 @@ router.delete('/projects/:id', userDetailsController.deleteProject);
 router.get('/certifications', userDetailsController.getCertifications);
 
 // POST /api/user-details/certifications - Create certification
-router.post('/certifications', userDetailsController.createCertification);
+router.post(
+  '/certifications',
+  validateBody(createCertificationSchema),
+  userDetailsController.createCertification,
+);
 
 // PATCH /api/user-details/certifications/:id - Update certification
-router.patch('/certifications/:id', userDetailsController.updateCertification);
+router.patch(
+  '/certifications/:id',
+  validateBody(updateCertificationSchema),
+  userDetailsController.updateCertification,
+);
 
 // DELETE /api/user-details/certifications/:id - Soft delete certification
 router.delete('/certifications/:id', userDetailsController.deleteCertification);
@@ -96,10 +141,14 @@ router.delete('/certifications/:id', userDetailsController.deleteCertification);
 router.get('/languages', userDetailsController.getLanguages);
 
 // POST /api/user-details/languages - Create language
-router.post('/languages', userDetailsController.createLanguage);
+router.post('/languages', validateBody(createLanguageSchema), userDetailsController.createLanguage);
 
 // PATCH /api/user-details/languages/:id - Update language
-router.patch('/languages/:id', userDetailsController.updateLanguage);
+router.patch(
+  '/languages/:id',
+  validateBody(updateLanguageSchema),
+  userDetailsController.updateLanguage,
+);
 
 // DELETE /api/user-details/languages/:id - Soft delete language
 router.delete('/languages/:id', userDetailsController.deleteLanguage);

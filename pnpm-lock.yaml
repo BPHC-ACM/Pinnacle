@@ -62,6 +62,9 @@ importers:
       yamljs:
         specifier: ^0.3.0
         version: 0.3.0
+      zod:
+        specifier: ^4.2.1
+        version: 4.2.1
     devDependencies:
       '@eslint/compat':
         specifier: ^1.4.1
@@ -96,9 +99,6 @@ importers:
       '@types/pdfkit':
         specifier: ^0.17.3
         version: 0.17.3
-      '@types/pino-http':
-        specifier: ^6.1.0
-        version: 6.1.0
       '@types/swagger-ui-express':
         specifier: ^4.1.8
         version: 4.1.8
@@ -799,10 +799,6 @@ packages:
 
   '@types/pdfkit@0.17.3':
     resolution: {integrity: sha512-E4tp2qFaghqfS4K5TR4Gn1uTIkg0UAkhUgvVIszr5cS6ZmbioPWEkvhNDy3GtR9qdKC8DLQAnaaMlTcf346VsA==}
-
-  '@types/pino-http@6.1.0':
-    resolution: {integrity: sha512-rjPOSk2yI0714Pi8LdjIhDynXWqOvswmjRiTHj/1TOh1+0R26aKJ8vAVZRc4Ky5dQ5M5Bly1vrV/Klew6lThkA==}
-    deprecated: This is a stub types definition. pino-http provides its own type definitions, so you do not need this installed.
 
   '@types/qs@6.14.0':
     resolution: {integrity: sha512-eOunJqu0K1923aExK6y8p6fsihYEn/BYuQ4g0CxAAgFc4b/ZLN4CrsRZ55srTdqoiLzU2B2evC+apEIxprEzkQ==}
@@ -2731,6 +2727,9 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
 
+  zod@4.2.1:
+    resolution: {integrity: sha512-0wZ1IRqGGhMP76gLqz8EyfBXKk0J2qo2+H3fi4mcUP/KtTocoX08nmIAHl1Z2kJIZbZee8KOpBCSNPRgauucjw==}
+
 snapshots:
 
   '@aws-crypto/sha256-browser@5.2.0':
@@ -3698,10 +3697,6 @@ snapshots:
   '@types/pdfkit@0.17.3':
     dependencies:
       '@types/node': 22.18.13
-
-  '@types/pino-http@6.1.0':
-    dependencies:
-      pino-http: 11.0.0
 
   '@types/qs@6.14.0': {}
 
@@ -5933,3 +5928,5 @@ snapshots:
       glob: 7.2.3
 
   yocto-queue@0.1.0: {}
+
+  zod@4.2.1: {}

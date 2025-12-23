@@ -1,4 +1,5 @@
 import prisma from '../../db/client';
+import { NotFoundError } from '../../types/errors.types';
 import type { PaginationParams, PaginatedResponse } from '../../types/pagination.types';
 import type {
   UserProfile,
@@ -92,19 +93,29 @@ export class UserService {
     userId: string,
     id: string,
     data: UpdateExperienceRequest,
-  ): Promise<Experience | null> {
+  ): Promise<Experience> {
     const experience = await prisma.experience.findFirst({
       where: { id, userId, deletedAt: null },
     });
-    if (!experience) return null;
+    if (!experience) {
+      throw new NotFoundError(
+        `Experience with ID ${id} not found for user ${userId}`,
+        'Experience not found',
+      );
+    }
     return (await prisma.experience.update({ where: { id }, data })) as Experience;
   }
 
-  async deleteExperience(userId: string, id: string): Promise<Experience | null> {
+  async deleteExperience(userId: string, id: string): Promise<Experience> {
     const experience = await prisma.experience.findFirst({
       where: { id, userId, deletedAt: null },
     });
-    if (!experience) return null;
+    if (!experience) {
+      throw new NotFoundError(
+        `Experience with ID ${id} not found for user ${userId}`,
+        'Experience not found',
+      );
+    }
     return (await prisma.experience.update({
       where: { id },
       data: { deletedAt: new Date() },
@@ -143,19 +154,29 @@ export class UserService {
     userId: string,
     id: string,
     data: UpdateEducationRequest,
-  ): Promise<Education | null> {
+  ): Promise<Education> {
     const education = await prisma.education.findFirst({
       where: { id, userId, deletedAt: null },
     });
-    if (!education) return null;
+    if (!education) {
+      throw new NotFoundError(
+        `Education with ID ${id} not found for user ${userId}`,
+        'Education not found',
+      );
+    }
     return (await prisma.education.update({ where: { id }, data })) as Education;
   }
 
-  async deleteEducation(userId: string, id: string): Promise<Education | null> {
+  async deleteEducation(userId: string, id: string): Promise<Education> {
     const education = await prisma.education.findFirst({
       where: { id, userId, deletedAt: null },
     });
-    if (!education) return null;
+    if (!education) {
+      throw new NotFoundError(
+        `Education with ID ${id} not found for user ${userId}`,
+        'Education not found',
+      );
+    }
     return (await prisma.education.update({
       where: { id },
       data: { deletedAt: new Date() },
@@ -187,15 +208,25 @@ export class UserService {
     })) as Skill;
   }
 
-  async updateSkill(userId: string, id: string, data: UpdateSkillRequest): Promise<Skill | null> {
+  async updateSkill(userId: string, id: string, data: UpdateSkillRequest): Promise<Skill> {
     const skill = await prisma.skill.findFirst({ where: { id, userId, deletedAt: null } });
-    if (!skill) return null;
+    if (!skill) {
+      throw new NotFoundError(
+        `Skill with ID ${id} not found for user ${userId}`,
+        'Skill not found',
+      );
+    }
     return (await prisma.skill.update({ where: { id }, data })) as Skill;
   }
 
-  async deleteSkill(userId: string, id: string): Promise<Skill | null> {
+  async deleteSkill(userId: string, id: string): Promise<Skill> {
     const skill = await prisma.skill.findFirst({ where: { id, userId, deletedAt: null } });
-    if (!skill) return null;
+    if (!skill) {
+      throw new NotFoundError(
+        `Skill with ID ${id} not found for user ${userId}`,
+        'Skill not found',
+      );
+    }
     return (await prisma.skill.update({
       where: { id },
       data: { deletedAt: new Date() },
@@ -236,19 +267,25 @@ export class UserService {
     })) as Project;
   }
 
-  async updateProject(
-    userId: string,
-    id: string,
-    data: UpdateProjectRequest,
-  ): Promise<Project | null> {
+  async updateProject(userId: string, id: string, data: UpdateProjectRequest): Promise<Project> {
     const project = await prisma.project.findFirst({ where: { id, userId, deletedAt: null } });
-    if (!project) return null;
+    if (!project) {
+      throw new NotFoundError(
+        `Project with ID ${id} not found for user ${userId}`,
+        'Project not found',
+      );
+    }
     return (await prisma.project.update({ where: { id }, data })) as Project;
   }
 
-  async deleteProject(userId: string, id: string): Promise<Project | null> {
+  async deleteProject(userId: string, id: string): Promise<Project> {
     const project = await prisma.project.findFirst({ where: { id, userId, deletedAt: null } });
-    if (!project) return null;
+    if (!project) {
+      throw new NotFoundError(
+        `Project with ID ${id} not found for user ${userId}`,
+        'Project not found',
+      );
+    }
     return (await prisma.project.update({
       where: { id },
       data: { deletedAt: new Date() },
@@ -290,19 +327,29 @@ export class UserService {
     userId: string,
     id: string,
     data: UpdateCertificationRequest,
-  ): Promise<Certification | null> {
+  ): Promise<Certification> {
     const certification = await prisma.certification.findFirst({
       where: { id, userId, deletedAt: null },
     });
-    if (!certification) return null;
+    if (!certification) {
+      throw new NotFoundError(
+        `Certification with ID ${id} not found for user ${userId}`,
+        'Certification not found',
+      );
+    }
     return (await prisma.certification.update({ where: { id }, data })) as Certification;
   }
 
-  async deleteCertification(userId: string, id: string): Promise<Certification | null> {
+  async deleteCertification(userId: string, id: string): Promise<Certification> {
     const certification = await prisma.certification.findFirst({
       where: { id, userId, deletedAt: null },
     });
-    if (!certification) return null;
+    if (!certification) {
+      throw new NotFoundError(
+        `Certification with ID ${id} not found for user ${userId}`,
+        'Certification not found',
+      );
+    }
     return (await prisma.certification.update({
       where: { id },
       data: { deletedAt: new Date() },
@@ -337,23 +384,29 @@ export class UserService {
     })) as Language;
   }
 
-  async updateLanguage(
-    userId: string,
-    id: string,
-    data: UpdateLanguageRequest,
-  ): Promise<Language | null> {
+  async updateLanguage(userId: string, id: string, data: UpdateLanguageRequest): Promise<Language> {
     const language = await prisma.language.findFirst({
       where: { id, userId, deletedAt: null },
     });
-    if (!language) return null;
+    if (!language) {
+      throw new NotFoundError(
+        `Language with ID ${id} not found for user ${userId}`,
+        'Language not found',
+      );
+    }
     return (await prisma.language.update({ where: { id }, data })) as Language;
   }
 
-  async deleteLanguage(userId: string, id: string): Promise<Language | null> {
+  async deleteLanguage(userId: string, id: string): Promise<Language> {
     const language = await prisma.language.findFirst({
       where: { id, userId, deletedAt: null },
     });
-    if (!language) return null;
+    if (!language) {
+      throw new NotFoundError(
+        `Language with ID ${id} not found for user ${userId}`,
+        'Language not found',
+      );
+    }
     return (await prisma.language.update({
       where: { id },
       data: { deletedAt: new Date() },
