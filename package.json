@@ -27,6 +27,7 @@
     "@eslint/compat": "^1.4.1",
     "@eslint/eslintrc": "^3.3.1",
     "@eslint/js": "^9.39.0",
+    "@faker-js/faker": "^10.1.0",
     "@types/amqplib": "^0.10.8",
     "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
@@ -76,5 +77,8 @@
     "yamljs": "^0.3.0",
     "zod": "^4.2.1"
   },
-  "packageManager": "pnpm@10.26.1"
+  "packageManager": "pnpm@10.26.1",
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  }
 }
