@@ -172,6 +172,12 @@ export const updateApplicationStatusSchema = z.object({
   status: z.enum(['APPLIED', 'SHORTLISTED', 'INTERVIEWING', 'REJECTED', 'HIRED', 'WITHDRAWN']),
 });
 
+// Bulk Status Update Schema
+export const bulkStatusUpdateSchema = z.object({
+  applicationIds: z.array(z.string().uuid()).min(1),
+  status: z.enum(['APPLIED', 'SHORTLISTED', 'INTERVIEWING', 'REJECTED', 'HIRED', 'WITHDRAWN']),
+});
+
 // Update Job Schema
 export const updateJobSchema = z.object({
   title: z.string().min(1).max(255).optional(),
@@ -181,10 +187,4 @@ export const updateJobSchema = z.object({
   salary: z.string().max(255).optional(),
   deadline: z.coerce.date().optional(),
   status: z.enum(['OPEN', 'CLOSED', 'PAUSED']).optional(),
-});
-
-// Bulk Status Update Schema
-export const bulkStatusUpdateSchema = z.object({
-  applicationIds: z.array(z.string().uuid()).min(1),
-  status: z.enum(['APPLIED', 'SHORTLISTED', 'INTERVIEWING', 'REJECTED', 'HIRED', 'WITHDRAWN']),
 });

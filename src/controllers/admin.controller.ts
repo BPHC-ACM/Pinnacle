@@ -217,7 +217,7 @@ export const getApplicantProfile = async (req: Request, res: Response): Promise<
     return;
   }
 
-  const profile = await applicationService.getApplicantProfile(id);
+  const profile: unknown = await applicationService.getApplicantProfile(id);
   if (!profile) {
     res.status(404).json({ error: 'Application or applicant not found' });
     return;
