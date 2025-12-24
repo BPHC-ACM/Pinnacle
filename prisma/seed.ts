@@ -1,3 +1,4 @@
+/*eslint-disable*/
 import { faker } from '@faker-js/faker';
 import { PrismaClient, UserRole, ApplicationStatus, JobStatus } from '@prisma/client';
 

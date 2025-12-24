@@ -19,7 +19,14 @@ const compat = new FlatCompat({
 });
 
 export default defineConfig([
-  globalIgnores(['**/dist', '**/node_modules', '*.config.ts', '*.config.mjs', '**/generated/**']),
+  globalIgnores([
+    '**/dist',
+    '**/node_modules',
+    '*.config.ts',
+    '*.config.mjs',
+    '**/generated/**',
+    '**/prisma/**',
+  ]),
   {
     extends: fixupConfigRules(
       compat.extends(

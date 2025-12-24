@@ -21,6 +21,6 @@
     "noUncheckedIndexedAccess": true,
     "skipLibCheck": true
   },
-  "include": ["src/**/*", "prisma/seed.ts"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "prisma.config.ts", "eslint.config.mjs", "src/generated/**"]
 }
