@@ -1,9 +1,9 @@
-import { PrismaClient, UserRole, ApplicationStatus, JobStatus } from '@prisma/client';
 import { faker } from '@faker-js/faker';
+import { PrismaClient, UserRole, ApplicationStatus, JobStatus } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-async function main() {
+async function main(): Promise<void> {
   console.log('Starting database seeding...');
 
   // Clear existing data (optional - be careful in production!)
@@ -24,7 +24,7 @@ async function main() {
 
   // 1. Create Admin User
   console.log('Creating admin user...');
-  const admin = await prisma.user.create({
+  await prisma.user.create({
     data: {
       email: 'admin@gmail.com',
       name: 'Admin User',
