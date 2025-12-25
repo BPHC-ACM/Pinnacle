@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 export type ApplicationStatus =
   | 'APPLIED'
   | 'SHORTLISTED'
@@ -137,3 +139,52 @@ export interface BulkStatusUpdateRequest {
   applicationIds: string[];
   status: ApplicationStatus;
 }
+
+// ==================== ZOD SCHEMAS ====================
+
+// Job Question Schema
+const jobQuestionSchema = z.object({
+  question: z.string().min(1).max(1000),
+  required: z.boolean().optional(),
+});
+
+// Create Job Schema
+export const createJobSchema = z.object({
+  companyId: z.string().uuid(),
+  title: z.string().min(1).max(255),
+  description: z.string().max(5000).optional(),
+  location: z.string().max(255).optional(),
+  type: z.string().max(100).optional(),
+  salary: z.string().max(255).optional(),
+  deadline: z.coerce.date().optional(),
+  questions: z.array(jobQuestionSchema).optional(),
+});
+
+// Apply Request Schema
+export const applyRequestSchema = z.object({
+  resumeId: z.string().uuid().optional(),
+  coverLetter: z.string().max(5000).optional(),
+  answers: z.record(z.string(), z.union([z.string(), z.boolean()])).optional(),
+});
+
+// Update Application Status Schema
+export const updateApplicationStatusSchema = z.object({
+  status: z.enum(['APPLIED', 'SHORTLISTED', 'INTERVIEWING', 'REJECTED', 'HIRED', 'WITHDRAWN']),
+});
+
+// Update Job Schema
+export const updateJobSchema = z.object({
+  title: z.string().min(1).max(255).optional(),
+  description: z.string().max(5000).optional(),
+  location: z.string().max(255).optional(),
+  type: z.string().max(100).optional(),
+  salary: z.string().max(255).optional(),
+  deadline: z.coerce.date().optional(),
+  status: z.enum(['OPEN', 'CLOSED', 'PAUSED']).optional(),
+});
+
+// Bulk Status Update Schema
+export const bulkStatusUpdateSchema = z.object({
+  applicationIds: z.array(z.string().uuid()).min(1),
+  status: z.enum(['APPLIED', 'SHORTLISTED', 'INTERVIEWING', 'REJECTED', 'HIRED', 'WITHDRAWN']),
+});
