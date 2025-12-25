@@ -1,8 +1,9 @@
 import type { Request, Response } from 'express';
 
 import applicationService from '../services/application-service/application.service';
-import type { CreateJobRequest, ApplyRequest } from '../types/application.types';
+import type { ApplyRequest } from '../types/application.types';
 import { ValidationError, AuthError, NotFoundError } from '../types/errors.types';
+import type { CreateJobRequest } from '../types/job.types';
 import { parsePagination } from '../types/pagination.types';
 
 const getUserId = (req: Request): string => {

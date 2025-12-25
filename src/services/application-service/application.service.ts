@@ -3,19 +3,21 @@ import type { User } from '@prisma/client';
 import { logger } from '../../config/logger.config';
 import prisma from '../../db/client';
 import type {
-  Job,
   Application,
-  CreateJobRequest,
   ApplyRequest,
   ApplicationStatus,
   AdminApplicationFilters,
-  AdminJobFilters,
-  UpdateJobRequest,
   ApplicationWithDetails,
-  JobWithStats,
   AdminDashboardStats,
 } from '../../types/application.types';
 import { ValidationError, NotFoundError } from '../../types/errors.types';
+import type {
+  Job,
+  CreateJobRequest,
+  AdminJobFilters,
+  UpdateJobRequest,
+  JobWithStats,
+} from '../../types/job.types';
 import type { PaginationParams, PaginatedResponse } from '../../types/pagination.types';
 
 export class ApplicationService {
@@ -222,7 +224,7 @@ export class ApplicationService {
     return withdrawn as unknown as Application;
   }
 
-  // ==================== ADMIN METHODS ====================
+  //  ADMIN METHODS
 
   // Get admin dashboard statistics
   async getAdminDashboardStats(): Promise<AdminDashboardStats> {

@@ -16,7 +16,7 @@ import {
   getJobApplications,
 } from '../controllers/job.controller';
 import { validateBody } from '../middleware/validate.middleware';
-import { createJobSchema } from '../types/application.types';
+import { createJobSchema } from '../types/job.types';
 
 const router = Router();
 

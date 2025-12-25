@@ -3,21 +3,20 @@ import type { Request, Response } from 'express';
 import applicationService from '../services/application-service/application.service';
 import type {
   AdminApplicationFilters,
-  AdminJobFilters,
-  UpdateJobRequest,
   BulkStatusUpdateRequest,
   ApplicationStatus,
 } from '../types/application.types';
+import type { AdminJobFilters, UpdateJobRequest } from '../types/job.types';
 import { parsePagination } from '../types/pagination.types';
 
-// ==================== DASHBOARD ====================
+//  DASHBOARD
 
 export const getAdminDashboard = async (_req: Request, res: Response): Promise<void> => {
   const stats = await applicationService.getAdminDashboardStats();
   res.json(stats);
 };
 
-// ==================== JOBS MANAGEMENT ====================
+//  JOBS MANAGEMENT
 
 export const getAllJobs = async (req: Request, res: Response): Promise<void> => {
   const filters: AdminJobFilters = {
@@ -127,7 +126,7 @@ export const exportJobApplications = async (req: Request, res: Response): Promis
   res.json(data);
 };
 
-// ==================== APPLICATIONS MANAGEMENT ====================
+//  APPLICATIONS MANAGEMENT
 
 export const getAllApplications = async (req: Request, res: Response): Promise<void> => {
   const filters: AdminApplicationFilters = {
