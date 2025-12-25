@@ -12,6 +12,8 @@ import {
   updateApplicationStatus,
   withdrawApplication,
 } from '../controllers/application.controller';
+import { validateBody } from '../middleware/validate.middleware';
+import { updateApplicationStatusSchema } from '../types/application.types';
 
 const router = Router();
 
@@ -22,6 +24,7 @@ router.patch(
   adminRateLimiter as RequestHandler,
   authenticateToken,
   isAdmin,
+  validateBody(updateApplicationStatusSchema),
   updateApplicationStatus,
 );
 router.post(

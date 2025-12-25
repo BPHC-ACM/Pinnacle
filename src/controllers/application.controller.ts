@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 
 import applicationService from '../services/application-service/application.service';
-import type { UpdateApplicationStatusRequest } from '../types/application.types';
+import { updateApplicationStatusSchema } from '../types/application.types';
 import { parsePagination } from '../types/pagination.types';
 
 export const getUserApplications = async (req: Request, res: Response): Promise<void> => {
@@ -22,12 +22,16 @@ export const updateApplicationStatus = async (req: Request, res: Response): Prom
     res.status(400).json({ error: 'Application ID required' });
     return;
   }
-  const { status } = req.body as UpdateApplicationStatusRequest;
-  const application = await applicationService.updateStatus(id, status);
-  if (!application) {
-    res.status(404).json({ error: 'Application not found' });
+
+  // Validate request body with Zod
+  const validation = updateApplicationStatusSchema.safeParse(req.body);
+  if (!validation.success) {
+    res.status(400).json({ error: 'Invalid request data', details: validation.error.issues });
     return;
   }
+
+  const { status } = validation.data;
+  const application = await applicationService.updateStatus(id, status);
   res.json(application);
 };
 
@@ -44,9 +48,5 @@ export const withdrawApplication = async (req: Request, res: Response): Promise<
   }
 
   const result = await applicationService.withdraw(userId, id);
-  if ('error' in result) {
-    res.status(400).json(result);
-    return;
-  }
   res.json(result);
 };
