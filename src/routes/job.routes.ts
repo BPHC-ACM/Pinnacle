@@ -15,11 +15,20 @@ import {
   apply,
   getJobApplications,
 } from '../controllers/job.controller';
+import { validateBody } from '../middleware/validate.middleware';
+import { createJobSchema } from '../types/job.types';
 
 const router = Router();
 
 // Job routes (admin only with rate limiting)
-router.post('/', adminRateLimiter as RequestHandler, authenticateToken, isAdmin, createJob);
+router.post(
+  '/',
+  adminRateLimiter as RequestHandler,
+  authenticateToken,
+  isAdmin,
+  validateBody(createJobSchema),
+  createJob,
+);
 router.get('/', getJobs);
 router.get('/:id', getJob);
 router.patch(

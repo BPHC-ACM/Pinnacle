@@ -5,6 +5,7 @@ import type {
   UpdateCompanyRequest,
   Company,
 } from '../../types/company.types';
+import { NotFoundError } from '../../types/errors.types';
 import type { PaginationParams, PaginatedResponse } from '../../types/pagination.types';
 
 export class CompanyService {
@@ -38,15 +39,19 @@ export class CompanyService {
     return company;
   }
 
-  async updateCompany(id: string, data: UpdateCompanyRequest): Promise<Company | null> {
+  async updateCompany(id: string, data: UpdateCompanyRequest): Promise<Company> {
     const company = await prisma.company.findFirst({ where: { id, deletedAt: null } });
-    if (!company) return null;
+    if (!company) {
+      throw new NotFoundError(`Company with id ${id} not found`, 'Company not found');
+    }
     return prisma.company.update({ where: { id }, data }) as Promise<Company>;
   }
 
-  async deleteCompany(id: string): Promise<Company | null> {
+  async deleteCompany(id: string): Promise<Company> {
     const company = await prisma.company.findFirst({ where: { id, deletedAt: null } });
-    if (!company) return null;
+    if (!company) {
+      throw new NotFoundError(`Company with id ${id} not found`, 'Company not found');
+    }
     const deleted = (await prisma.company.update({
       where: { id },
       data: { deletedAt: new Date() },

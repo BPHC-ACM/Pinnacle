@@ -1,23 +1,23 @@
 import type { Request, Response } from 'express';
 
 import applicationService from '../services/application-service/application.service';
+import jobService from '../services/job-service/job.service';
 import type {
   AdminApplicationFilters,
-  AdminJobFilters,
-  UpdateJobRequest,
   BulkStatusUpdateRequest,
   ApplicationStatus,
 } from '../types/application.types';
+import type { AdminJobFilters, UpdateJobRequest } from '../types/job.types';
 import { parsePagination } from '../types/pagination.types';
 
-// ==================== DASHBOARD ====================
+//  DASHBOARD
 
 export const getAdminDashboard = async (_req: Request, res: Response): Promise<void> => {
   const stats = await applicationService.getAdminDashboardStats();
   res.json(stats);
 };
 
-// ==================== JOBS MANAGEMENT ====================
+//  JOBS MANAGEMENT
 
 export const getAllJobs = async (req: Request, res: Response): Promise<void> => {
   const filters: AdminJobFilters = {
@@ -28,7 +28,7 @@ export const getAllJobs = async (req: Request, res: Response): Promise<void> => 
     toDate: req.query.toDate ? new Date(req.query.toDate as string) : undefined,
   };
   const params = parsePagination(req.query as Record<string, unknown>);
-  const jobs = await applicationService.getAllJobsWithStats(filters, params);
+  const jobs = await jobService.getAllJobsWithStats(filters, params);
   res.json(jobs);
 };
 
@@ -39,7 +39,7 @@ export const getJobById = async (req: Request, res: Response): Promise<void> => 
     return;
   }
 
-  const job = await applicationService.getJob(id);
+  const job = await jobService.getJob(id);
   if (!job) {
     res.status(404).json({ error: 'Job not found' });
     return;
@@ -55,7 +55,7 @@ export const updateJob = async (req: Request, res: Response): Promise<void> => {
   }
 
   const data = req.body as UpdateJobRequest;
-  const job = await applicationService.updateJob(id, data);
+  const job = await jobService.updateJob(id, data);
 
   if (!job) {
     res.status(404).json({ error: 'Job not found' });
@@ -71,7 +71,7 @@ export const deleteJob = async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
-  const job = await applicationService.deleteJob(id);
+  const job = await jobService.deleteJob(id);
   if (!job) {
     res.status(404).json({ error: 'Job not found' });
     return;
@@ -86,7 +86,7 @@ export const pauseJob = async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
-  const job = await applicationService.pauseJob(id);
+  const job = await jobService.pauseJob(id);
   if (!job) {
     res.status(404).json({ error: 'Job not found' });
     return;
@@ -104,7 +104,7 @@ export const reopenJob = async (req: Request, res: Response): Promise<void> => {
   const { deadline } = req.body as { deadline?: string };
   const newDeadline = deadline ? new Date(deadline) : undefined;
 
-  const job = await applicationService.reopenJob(id, newDeadline);
+  const job = await jobService.reopenJob(id, newDeadline);
   if (!job) {
     res.status(404).json({ error: 'Job not found' });
     return;
@@ -119,7 +119,7 @@ export const exportJobApplications = async (req: Request, res: Response): Promis
     return;
   }
 
-  const data = await applicationService.exportJobApplications(id);
+  const data = await jobService.exportJobApplications(id);
   if (!data) {
     res.status(404).json({ error: 'Job not found' });
     return;
@@ -127,7 +127,7 @@ export const exportJobApplications = async (req: Request, res: Response): Promis
   res.json(data);
 };
 
-// ==================== APPLICATIONS MANAGEMENT ====================
+//  APPLICATIONS MANAGEMENT
 
 export const getAllApplications = async (req: Request, res: Response): Promise<void> => {
   const filters: AdminApplicationFilters = {
@@ -217,7 +217,7 @@ export const getApplicantProfile = async (req: Request, res: Response): Promise<
     return;
   }
 
-  const profile = await applicationService.getApplicantProfile(id);
+  const profile: unknown = await applicationService.getApplicantProfile(id);
   if (!profile) {
     res.status(404).json({ error: 'Application or applicant not found' });
     return;
