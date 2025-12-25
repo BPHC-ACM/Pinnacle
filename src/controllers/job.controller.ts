@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 
 import applicationService from '../services/application-service/application.service';
+import jobService from '../services/job-service/job.service';
 import type { ApplyRequest } from '../types/application.types';
 import { ValidationError, AuthError, NotFoundError } from '../types/errors.types';
 import type { CreateJobRequest } from '../types/job.types';
@@ -24,13 +25,13 @@ const getParamId = (req: Request): string => {
 
 export async function createJob(req: Request, res: Response): Promise<void> {
   const data = req.body as CreateJobRequest;
-  const job = await applicationService.createJob(data);
+  const job = await jobService.createJob(data);
   res.status(201).json(job);
 }
 
 export async function getJob(req: Request, res: Response): Promise<void> {
   const id = getParamId(req);
-  const job = await applicationService.getJob(id);
+  const job = await jobService.getJob(id);
   if (!job) {
     throw new NotFoundError(`Job with ID ${id} not found`, 'Job not found');
   }
@@ -39,13 +40,13 @@ export async function getJob(req: Request, res: Response): Promise<void> {
 
 export async function getJobs(req: Request, res: Response): Promise<void> {
   const params = parsePagination(req.query as Record<string, unknown>);
-  const jobs = await applicationService.getJobs(req.query.companyId as string | undefined, params);
+  const jobs = await jobService.getJobs(req.query.companyId as string | undefined, params);
   res.json(jobs);
 }
 
 export async function closeJob(req: Request, res: Response): Promise<void> {
   const id = getParamId(req);
-  const job = await applicationService.closeJob(id);
+  const job = await jobService.closeJob(id);
   res.json(job);
 }
 

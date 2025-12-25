@@ -287,6 +287,54 @@ paths:
         parameters: [{ name: userId, in: path, required: true, schema: { type: string } }],
       }
 
+  /api/resume/download/{resumeId}:
+    get:
+      summary: 'Get download URL for a stored resume PDF'
+      description: 'Returns a presigned URL that expires in 1 hour'
+      tags: [Resume]
+      parameters:
+        [
+          {
+            name: resumeId,
+            in: path,
+            required: true,
+            description: 'The ID of the saved resume',
+            schema: { type: string },
+          },
+        ]
+
+  /api/resume/file-info/{resumeId}:
+    get:
+      summary: 'Get metadata about stored resume PDF file'
+      description: 'Returns file metadata (size, mimeType, createdAt, etc.)'
+      tags: [Resume]
+      parameters:
+        [
+          {
+            name: resumeId,
+            in: path,
+            required: true,
+            description: 'The ID of the saved resume',
+            schema: { type: string },
+          },
+        ]
+
+  /api/resume/file/{resumeId}:
+    delete:
+      summary: 'Delete stored resume PDF file from storage'
+      description: 'Removes the PDF file from cloud storage'
+      tags: [Resume]
+      parameters:
+        [
+          {
+            name: resumeId,
+            in: path,
+            required: true,
+            description: 'The ID of the saved resume',
+            schema: { type: string },
+          },
+        ]
+
   # Dashboard
   /api/dashboard:
     get: { summary: 'Get all user data in one request', tags: [Dashboard] }
@@ -295,6 +343,102 @@ paths:
   /api/dashboard/profile-completion:
     get: { summary: 'Get profile completion percentage', tags: [Dashboard] }
 
-  # Notifications
-  /api/notify:
-    post: { summary: 'Send a notification', tags: [Notification] } # Assuming this is the path
+  # Admin Management
+  /api/admin/dashboard:
+    get:
+      summary: 'Get admin dashboard statistics'
+      description: 'Admin only - get overall platform statistics'
+      tags: [Admin]
+
+  /api/admin/jobs:
+    get:
+      summary: 'Get all jobs with stats (Admin)'
+      description: 'Admin only - get all jobs with application statistics and filters'
+      tags: [Admin]
+    post:
+      summary: 'Create a new job posting (Admin)'
+      description: 'Admin only - create a new job posting'
+      tags: [Admin]
+
+  /api/admin/jobs/{id}:
+    get:
+      summary: 'Get job by ID (Admin)'
+      description: 'Admin only - get detailed job information'
+      tags: [Admin]
+      parameters: [{ $ref: '#/components/parameters/id' }]
+    patch:
+      summary: 'Update job details (Admin)'
+      description: 'Admin only - update job information'
+      tags: [Admin]
+      parameters: [{ $ref: '#/components/parameters/id' }]
+    delete:
+      summary: 'Delete job (Admin)'
+      description: 'Admin only - soft delete a job posting'
+      tags: [Admin]
+      parameters: [{ $ref: '#/components/parameters/id' }]
+
+  /api/admin/jobs/{id}/pause:
+    patch:
+      summary: 'Pause a job (Admin)'
+      description: 'Admin only - pause a job posting'
+      tags: [Admin]
+      parameters: [{ $ref: '#/components/parameters/id' }]
+
+  /api/admin/jobs/{id}/reopen:
+    patch:
+      summary: 'Reopen a job (Admin)'
+      description: 'Admin only - reopen a closed or paused job posting'
+      tags: [Admin]
+      parameters: [{ $ref: '#/components/parameters/id' }]
+
+  /api/admin/jobs/{id}/export:
+    get:
+      summary: 'Export job applications (Admin)'
+      description: 'Admin only - export all applications for a job'
+      tags: [Admin]
+      parameters: [{ $ref: '#/components/parameters/id' }]
+
+  /api/admin/jobs/{jobId}/applications:
+    get:
+      summary: 'Get applications for job (Admin)'
+      description: 'Admin only - get all applications for a specific job'
+      tags: [Admin]
+      parameters: [{ $ref: '#/components/parameters/jobId' }]
+
+  /api/admin/applications:
+    get:
+      summary: 'Get all applications (Admin)'
+      description: 'Admin only - get all applications with filters'
+      tags: [Admin]
+
+  /api/admin/applications/{id}:
+    get:
+      summary: 'Get application details (Admin)'
+      description: 'Admin only - get detailed application information'
+      tags: [Admin]
+      parameters: [{ $ref: '#/components/parameters/id' }]
+    delete:
+      summary: 'Delete application (Admin)'
+      description: 'Admin only - delete an application'
+      tags: [Admin]
+      parameters: [{ $ref: '#/components/parameters/id' }]
+
+  /api/admin/applications/{id}/status:
+    patch:
+      summary: 'Update application status (Admin)'
+      description: 'Admin only - update the status of an application'
+      tags: [Admin]
+      parameters: [{ $ref: '#/components/parameters/id' }]
+
+  /api/admin/applications/{id}/profile:
+    get:
+      summary: 'Get applicant profile (Admin)'
+      description: 'Admin only - get full profile of an applicant'
+      tags: [Admin]
+      parameters: [{ $ref: '#/components/parameters/id' }]
+
+  /api/admin/applications/bulk-status:
+    post:
+      summary: 'Bulk update application status (Admin)'
+      description: 'Admin only - update status of multiple applications at once'
+      tags: [Admin]
