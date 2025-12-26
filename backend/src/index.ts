@@ -18,6 +18,7 @@ import applicationRoutes from './routes/application.routes';
 import companyRoutes from './routes/company.routes';
 import dashboardRoutes from './routes/dashboard.routes';
 import jobRoutes from './routes/job.routes';
+import uploadRoutes from './routes/upload.routes';
 import userDetailsRoutes from './routes/user-details.routes';
 import resumeRoutes from './services/resume-service/routes/resume.routes';
 import { initializeStorage } from './services/storage-service/storage-init';
@@ -47,6 +48,7 @@ app.use('/api/resume', resumeRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/jobs', jobRoutes);
 app.use('/api/applications', applicationRoutes);
+app.use('/api/upload', uploadRoutes);
 app.use('/api/admin', adminRoutes);
 
 // API Documentation endpoint (via Swagger UI)

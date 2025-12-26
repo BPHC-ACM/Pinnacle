@@ -7,6 +7,7 @@ export interface Job {
   companyId: string;
   title: string;
   description?: string;
+  descriptionDocument?: string; // CDN URL for job description document/PDF
   location?: string;
   type?: string;
   salary?: string;
@@ -29,6 +30,7 @@ export interface CreateJobRequest {
   companyId: string;
   title: string;
   description?: string;
+  descriptionDocument?: string; // CDN URL for job description document/PDF
   location?: string;
   type?: string;
   salary?: string;
@@ -39,6 +41,7 @@ export interface CreateJobRequest {
 export interface UpdateJobRequest {
   title?: string;
   description?: string;
+  descriptionDocument?: string; // CDN URL for job description document/PDF
   location?: string;
   type?: string;
   salary?: string;

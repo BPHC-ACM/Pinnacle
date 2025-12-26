@@ -195,6 +195,57 @@ MINIO_SECRET_KEY=minio123
 
 5. **File Naming**: PDFs are stored with unique keys: `{resumeId}/{timestamp}-{hash}-{filename}.pdf`
 
+## CDN Integration for File Uploads
+
+### Overview
+
+The application uses **Minio** (S3-compatible object storage) for storing and serving files through CDN. The following file types are supported:
+
+1. **User Profile Pictures** - Profile images for users
+2. **Company Logos** - Brand logos for companies (displayed on job postings via company relation)
+3. **Job Description Documents** - PDF/Word documents for detailed job descriptions
+4. **Resume PDFs** - Generated resume files (covered in previous section)
+
+### Storage Buckets
+
+The following Minio buckets are created automatically on application startup:
+
+- `profile-pictures` - User profile images
+- `company-logos` - Company brand logos
+- `job-documents` - Job description documents
+- `resumes` - Generated resume PDFs
+
+### File Upload Limits & Restrictions
+
+#### Images (Profile Pictures, Company Logos)
+
+- **Allowed MIME Types**: `image/jpeg`, `image/png`, `image/webp`, `image/gif`
+- **Maximum Size**: 5 MB
+- **Storage**: Files are stored with unique keys: `{entityId}/{timestamp}-{hash}-{filename}`
+
+#### Documents (Job Descriptions)
+
+- **Allowed MIME Types**: `application/pdf`, `application/msword`, `application/vnd.openxmlformats-officedocument.wordprocessingml.document`
+- **Maximum Size**: 10 MB
+- **Storage**: Files are stored with unique keys: `{jobId}/{timestamp}-{hash}-{filename}`
+
+### Security Features
+
+1. **Authentication Required** - All upload endpoints require valid JWT tokens
+2. **Admin Authorization** - Company and job-related uploads require admin role
+3. **File Type Validation** - Only allowed MIME types are accepted
+4. **File Size Limits** - Maximum sizes enforced (5MB for images, 10MB for documents)
+5. **Presigned URLs** - Files are served via presigned URLs with 1-year expiration
+6. **Unique File Names** - Files are stored with hash-based unique keys to prevent conflicts
+
+### Important Notes
+
+1. **Automatic URL Updates**: Uploading a new file automatically replaces the old URL in the database
+2. **Manual Deletion**: Old files are NOT automatically deleted from storage when new files are uploaded (to prevent breaking cached URLs)
+3. **Presigned URLs**: URLs expire after 1 year. Consider implementing a refresh mechanism in the frontend
+4. **Multiple Uploads**: Users can upload multiple times, but only the latest URL is stored
+5. **External URLs**: The system maintains external URLs (e.g., Google OAuth profile pictures) until a new file is uploaded
+
 ## License
 
 See [LICENSE](../LICENSE) file.

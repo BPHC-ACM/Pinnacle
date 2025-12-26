@@ -234,18 +234,14 @@ model Company {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime? // Soft delete
 
+  // Relations
+  jobs Job[]
+
   @@index([name])
   @@index([deletedAt])
 }
 
-model trial {
-  id    Int    @id @default(autoincrement())
-  name  String
-  email String @unique
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
 
 enum ApplicationStatus {
   APPLIED
@@ -263,16 +259,18 @@ enum JobStatus {
 }
 
 model Job {
-  id        String @id @default(uuid())
+  id        String  @id @default(uuid())
   companyId String
+  company   Company @relation(fields: [companyId], references: [id])
 
-  title       String
-  description String?
-  location    String?
-  type        String? // Full-time, Part-time, Internship
-  salary      String?
-  deadline    DateTime?
-  status      JobStatus @default(OPEN)
+  title               String
+  description         String?
+  descriptionDocument String? // CDN URL for job description document/PDF
+  location            String?
+  type                String? // Full-time, Part-time, Internship
+  salary              String?
+  deadline            DateTime?
+  status              JobStatus @default(OPEN)
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
