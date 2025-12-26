@@ -4,6 +4,12 @@ import multer from 'multer';
 import { logger } from '@/config/logger.config';
 import prisma from '@/db/client';
 import imageStorageService from '@/services/storage-service/image-storage.service';
+import type {
+  UserWithPicture,
+  CompanyWithLogo,
+  JobWithLogo,
+  JobWithDocument,
+} from '@/types/prisma-helpers.types';
 
 // Multer configuration for memory storage
 const upload = multer({
@@ -23,7 +29,7 @@ export const uploadSingleImage = upload.single('file');
  */
 export const uploadProfilePicture = async (req: Request, res: Response): Promise<void> => {
   try {
-    const userId = req.user?.id;
+    const userId = (req.user as { id?: string })?.id;
     if (!userId) {
       res.status(401).json({ error: 'Authentication required' });
       return;
@@ -45,10 +51,11 @@ export const uploadProfilePicture = async (req: Request, res: Response): Promise
     );
 
     // Update user profile with new picture URL
-    await prisma.user.update({
+    const updateResult: unknown = await prisma.user.update({
       where: { id: userId },
       data: { picture: url },
     });
+    void updateResult;
 
     logger.info({ userId, url }, 'Profile picture updated');
     res.json({ url, message: 'Profile picture uploaded successfully' });
@@ -70,16 +77,16 @@ export const uploadProfilePicture = async (req: Request, res: Response): Promise
  */
 export const deleteProfilePicture = async (req: Request, res: Response): Promise<void> => {
   try {
-    const userId = req.user?.id;
+    const userId = (req.user as { id?: string })?.id;
     if (!userId) {
       res.status(401).json({ error: 'Authentication required' });
       return;
     }
 
-    const user = await prisma.user.findUnique({
+    const user = (await prisma.user.findUnique({
       where: { id: userId },
-      select: { picture: true },
-    });
+      select: { picture: true, id: true },
+    })) as UserWithPicture | null;
 
     if (!user?.picture) {
       res.status(404).json({ error: 'No profile picture found' });
@@ -93,10 +100,11 @@ export const deleteProfilePicture = async (req: Request, res: Response): Promise
     }
 
     // Remove picture URL from database
-    await prisma.user.update({
+    const updateResult: unknown = await prisma.user.update({
       where: { id: userId },
       data: { picture: null },
     });
+    void updateResult;
 
     logger.info({ userId }, 'Profile picture deleted');
     res.json({ message: 'Profile picture deleted successfully' });
@@ -128,9 +136,10 @@ export const uploadCompanyLogo = async (req: Request, res: Response): Promise<vo
     const { buffer, originalname, mimetype } = req.file;
 
     // Check if company exists
-    const company = await prisma.company.findFirst({
+    const company = (await prisma.company.findFirst({
       where: { id: companyId, deletedAt: null },
-    });
+      select: { id: true, logo: true, deletedAt: true },
+    })) as CompanyWithLogo | null;
 
     if (!company) {
       res.status(404).json({ error: 'Company not found' });
@@ -146,10 +155,11 @@ export const uploadCompanyLogo = async (req: Request, res: Response): Promise<vo
     );
 
     // Update company with new logo URL
-    await prisma.company.update({
+    const updateResult: unknown = await prisma.company.update({
       where: { id: companyId },
       data: { logo: url },
     });
+    void updateResult;
 
     logger.info({ companyId, url }, 'Company logo updated');
     res.json({ url, message: 'Company logo uploaded successfully' });
@@ -173,10 +183,10 @@ export const deleteCompanyLogo = async (req: Request, res: Response): Promise<vo
   try {
     const { companyId } = req.params;
 
-    const company = await prisma.company.findFirst({
+    const company = (await prisma.company.findFirst({
       where: { id: companyId, deletedAt: null },
       select: { logo: true },
-    });
+    })) as { logo: string | null } | null;
 
     if (!company) {
       res.status(404).json({ error: 'Company not found' });
@@ -195,10 +205,11 @@ export const deleteCompanyLogo = async (req: Request, res: Response): Promise<vo
     }
 
     // Remove logo URL from database
-    await prisma.company.update({
+    const updateResult: unknown = await prisma.company.update({
       where: { id: companyId },
       data: { logo: null },
     });
+    void updateResult;
 
     logger.info({ companyId }, 'Company logo deleted');
     res.json({ message: 'Company logo deleted successfully' });
@@ -230,9 +241,10 @@ export const uploadJobLogo = async (req: Request, res: Response): Promise<void> 
     const { buffer, originalname, mimetype } = req.file;
 
     // Check if job exists
-    const job = await prisma.job.findFirst({
+    const job = (await prisma.job.findFirst({
       where: { id: jobId, deletedAt: null },
-    });
+      select: { id: true, logo: true, deletedAt: true },
+    })) as JobWithLogo | null;
 
     if (!job) {
       res.status(404).json({ error: 'Job not found' });
@@ -243,10 +255,11 @@ export const uploadJobLogo = async (req: Request, res: Response): Promise<void> 
     const { url } = await imageStorageService.uploadJobLogo(jobId, buffer, originalname, mimetype);
 
     // Update job with new logo URL
-    await prisma.job.update({
+    const updateResult: unknown = await prisma.job.update({
       where: { id: jobId },
       data: { logo: url },
     });
+    void updateResult;
 
     logger.info({ jobId, url }, 'Job logo updated');
     res.json({ url, message: 'Job logo uploaded successfully' });
@@ -283,9 +296,10 @@ export const uploadJobDocument = async (req: Request, res: Response): Promise<vo
     const { buffer, originalname, mimetype } = req.file;
 
     // Check if job exists
-    const job = await prisma.job.findFirst({
+    const job = (await prisma.job.findFirst({
       where: { id: jobId, deletedAt: null },
-    });
+      select: { id: true, descriptionDocument: true, deletedAt: true },
+    })) as JobWithDocument | null;
 
     if (!job) {
       res.status(404).json({ error: 'Job not found' });
@@ -301,10 +315,11 @@ export const uploadJobDocument = async (req: Request, res: Response): Promise<vo
     );
 
     // Update job with new document URL
-    await prisma.job.update({
+    const updateResult: unknown = await prisma.job.update({
       where: { id: jobId },
       data: { descriptionDocument: url },
     });
+    void updateResult;
 
     logger.info({ jobId, url }, 'Job document updated');
     res.json({ url, message: 'Job document uploaded successfully' });
