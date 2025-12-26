@@ -35,11 +35,6 @@ export interface CompanyBasic {
 }
 
 // Job types
-export interface JobWithLogo {
-  id: string;
-  logo: string | null;
-  deletedAt: Date | null;
-}
 export interface JobWithDocument {
   id: string;
   descriptionDocument: string | null;

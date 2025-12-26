@@ -1,7 +1,7 @@
 import { logger } from '@/config/logger.config';
 import { minioClient } from '@/db/minio';
 
-const BUCKETS = ['resumes', 'profile-pictures', 'company-logos', 'job-images', 'job-documents'];
+const BUCKETS = ['resumes', 'profile-pictures', 'company-logos', 'job-documents'];
 
 /**
  * Initialize Minio storage by ensuring required buckets exist

@@ -442,3 +442,120 @@ paths:
       summary: 'Bulk update application status (Admin)'
       description: 'Admin only - update status of multiple applications at once'
       tags: [Admin]
+
+  # Upload / CDN
+  /api/upload/profile-picture:
+    post:
+      summary: 'Upload user profile picture'
+      description: 'Authenticated users can upload a profile picture (max 5MB, images only)'
+      tags: [Upload]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: 'Profile picture uploaded successfully'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url:
+                    type: string
+                    description: 'Presigned URL to access the uploaded image'
+                  message:
+                    type: string
+    delete:
+      summary: 'Delete user profile picture'
+      description: 'Authenticated users can delete their profile picture'
+      tags: [Upload]
+      responses:
+        '200':
+          description: 'Profile picture deleted successfully'
+
+  /api/upload/company-logo/{companyId}:
+    post:
+      summary: 'Upload company logo (Admin)'
+      description: 'Admin only - upload a company logo (max 5MB, images only)'
+      tags: [Upload]
+      parameters:
+        - name: companyId
+          in: path
+          required: true
+          description: 'The ID of the company'
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: 'Company logo uploaded successfully'
+    delete:
+      summary: 'Delete company logo (Admin)'
+      description: 'Admin only - delete a company logo'
+      tags: [Upload]
+      parameters:
+        - name: companyId
+          in: path
+          required: true
+          description: 'The ID of the company'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 'Company logo deleted successfully'
+
+  /api/upload/job-document/{jobId}:
+    post:
+      summary: 'Upload job description document (Admin)'
+      description: 'Admin only - upload a job description document (max 10MB, PDF/DOC/DOCX)'
+      tags: [Upload]
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          description: 'The ID of the job'
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: 'Job document uploaded successfully'
+    delete:
+      summary: 'Delete job description document (Admin)'
+      description: 'Admin only - delete a job description document'
+      tags: [Upload]
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          description: 'The ID of the job'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 'Job document deleted successfully'

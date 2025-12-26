@@ -6,13 +6,11 @@ import { MinioBucketStorage } from '@/services/storage-service/minio-service';
 // Bucket names
 const PROFILE_PICTURES_BUCKET = 'profile-pictures';
 const COMPANY_LOGOS_BUCKET = 'company-logos';
-const JOB_IMAGES_BUCKET = 'job-images';
 const JOB_DOCUMENTS_BUCKET = 'job-documents';
 
 // Storage instances
 const profilePicturesStorage = new MinioBucketStorage(PROFILE_PICTURES_BUCKET);
 const companyLogosStorage = new MinioBucketStorage(COMPANY_LOGOS_BUCKET);
-const jobImagesStorage = new MinioBucketStorage(JOB_IMAGES_BUCKET);
 const jobDocumentsStorage = new MinioBucketStorage(JOB_DOCUMENTS_BUCKET);
 
 // Allowed MIME types
@@ -134,43 +132,6 @@ export class ImageStorageService {
       logger.info({ objectKey }, 'Company logo deleted');
     } catch (error) {
       logger.error({ err: error, objectKey }, 'Failed to delete company logo');
-      throw error;
-    }
-  }
-
-  /**
-   * Upload job logo/image
-   */
-  async uploadJobLogo(
-    jobId: string,
-    buffer: Buffer,
-    fileName: string,
-    mimeType: string,
-  ): Promise<{ url: string; size: number }> {
-    try {
-      this.validateImageFile(buffer, mimeType);
-      const objectKey = this.generateObjectKey(jobId, fileName, buffer);
-
-      const { size } = await jobImagesStorage.upload(objectKey, buffer, mimeType);
-      const url = await jobImagesStorage.getDownloadUrl(objectKey, 365 * 24 * 3600); // 1 year
-
-      logger.info({ jobId, objectKey, size }, 'Job logo uploaded');
-      return { url, size };
-    } catch (error) {
-      logger.error({ err: error, jobId }, 'Failed to upload job logo');
-      throw error;
-    }
-  }
-
-  /**
-   * Delete job logo
-   */
-  async deleteJobLogo(objectKey: string): Promise<void> {
-    try {
-      await jobImagesStorage.delete(objectKey);
-      logger.info({ objectKey }, 'Job logo deleted');
-    } catch (error) {
-      logger.error({ err: error, objectKey }, 'Failed to delete job logo');
       throw error;
     }
   }

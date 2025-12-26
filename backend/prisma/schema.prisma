@@ -234,6 +234,9 @@ model Company {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime? // Soft delete
 
+  // Relations
+  jobs Job[]
+
   @@index([name])
   @@index([deletedAt])
 }
@@ -256,13 +259,13 @@ enum JobStatus {
 }
 
 model Job {
-  id        String @id @default(uuid())
+  id        String  @id @default(uuid())
   companyId String
+  company   Company @relation(fields: [companyId], references: [id])
 
   title               String
   description         String?
   descriptionDocument String? // CDN URL for job description document/PDF
-  logo                String? // CDN URL for job logo/image
   location            String?
   type                String? // Full-time, Part-time, Internship
   salary              String?

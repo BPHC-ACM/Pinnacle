@@ -6,7 +6,6 @@ import {
   deleteProfilePicture,
   uploadCompanyLogo,
   deleteCompanyLogo,
-  uploadJobLogo,
   uploadJobDocument,
   uploadSingleImage,
 } from '../controllers/upload.controller';
@@ -43,13 +42,6 @@ router.post('/company-logo/:companyId', isAdmin, uploadSingleImage, uploadCompan
  * @access Private (requires admin authentication)
  */
 router.delete('/company-logo/:companyId', isAdmin, deleteCompanyLogo);
-
-/**
- * @route POST /api/upload/job-logo/:jobId
- * @desc Upload job logo/image
- * @access Private (requires admin authentication)
- */
-router.post('/job-logo/:jobId', isAdmin, uploadSingleImage, uploadJobLogo);
 
 /**
  * @route POST /api/upload/job-document/:jobId

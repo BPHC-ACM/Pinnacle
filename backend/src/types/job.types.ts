@@ -8,7 +8,6 @@ export interface Job {
   title: string;
   description?: string;
   descriptionDocument?: string; // CDN URL for job description document/PDF
-  logo?: string; // CDN URL for job logo/image
   location?: string;
   type?: string;
   salary?: string;
@@ -32,7 +31,6 @@ export interface CreateJobRequest {
   title: string;
   description?: string;
   descriptionDocument?: string; // CDN URL for job description document/PDF
-  logo?: string; // CDN URL for job logo/image
   location?: string;
   type?: string;
   salary?: string;
@@ -44,7 +42,6 @@ export interface UpdateJobRequest {
   title?: string;
   description?: string;
   descriptionDocument?: string; // CDN URL for job description document/PDF
-  logo?: string; // CDN URL for job logo/image
   location?: string;
   type?: string;
   salary?: string;

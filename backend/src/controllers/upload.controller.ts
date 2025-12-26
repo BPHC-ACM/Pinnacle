@@ -7,7 +7,6 @@ import imageStorageService from '@/services/storage-service/image-storage.servic
 import type {
   UserWithPicture,
   CompanyWithLogo,
-  JobWithLogo,
   JobWithDocument,
 } from '@/types/prisma-helpers.types';
 
@@ -216,61 +215,6 @@ export const deleteCompanyLogo = async (req: Request, res: Response): Promise<vo
   } catch (error) {
     logger.error({ err: error }, 'Failed to delete company logo');
     res.status(500).json({ error: 'Failed to delete company logo' });
-  }
-};
-
-/**
- * @route POST /api/upload/job-logo/:jobId
- * @desc Upload job logo (Admin only)
- * @access Private (requires admin authentication)
- */
-export const uploadJobLogo = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { jobId } = req.params;
-
-    if (!jobId) {
-      res.status(400).json({ error: 'Job ID required' });
-      return;
-    }
-
-    if (!req.file) {
-      res.status(400).json({ error: 'No file uploaded' });
-      return;
-    }
-
-    const { buffer, originalname, mimetype } = req.file;
-
-    // Check if job exists
-    const job = (await prisma.job.findFirst({
-      where: { id: jobId, deletedAt: null },
-      select: { id: true, logo: true, deletedAt: true },
-    })) as JobWithLogo | null;
-
-    if (!job) {
-      res.status(404).json({ error: 'Job not found' });
-      return;
-    }
-
-    // Upload to storage
-    const { url } = await imageStorageService.uploadJobLogo(jobId, buffer, originalname, mimetype);
-
-    // Update job with new logo URL
-    const updateResult: unknown = await prisma.job.update({
-      where: { id: jobId },
-      data: { logo: url },
-    });
-    void updateResult;
-
-    logger.info({ jobId, url }, 'Job logo updated');
-    res.json({ url, message: 'Job logo uploaded successfully' });
-  } catch (error) {
-    logger.error({ err: error }, 'Failed to upload job logo');
-
-    if (error instanceof Error) {
-      res.status(400).json({ error: error.message });
-    } else {
-      res.status(500).json({ error: 'Failed to upload job logo' });
-    }
   }
 };
 
