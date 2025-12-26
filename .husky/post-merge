@@ -1,3 +1,21 @@
+#!/bin/bash
+
+echo "Post-merge: Checking for dependency updates..."
+
+if git diff-tree -r --name-only --no-commit-id ORIG_HEAD HEAD | grep --quiet "backend/pnpm-lock.yaml"; then
+  echo "Backend dependencies changed, updating..."
+  cd backend && pnpm install && cd ..
+fi
+
+if git diff-tree -r --name-only --no-commit-id ORIG_HEAD HEAD | grep --quiet "frontend/web/pnpm-lock.yaml"; then
+  echo "Frontend dependencies changed, updating..."
+  cd frontend/web && pnpm install && cd ../..
+fi
+
 echo "Running Prisma migrations after merge..."
+cd backend || exit 1
 pnpm prisma migrate dev --skip-generate
 pnpm prisma generate
+cd ..
+
+echo "✓ Post-merge checks complete!"

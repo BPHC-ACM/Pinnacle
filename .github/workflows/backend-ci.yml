@@ -3,14 +3,8 @@ name: Backend CI
 on:
   push:
     branches: [main, develop]
-    paths:
-      - 'backend/**'
-      - '.github/workflows/backend-ci.yml'
   pull_request:
     branches: [main, develop]
-    paths:
-      - 'backend/**'
-      - '.github/workflows/backend-ci.yml'
 
 jobs:
   validate:
@@ -22,17 +16,55 @@ jobs:
         working-directory: backend
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Check for backend changes
+        id: backend-changes
+        run: |
+          if git diff --name-only HEAD~1 HEAD | grep -qE '^backend/|^\.github/workflows/backend-ci\.yml'; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+        working-directory: .
+
       - uses: pnpm/action-setup@v4
+        if: steps.backend-changes.outputs.changed == 'true'
         with:
           version: 10.26.1
+
       - uses: actions/setup-node@v4
+        if: steps.backend-changes.outputs.changed == 'true'
         with:
           node-version: '20'
           cache: 'pnpm'
           cache-dependency-path: 'backend/pnpm-lock.yaml'
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm exec prisma generate
-      - run: pnpm run format:check
-      - run: pnpm run lint
-      - run: pnpm run type-check
-      - run: pnpm run build
+
+      - name: Install dependencies
+        if: steps.backend-changes.outputs.changed == 'true'
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        if: steps.backend-changes.outputs.changed == 'true'
+        run: pnpm exec prisma generate
+
+      - name: Check formatting
+        if: steps.backend-changes.outputs.changed == 'true'
+        run: pnpm run format:check
+
+      - name: Lint
+        if: steps.backend-changes.outputs.changed == 'true'
+        run: pnpm run lint
+
+      - name: Type check
+        if: steps.backend-changes.outputs.changed == 'true'
+        run: pnpm run type-check
+
+      - name: Build
+        if: steps.backend-changes.outputs.changed == 'true'
+        run: pnpm run build
+
+      - name: Backend checks skipped
+        if: steps.backend-changes.outputs.changed == 'false'
+        run: echo "No backend changes detected, skipping checks"
