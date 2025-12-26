@@ -23,22 +23,6 @@ export interface Application {
   withdrawnAt?: Date;
 }
 
-<<<<<<< HEAD:src/types/application.types.ts
-export interface CreateJobRequest {
-  companyId: string;
-  title: string;
-  description?: string;
-  descriptionDocument?: string; // CDN URL for job description document/PDF
-  logo?: string; // CDN URL for job logo/image
-  location?: string;
-  type?: string;
-  salary?: string;
-  deadline?: Date;
-  questions?: { question: string; required?: boolean }[];
-}
-
-=======
->>>>>>> origin/main:backend/src/types/application.types.ts
 export interface ApplyRequest {
   resumeId?: string;
   coverLetter?: string;
