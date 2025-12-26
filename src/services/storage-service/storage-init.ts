@@ -1,25 +1,25 @@
 import { logger } from '@/config/logger.config';
 import { minioClient } from '@/db/minio';
 
-const RESUME_BUCKET = 'resumes';
+const BUCKETS = ['resumes', 'profile-pictures', 'company-logos', 'job-images', 'job-documents'];
 
 /**
  * Initialize Minio storage by ensuring required buckets exist
  */
 export async function initializeStorage(): Promise<void> {
-  try {
-    // Check if bucket exists
-    const bucketExists = await minioClient.bucketExists(RESUME_BUCKET);
+  for (const bucket of BUCKETS) {
+    try {
+      const bucketExists = await minioClient.bucketExists(bucket);
 
-    if (!bucketExists) {
-      // Create bucket
-      await minioClient.makeBucket(RESUME_BUCKET, 'us-east-1');
-      logger.info({ bucket: RESUME_BUCKET }, 'Minio bucket created successfully');
-    } else {
-      logger.info({ bucket: RESUME_BUCKET }, 'Minio bucket already exists');
+      if (!bucketExists) {
+        await minioClient.makeBucket(bucket, 'us-east-1');
+        logger.info({ bucket }, 'Minio bucket created successfully');
+      } else {
+        logger.info({ bucket }, 'Minio bucket already exists');
+      }
+    } catch (error) {
+      logger.error({ err: error, bucket }, 'Failed to initialize Minio bucket');
+      // Don't throw - allow app to start even if Minio is unavailable
     }
-  } catch (error) {
-    logger.error({ err: error, bucket: RESUME_BUCKET }, 'Failed to initialize Minio storage');
-    // Don't throw - allow app to start even if Minio is unavailable
   }
 }
