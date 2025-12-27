@@ -51,7 +51,14 @@ export class UserService {
   async updateUserProfile(userId: string, data: UpdateUserProfileRequest): Promise<UserProfile> {
     return (await prisma.user.update({
       where: { id: userId },
-      data,
+      data: { ...data, isVerified: false },
+    })) as UserProfile;
+  }
+
+  async verifyUser(userId: string): Promise<UserProfile> {
+    return (await prisma.user.update({
+      where: { id: userId },
+      data: { isVerified: true },
     })) as UserProfile;
   }
 
@@ -103,7 +110,26 @@ export class UserService {
         'Experience not found',
       );
     }
-    return (await prisma.experience.update({ where: { id }, data })) as Experience;
+    return (await prisma.experience.update({
+      where: { id },
+      data: { ...data, isVerified: false },
+    })) as Experience;
+  }
+
+  async verifyExperience(userId: string, id: string): Promise<Experience> {
+    const experience = await prisma.experience.findFirst({
+      where: { id, userId, deletedAt: null },
+    });
+    if (!experience) {
+      throw new NotFoundError(
+        `Experience with ID ${id} not found for user ${userId}`,
+        'Experience not found',
+      );
+    }
+    return (await prisma.experience.update({
+      where: { id },
+      data: { isVerified: true },
+    })) as Experience;
   }
 
   async deleteExperience(userId: string, id: string): Promise<Experience> {
@@ -164,7 +190,26 @@ export class UserService {
         'Education not found',
       );
     }
-    return (await prisma.education.update({ where: { id }, data })) as Education;
+    return (await prisma.education.update({
+      where: { id },
+      data: { ...data, isVerified: false },
+    })) as Education;
+  }
+
+  async verifyEducation(userId: string, id: string): Promise<Education> {
+    const education = await prisma.education.findFirst({
+      where: { id, userId, deletedAt: null },
+    });
+    if (!education) {
+      throw new NotFoundError(
+        `Education with ID ${id} not found for user ${userId}`,
+        'Education not found',
+      );
+    }
+    return (await prisma.education.update({
+      where: { id },
+      data: { isVerified: true },
+    })) as Education;
   }
 
   async deleteEducation(userId: string, id: string): Promise<Education> {
@@ -216,7 +261,21 @@ export class UserService {
         'Skill not found',
       );
     }
-    return (await prisma.skill.update({ where: { id }, data })) as Skill;
+    return (await prisma.skill.update({
+      where: { id },
+      data: { ...data, isVerified: false },
+    })) as Skill;
+  }
+
+  async verifySkill(userId: string, id: string): Promise<Skill> {
+    const skill = await prisma.skill.findFirst({ where: { id, userId, deletedAt: null } });
+    if (!skill) {
+      throw new NotFoundError(
+        `Skill with ID ${id} not found for user ${userId}`,
+        'Skill not found',
+      );
+    }
+    return (await prisma.skill.update({ where: { id }, data: { isVerified: true } })) as Skill;
   }
 
   async deleteSkill(userId: string, id: string): Promise<Skill> {
@@ -275,7 +334,21 @@ export class UserService {
         'Project not found',
       );
     }
-    return (await prisma.project.update({ where: { id }, data })) as Project;
+    return (await prisma.project.update({
+      where: { id },
+      data: { ...data, isVerified: false },
+    })) as Project;
+  }
+
+  async verifyProject(userId: string, id: string): Promise<Project> {
+    const project = await prisma.project.findFirst({ where: { id, userId, deletedAt: null } });
+    if (!project) {
+      throw new NotFoundError(
+        `Project with ID ${id} not found for user ${userId}`,
+        'Project not found',
+      );
+    }
+    return (await prisma.project.update({ where: { id }, data: { isVerified: true } })) as Project;
   }
 
   async deleteProject(userId: string, id: string): Promise<Project> {
@@ -337,7 +410,26 @@ export class UserService {
         'Certification not found',
       );
     }
-    return (await prisma.certification.update({ where: { id }, data })) as Certification;
+    return (await prisma.certification.update({
+      where: { id },
+      data: { ...data, isVerified: false },
+    })) as Certification;
+  }
+
+  async verifyCertification(userId: string, id: string): Promise<Certification> {
+    const certification = await prisma.certification.findFirst({
+      where: { id, userId, deletedAt: null },
+    });
+    if (!certification) {
+      throw new NotFoundError(
+        `Certification with ID ${id} not found for user ${userId}`,
+        'Certification not found',
+      );
+    }
+    return (await prisma.certification.update({
+      where: { id },
+      data: { isVerified: true },
+    })) as Certification;
   }
 
   async deleteCertification(userId: string, id: string): Promise<Certification> {
