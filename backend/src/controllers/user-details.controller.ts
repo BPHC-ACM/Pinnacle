@@ -78,13 +78,6 @@ export async function updateExperience(req: Request, res: Response): Promise<voi
   res.json(result);
 }
 
-export async function verifyExperience(req: Request, res: Response): Promise<void> {
-  const userId = getUserId(req);
-  const id = getParamId(req);
-  const result = await userService.verifyExperience(userId, id);
-  res.json(result);
-}
-
 export async function deleteExperience(req: Request, res: Response): Promise<void> {
   const userId = getUserId(req);
   const id = getParamId(req);
@@ -109,13 +102,6 @@ export async function updateEducation(req: Request, res: Response): Promise<void
   const userId = getUserId(req);
   const id = getParamId(req);
   const result = await userService.updateEducation(userId, id, req.body as UpdateEducationRequest);
-  res.json(result);
-}
-
-export async function verifyEducation(req: Request, res: Response): Promise<void> {
-  const userId = getUserId(req);
-  const id = getParamId(req);
-  const result = await userService.verifyEducation(userId, id);
   res.json(result);
 }
 
@@ -144,13 +130,6 @@ export async function updateSkill(req: Request, res: Response): Promise<void> {
   res.json(result);
 }
 
-export async function verifySkill(req: Request, res: Response): Promise<void> {
-  const userId = getUserId(req);
-  const id = getParamId(req);
-  const result = await userService.verifySkill(userId, id);
-  res.json(result);
-}
-
 export async function deleteSkill(req: Request, res: Response): Promise<void> {
   const userId = getUserId(req);
   const id = getParamId(req);
@@ -173,13 +152,6 @@ export async function updateProject(req: Request, res: Response): Promise<void> 
   const userId = getUserId(req);
   const id = getParamId(req);
   const result = await userService.updateProject(userId, id, req.body as UpdateProjectRequest);
-  res.json(result);
-}
-
-export async function verifyProject(req: Request, res: Response): Promise<void> {
-  const userId = getUserId(req);
-  const id = getParamId(req);
-  const result = await userService.verifyProject(userId, id);
   res.json(result);
 }
 
@@ -211,13 +183,6 @@ export async function updateCertification(req: Request, res: Response): Promise<
     id,
     req.body as UpdateCertificationRequest,
   );
-  res.json(result);
-}
-
-export async function verifyCertification(req: Request, res: Response): Promise<void> {
-  const userId = getUserId(req);
-  const id = getParamId(req);
-  const result = await userService.verifyCertification(userId, id);
   res.json(result);
 }
 

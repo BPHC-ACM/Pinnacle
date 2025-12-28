@@ -65,11 +65,6 @@ paths:
   /api/user-details/profile:
     get: { summary: "Get user's core profile", tags: [UserDetails] }
     patch: { summary: "Update user's core profile", tags: [UserDetails] }
-  /api/user-details/profile/verify:
-    patch:
-      summary: "Verify user's profile (Admin Only)"
-      tags: [UserDetails]
-      security: [{ bearerAuth: [] }]
   /api/user-details/experiences:
     get: { summary: 'Get all experiences', tags: [UserDetails] }
     post: { summary: 'Create an experience', tags: [UserDetails] }
@@ -86,12 +81,6 @@ paths:
         tags: [UserDetails],
         parameters: [{ $ref: '#/components/parameters/id' }],
       }
-  /api/user-details/experiences/{id}/verify:
-    patch:
-      summary: 'Verify an experience (Admin Only)'
-      tags: [UserDetails]
-      parameters: [{ $ref: '#/components/parameters/id' }]
-      security: [{ bearerAuth: [] }]
   /api/user-details/education:
     get: { summary: 'Get all education entries', tags: [UserDetails] }
     post: { summary: 'Create an education entry', tags: [UserDetails] }
@@ -108,12 +97,6 @@ paths:
         tags: [UserDetails],
         parameters: [{ $ref: '#/components/parameters/id' }],
       }
-  /api/user-details/education/{id}/verify:
-    patch:
-      summary: 'Verify an education entry (Admin Only)'
-      tags: [UserDetails]
-      parameters: [{ $ref: '#/components/parameters/id' }]
-      security: [{ bearerAuth: [] }]
   /api/user-details/skills:
     get: { summary: 'Get all skills', tags: [UserDetails] }
     post: { summary: 'Create a skill entry', tags: [UserDetails] }
@@ -130,12 +113,6 @@ paths:
         tags: [UserDetails],
         parameters: [{ $ref: '#/components/parameters/id' }],
       }
-  /api/user-details/skills/{id}/verify:
-    patch:
-      summary: 'Verify a skill entry (Admin Only)'
-      tags: [UserDetails]
-      parameters: [{ $ref: '#/components/parameters/id' }]
-      security: [{ bearerAuth: [] }]
   /api/user-details/projects:
     get: { summary: 'Get all projects', tags: [UserDetails] }
     post: { summary: 'Create a project entry', tags: [UserDetails] }
@@ -152,12 +129,6 @@ paths:
         tags: [UserDetails],
         parameters: [{ $ref: '#/components/parameters/id' }],
       }
-  /api/user-details/projects/{id}/verify:
-    patch:
-      summary: 'Verify a project entry (Admin Only)'
-      tags: [UserDetails]
-      parameters: [{ $ref: '#/components/parameters/id' }]
-      security: [{ bearerAuth: [] }]
   /api/user-details/certifications:
     get: { summary: 'Get all certifications', tags: [UserDetails] }
     post: { summary: 'Create a certification entry', tags: [UserDetails] }
@@ -174,12 +145,6 @@ paths:
         tags: [UserDetails],
         parameters: [{ $ref: '#/components/parameters/id' }],
       }
-  /api/user-details/certifications/{id}/verify:
-    patch:
-      summary: 'Verify a certification entry (Admin Only)'
-      tags: [UserDetails]
-      parameters: [{ $ref: '#/components/parameters/id' }]
-      security: [{ bearerAuth: [] }]
   /api/user-details/languages:
     get: { summary: 'Get all languages', tags: [UserDetails] }
     post: { summary: 'Create a language entry', tags: [UserDetails] }
@@ -477,6 +442,45 @@ paths:
       summary: 'Bulk update application status (Admin)'
       description: 'Admin only - update status of multiple applications at once'
       tags: [Admin]
+
+  /api/admin/verify/{itemType}/{itemId}:
+    patch:
+      summary: 'Verify profile item (Admin)'
+      description: 'Admin only - verify any user profile item (experience, education, skill, project, certification)'
+      tags: [Admin]
+      parameters:
+        - name: itemType
+          in: path
+          required: true
+          description: 'Type of item to verify'
+          schema:
+            type: string
+            enum: [experience, education, skill, project, certification]
+        - name: itemId
+          in: path
+          required: true
+          description: 'ID of the item to verify'
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: boolean
+                  description: 'Verification status (true for verified, false for unverified)'
+      responses:
+        '200':
+          description: 'Item verified successfully'
+        '400':
+          description: 'Invalid item type or missing required fields'
+        '404':
+          description: 'Item not found'
 
   # Upload / CDN
   /api/upload/profile-picture:

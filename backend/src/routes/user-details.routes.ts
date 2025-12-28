@@ -59,9 +59,6 @@ router.patch(
   userDetailsController.updateExperience,
 );
 
-// PATCH /api/user-details/experiences/:id/verify - Verify experience (Admin only)
-router.patch('/experiences/:id/verify', isAdmin, userDetailsController.verifyExperience);
-
 // DELETE /api/user-details/experiences/:id - Soft delete experience
 router.delete('/experiences/:id', userDetailsController.deleteExperience);
 
@@ -84,9 +81,6 @@ router.patch(
   userDetailsController.updateEducation,
 );
 
-// PATCH /api/user-details/education/:id/verify - Verify education (Admin only)
-router.patch('/education/:id/verify', isAdmin, userDetailsController.verifyEducation);
-
 // DELETE /api/user-details/education/:id - Soft delete education
 router.delete('/education/:id', userDetailsController.deleteEducation);
 
@@ -100,9 +94,6 @@ router.post('/skills', validateBody(createSkillSchema), userDetailsController.cr
 
 // PATCH /api/user-details/skills/:id - Update skill
 router.patch('/skills/:id', validateBody(updateSkillSchema), userDetailsController.updateSkill);
-
-// PATCH /api/user-details/skills/:id/verify - Verify skill (Admin only)
-router.patch('/skills/:id/verify', isAdmin, userDetailsController.verifySkill);
 
 // DELETE /api/user-details/skills/:id - Soft delete skill
 router.delete('/skills/:id', userDetailsController.deleteSkill);
@@ -121,9 +112,6 @@ router.patch(
   validateBody(updateProjectSchema),
   userDetailsController.updateProject,
 );
-
-// PATCH /api/user-details/projects/:id/verify - Verify project (Admin only)
-router.patch('/projects/:id/verify', isAdmin, userDetailsController.verifyProject);
 
 // DELETE /api/user-details/projects/:id - Soft delete project
 router.delete('/projects/:id', userDetailsController.deleteProject);
@@ -146,9 +134,6 @@ router.patch(
   validateBody(updateCertificationSchema),
   userDetailsController.updateCertification,
 );
-
-// PATCH /api/user-details/certifications/:id/verify - Verify certification (Admin only)
-router.patch('/certifications/:id/verify', isAdmin, userDetailsController.verifyCertification);
 
 // DELETE /api/user-details/certifications/:id - Soft delete certification
 router.delete('/certifications/:id', userDetailsController.deleteCertification);
