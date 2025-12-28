@@ -1,6 +1,6 @@
 import express, { type RequestHandler } from 'express';
 
-import { authenticateToken, sensitiveEndpointRateLimiter, isAdmin } from '../auth/middleware';
+import { authenticateToken, sensitiveEndpointRateLimiter } from '../auth/middleware';
 import * as userDetailsController from '../controllers/user-details.controller';
 import { validateBody } from '../middleware/validate.middleware';
 import {
@@ -36,9 +36,6 @@ router.patch(
   validateBody(updateUserProfileSchema),
   userDetailsController.updateUserProfile,
 );
-
-// PATCH /api/user-details/profile/verify - Verify user profile (Admin only)
-router.patch('/profile/verify', isAdmin, userDetailsController.verifyUserProfile);
 
 // EXPERIENCE ROUTES
 

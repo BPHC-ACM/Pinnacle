@@ -446,7 +446,7 @@ paths:
   /api/admin/verify/{itemType}/{itemId}:
     patch:
       summary: 'Verify profile item (Admin)'
-      description: 'Admin only - verify any user profile item (experience, education, skill, project, certification)'
+      description: 'Admin only - verify any user profile item (user, experience, education, skill, project, certification). For user verification, ALL related items must be verified first.'
       tags: [Admin]
       parameters:
         - name: itemType
@@ -455,11 +455,11 @@ paths:
           description: 'Type of item to verify'
           schema:
             type: string
-            enum: [experience, education, skill, project, certification]
+            enum: [user, experience, education, skill, project, certification]
         - name: itemId
           in: path
           required: true
-          description: 'ID of the item to verify'
+          description: 'ID of the item to verify (for user type, this is the userId)'
           schema:
             type: string
       requestBody:
@@ -478,7 +478,7 @@ paths:
         '200':
           description: 'Item verified successfully'
         '400':
-          description: 'Invalid item type or missing required fields'
+          description: 'Invalid item type, missing required fields, or prerequisites not met (for user verification)'
         '404':
           description: 'Item not found'
 

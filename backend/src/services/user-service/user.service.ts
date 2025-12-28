@@ -51,14 +51,10 @@ export class UserService {
   async updateUserProfile(userId: string, data: UpdateUserProfileRequest): Promise<UserProfile> {
     return (await prisma.user.update({
       where: { id: userId },
-      data: { ...data, isVerified: false },
-    })) as UserProfile;
-  }
-
-  async verifyUser(userId: string): Promise<UserProfile> {
-    return (await prisma.user.update({
-      where: { id: userId },
-      data: { isVerified: true },
+      data: {
+        ...data,
+        isVerified: false,
+      },
     })) as UserProfile;
   }
 
@@ -112,7 +108,10 @@ export class UserService {
     }
     return (await prisma.experience.update({
       where: { id },
-      data: { ...data, isVerified: false },
+      data: {
+        ...data,
+        isVerified: false,
+      },
     })) as Experience;
   }
 
@@ -176,7 +175,10 @@ export class UserService {
     }
     return (await prisma.education.update({
       where: { id },
-      data: { ...data, isVerified: false },
+      data: {
+        ...data,
+        isVerified: false,
+      },
     })) as Education;
   }
 
@@ -231,7 +233,10 @@ export class UserService {
     }
     return (await prisma.skill.update({
       where: { id },
-      data: { ...data, isVerified: false },
+      data: {
+        ...data,
+        isVerified: false,
+      },
     })) as Skill;
   }
 
@@ -293,7 +298,10 @@ export class UserService {
     }
     return (await prisma.project.update({
       where: { id },
-      data: { ...data, isVerified: false },
+      data: {
+        ...data,
+        isVerified: false,
+      },
     })) as Project;
   }
 
@@ -358,7 +366,10 @@ export class UserService {
     }
     return (await prisma.certification.update({
       where: { id },
-      data: { ...data, isVerified: false },
+      data: {
+        ...data,
+        isVerified: false,
+      },
     })) as Certification;
   }
 

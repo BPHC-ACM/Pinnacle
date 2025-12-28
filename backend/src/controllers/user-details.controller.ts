@@ -49,11 +49,6 @@ export async function updateUserProfile(req: Request, res: Response): Promise<vo
   res.json(await userService.updateUserProfile(userId, req.body as UpdateUserProfileRequest));
 }
 
-export async function verifyUserProfile(req: Request, res: Response): Promise<void> {
-  const userId = getUserId(req);
-  res.json(await userService.verifyUser(userId));
-}
-
 export async function getExperiences(req: Request, res: Response): Promise<void> {
   const userId = getUserId(req);
   const params = parsePagination(req.query as Record<string, unknown>);
