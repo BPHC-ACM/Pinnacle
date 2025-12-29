@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 
-export default function AuthCallbackPage() {
+function CallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { refreshUser } = useAuth();
@@ -13,16 +13,11 @@ export default function AuthCallbackPage() {
     const token = searchParams.get('token');
 
     if (token) {
-      // Store token
       localStorage.setItem('token', token);
-
-      // Fetch user data
       refreshUser().then(() => {
-        // Redirect to dashboard or home
         router.push('/dashboard');
       });
     } else {
-      // No token, redirect to home
       router.push('/');
     }
   }, [searchParams, router, refreshUser]);
@@ -34,5 +29,13 @@ export default function AuthCallbackPage() {
         <p className="text-gray-600">Please wait while we log you in.</p>
       </div>
     </div>
+  );
+}
+
+export default function AuthCallbackPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CallbackContent />
+    </Suspense>
   );
 }
