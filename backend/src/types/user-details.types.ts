@@ -561,7 +561,7 @@ export const createAccomplishmentSchema = z.object({
   date: z.string().regex(/^\d{4}-\d{2}$/),
   description: z.string().max(2000).optional(),
   url: z.string().url().optional().or(z.literal('')),
-  metadata: z.record(z.unknown()).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
   order: z.number().int().min(0).optional(),
 });
 
@@ -586,7 +586,7 @@ export const updateAccomplishmentSchema = z.object({
     .optional(),
   description: z.string().max(2000).optional(),
   url: z.string().url().optional().or(z.literal('')),
-  metadata: z.record(z.unknown()).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
   order: z.number().int().min(0).optional(),
 });
 
