@@ -1,5 +1,4 @@
-import type { Request } from 'express';
-import { rateLimit, type RateLimitRequestHandler } from 'express-rate-limit';
+import { rateLimit, ipKeyGenerator, type RateLimitRequestHandler } from 'express-rate-limit';
 
 // Rate limiter for authentication endpoints.
 export const authRateLimiter: RateLimitRequestHandler = rateLimit({
@@ -10,7 +9,7 @@ export const authRateLimiter: RateLimitRequestHandler = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req: Request) => req.ip ?? req.socket.remoteAddress ?? 'unknown',
+  keyGenerator: (req) => ipKeyGenerator(req.ip ?? req.socket.remoteAddress ?? 'unknown'),
 });
 
 // Rate limiter for sensitive endpoints (e.g., applications, profile updates).
@@ -22,7 +21,7 @@ export const sensitiveEndpointRateLimiter: RateLimitRequestHandler = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req: Request) => req.ip ?? req.socket.remoteAddress ?? 'unknown',
+  keyGenerator: (req) => ipKeyGenerator(req.ip ?? req.socket.remoteAddress ?? 'unknown'),
 });
 
 // General-purpose rate limiter for most API endpoints.
@@ -34,7 +33,7 @@ export const generalApiRateLimiter: RateLimitRequestHandler = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req: Request) => req.ip ?? req.socket.remoteAddress ?? 'unknown',
+  keyGenerator: (req) => ipKeyGenerator(req.ip ?? req.socket.remoteAddress ?? 'unknown'),
 });
 
 // Strict rate limiter for administrative actions.
@@ -46,5 +45,5 @@ export const adminRateLimiter: RateLimitRequestHandler = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req: Request) => req.ip ?? req.socket.remoteAddress ?? 'unknown',
+  keyGenerator: (req) => ipKeyGenerator(req.ip ?? req.socket.remoteAddress ?? 'unknown'),
 });
