@@ -370,3 +370,294 @@ export const updateLanguageSchema = z.object({
   proficiency: z.enum(['Native', 'Fluent', 'Professional', 'Basic']).optional(),
   order: z.number().int().min(0).optional(),
 });
+
+// Position of Responsibility
+export interface PositionOfResponsibility {
+  id: string;
+  userId: string;
+  title: string;
+  organization: string;
+  startDate: string;
+  endDate?: string;
+  current: boolean;
+  description?: string;
+  order: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CreatePositionOfResponsibilityRequest {
+  title: string;
+  organization: string;
+  startDate: string;
+  endDate?: string;
+  current?: boolean;
+  description?: string;
+  order?: number;
+}
+
+export interface UpdatePositionOfResponsibilityRequest {
+  title?: string;
+  organization?: string;
+  startDate?: string;
+  endDate?: string;
+  current?: boolean;
+  description?: string;
+  order?: number;
+}
+
+export const createPositionOfResponsibilitySchema = z.object({
+  title: z.string().min(1).max(255),
+  organization: z.string().min(1).max(255),
+  startDate: z.string().regex(/^\d{4}-\d{2}$/),
+  endDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}$/)
+    .optional(),
+  current: z.boolean().optional(),
+  description: z.string().max(2000).optional(),
+  order: z.number().int().min(0).optional(),
+});
+
+export const updatePositionOfResponsibilitySchema = z.object({
+  title: z.string().min(1).max(255).optional(),
+  organization: z.string().min(1).max(255).optional(),
+  startDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}$/)
+    .optional(),
+  endDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}$/)
+    .optional(),
+  current: z.boolean().optional(),
+  description: z.string().max(2000).optional(),
+  order: z.number().int().min(0).optional(),
+});
+
+// Course
+export interface Course {
+  id: string;
+  userId: string;
+  name: string;
+  institution: string;
+  completionDate?: string;
+  grade?: string;
+  description?: string;
+  url?: string;
+  order: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CreateCourseRequest {
+  name: string;
+  institution: string;
+  completionDate?: string;
+  grade?: string;
+  description?: string;
+  url?: string;
+  order?: number;
+}
+
+export interface UpdateCourseRequest {
+  name?: string;
+  institution?: string;
+  completionDate?: string;
+  grade?: string;
+  description?: string;
+  url?: string;
+  order?: number;
+}
+
+export const createCourseSchema = z.object({
+  name: z.string().min(1).max(255),
+  institution: z.string().min(1).max(255),
+  completionDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}$/)
+    .optional(),
+  grade: z.string().max(20).optional(),
+  description: z.string().max(1000).optional(),
+  url: z.string().url().optional().or(z.literal('')),
+  order: z.number().int().min(0).optional(),
+});
+
+export const updateCourseSchema = z.object({
+  name: z.string().min(1).max(255).optional(),
+  institution: z.string().min(1).max(255).optional(),
+  completionDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}$/)
+    .optional(),
+  grade: z.string().max(20).optional(),
+  description: z.string().max(1000).optional(),
+  url: z.string().url().optional().or(z.literal('')),
+  order: z.number().int().min(0).optional(),
+});
+
+// Generic Accomplishment (Awards, Certifications, Competitions, Conferences, Test Scores, Patents, Publications, Scholarships)
+export enum AccomplishmentType {
+  AWARD = 'AWARD',
+  CERTIFICATION = 'CERTIFICATION',
+  COMPETITION = 'COMPETITION',
+  CONFERENCE = 'CONFERENCE',
+  TEST_SCORE = 'TEST_SCORE',
+  PATENT = 'PATENT',
+  PUBLICATION = 'PUBLICATION',
+  SCHOLARSHIP = 'SCHOLARSHIP',
+}
+
+export interface Accomplishment {
+  id: string;
+  userId: string;
+  type: AccomplishmentType;
+  title: string;
+  issuer?: string; // Organization, institution, or issuing body
+  date: string;
+  description?: string;
+  url?: string;
+  metadata?: Record<string, unknown>; // For type-specific additional data
+  order: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CreateAccomplishmentRequest {
+  type: AccomplishmentType;
+  title: string;
+  issuer?: string;
+  date: string;
+  description?: string;
+  url?: string;
+  metadata?: Record<string, unknown>;
+  order?: number;
+}
+
+export interface UpdateAccomplishmentRequest {
+  type?: AccomplishmentType;
+  title?: string;
+  issuer?: string;
+  date?: string;
+  description?: string;
+  url?: string;
+  metadata?: Record<string, unknown>;
+  order?: number;
+}
+
+export const createAccomplishmentSchema = z.object({
+  type: z.enum([
+    'AWARD',
+    'CERTIFICATION',
+    'COMPETITION',
+    'CONFERENCE',
+    'TEST_SCORE',
+    'PATENT',
+    'PUBLICATION',
+    'SCHOLARSHIP',
+  ]),
+  title: z.string().min(1).max(500),
+  issuer: z.string().max(255).optional(),
+  date: z.string().regex(/^\d{4}-\d{2}$/),
+  description: z.string().max(2000).optional(),
+  url: z.string().url().optional().or(z.literal('')),
+  metadata: z.record(z.unknown()).optional(),
+  order: z.number().int().min(0).optional(),
+});
+
+export const updateAccomplishmentSchema = z.object({
+  type: z
+    .enum([
+      'AWARD',
+      'CERTIFICATION',
+      'COMPETITION',
+      'CONFERENCE',
+      'TEST_SCORE',
+      'PATENT',
+      'PUBLICATION',
+      'SCHOLARSHIP',
+    ])
+    .optional(),
+  title: z.string().min(1).max(500).optional(),
+  issuer: z.string().max(255).optional(),
+  date: z
+    .string()
+    .regex(/^\d{4}-\d{2}$/)
+    .optional(),
+  description: z.string().max(2000).optional(),
+  url: z.string().url().optional().or(z.literal('')),
+  metadata: z.record(z.unknown()).optional(),
+  order: z.number().int().min(0).optional(),
+});
+
+// Extracurricular
+export interface Extracurricular {
+  id: string;
+  userId: string;
+  activity: string;
+  role?: string;
+  organization?: string;
+  startDate?: string;
+  endDate?: string;
+  current: boolean;
+  description?: string;
+  order: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CreateExtracurricularRequest {
+  activity: string;
+  role?: string;
+  organization?: string;
+  startDate?: string;
+  endDate?: string;
+  current?: boolean;
+  description?: string;
+  order?: number;
+}
+
+export interface UpdateExtracurricularRequest {
+  activity?: string;
+  role?: string;
+  organization?: string;
+  startDate?: string;
+  endDate?: string;
+  current?: boolean;
+  description?: string;
+  order?: number;
+}
+
+export const createExtracurricularSchema = z.object({
+  activity: z.string().min(1).max(255),
+  role: z.string().max(255).optional(),
+  organization: z.string().max(255).optional(),
+  startDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}$/)
+    .optional(),
+  endDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}$/)
+    .optional(),
+  current: z.boolean().optional(),
+  description: z.string().max(2000).optional(),
+  order: z.number().int().min(0).optional(),
+});
+
+export const updateExtracurricularSchema = z.object({
+  activity: z.string().min(1).max(255).optional(),
+  role: z.string().max(255).optional(),
+  organization: z.string().max(255).optional(),
+  startDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}$/)
+    .optional(),
+  endDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}$/)
+    .optional(),
+  current: z.boolean().optional(),
+  description: z.string().max(2000).optional(),
+  order: z.number().int().min(0).optional(),
+});
