@@ -60,7 +60,6 @@
   },
   "dependencies": {
     "@pinnacle/types": "workspace:*",
-    "@prisma/client": "^6.18.0",
     "amqplib": "^0.10.9",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
