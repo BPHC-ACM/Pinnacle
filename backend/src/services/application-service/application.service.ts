@@ -1,4 +1,4 @@
-import type { User } from '@prisma/client';
+import type { User } from '@pinnacle/types';
 
 import { logger } from '../../config/logger.config';
 import prisma from '../../db/client';
