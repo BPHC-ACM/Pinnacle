@@ -58,7 +58,7 @@ export const uploadProfilePicture = async (req: Request, res: Response): Promise
 
     logger.info({ userId, url }, 'Profile picture updated');
     res.json({ url, message: 'Profile picture uploaded successfully' });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error({ err: error }, 'Failed to upload profile picture');
 
     if (error instanceof Error) {
@@ -162,7 +162,7 @@ export const uploadCompanyLogo = async (req: Request, res: Response): Promise<vo
 
     logger.info({ companyId, url }, 'Company logo updated');
     res.json({ url, message: 'Company logo uploaded successfully' });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error({ err: error }, 'Failed to upload company logo');
 
     if (error instanceof Error) {
@@ -267,7 +267,7 @@ export const uploadJobDocument = async (req: Request, res: Response): Promise<vo
 
     logger.info({ jobId, url }, 'Job document updated');
     res.json({ url, message: 'Job document uploaded successfully' });
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error({ err: error }, 'Failed to upload job document');
 
     if (error instanceof Error) {
