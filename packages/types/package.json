@@ -1,0 +1,10 @@
+{
+  "name": "@pinnacle/types",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "types": "index.ts",
+  "exports": {
+    ".": "./index.ts",
+    "./prisma": "./node_modules/.prisma/client/index.d.ts"
+  }
+}

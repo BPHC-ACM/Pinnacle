@@ -58,6 +58,7 @@
     "pnpm": ">=8.0.0"
   },
   "dependencies": {
+    "@pinnacle/types": "workspace:*",
     "@prisma/client": "^6.18.0",
     "amqplib": "^0.10.9",
     "cookie-parser": "^1.4.7",
