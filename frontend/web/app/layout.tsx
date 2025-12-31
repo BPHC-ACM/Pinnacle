@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
-// import { AuthProvider } from "@/hooks/useAuth";
 import './globals.css';
+import { AuthProvider } from '@/contexts/auth-context';
 
 export const metadata: Metadata = {
   title: 'Pinnacle',
@@ -14,7 +14,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased">{/*<AuthProvider>*/}{children}{/*</AuthProvider>*/}</body>
+      <body className="antialiased">
+        <AuthProvider>{children}</AuthProvider>
+      </body>
     </html>
   );
 }

@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 
-import type { ResumeFile } from '@prisma/client';
+import type { ResumeFile } from '@pinnacle/types';
 
 import { logger } from '@/config/logger.config';
 import prisma from '@/db/client';

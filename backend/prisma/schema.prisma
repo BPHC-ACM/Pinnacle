@@ -6,6 +6,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  output   = "../../packages/types/node_modules/.prisma/client"
 }
 
 datasource db {
@@ -16,6 +17,17 @@ datasource db {
 enum UserRole {
   USER
   ADMIN
+}
+
+enum AccomplishmentType {
+  AWARD
+  CERTIFICATION
+  COMPETITION
+  CONFERENCE
+  TEST_SCORE
+  PATENT
+  PUBLICATION
+  SCHOLARSHIP
 }
 
 model User {
@@ -44,13 +56,17 @@ model User {
   deletedAt DateTime? // Soft delete
 
   // Relations
-  experiences    Experience[]
-  education      Education[]
-  skills         Skill[]
-  projects       Project[]
-  certifications Certification[]
-  languages      Language[]
-  resumes        Resume[]
+  experiences               Experience[]
+  education                 Education[]
+  skills                    Skill[]
+  projects                  Project[]
+  certifications            Certification[]
+  languages                 Language[]
+  resumes                   Resume[]
+  positionsOfResponsibility PositionOfResponsibility[]
+  courses                   Course[]
+  accomplishments           Accomplishment[]
+  extracurriculars          Extracurricular[]
 
   @@index([email])
   @@index([googleId])
@@ -168,6 +184,95 @@ model Language {
   name        String
   proficiency String // Native, Fluent, Professional, Basic
   order       Int    @default(0)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? // Soft delete
+
+  @@index([userId])
+  @@index([deletedAt])
+}
+
+model Accomplishment {
+  id     String            @id @default(uuid())
+  userId String
+  user   User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type        AccomplishmentType
+  title       String
+  issuer      String? // Organization, institution, or issuing body
+  date        String
+  description String?
+  url         String?
+  metadata    Json? // For type-specific additional data
+  order       Int     @default(0)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? // Soft delete
+
+  @@index([userId])
+  @@index([type])
+  @@index([deletedAt])
+}
+
+model Extracurricular {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  activity    String
+  role        String?
+  organization String?
+  startDate   String?
+  endDate     String?
+  current     Boolean  @default(false)
+  description String?
+  order       Int      @default(0)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? // Soft delete
+
+  @@index([userId])
+  @@index([deletedAt])
+}
+
+model PositionOfResponsibility {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title        String
+  organization String
+  location     String?
+  startDate    String
+  endDate      String?
+  current      Boolean  @default(false)
+  description  String?
+  highlights   String[] @default([])
+  order        Int      @default(0)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? // Soft delete
+
+  @@index([userId])
+  @@index([deletedAt])
+}
+
+model Course {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name         String
+  institution  String
+  completionDate String?
+  grade        String?
+  description  String?
+  url          String?
+  order        Int     @default(0)
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
