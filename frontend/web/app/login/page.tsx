@@ -1,81 +1,70 @@
 'use client';
 
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { useRouter } from 'next/navigation';
-import { Button } from "@/components/ui/button"
-// import { useAuth } from "@/hooks/useAuth";
-
-/* Validating email and password */
-const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-});
-
-type LoginForm = z.infer<typeof loginSchema>;
-
+import { useAuth } from '@/contexts/auth-context';
+import { Button } from '@/components/ui/button';
+import { Chrome } from 'lucide-react'; // Or any Google icon
+import Image from 'next/image';
 
 export default function LoginPage() {
-  // const { login, isAuthenticated } = useAuth(); 
-  const router = useRouter();
+  const { login, isLoading, isAuthenticated } = useAuth();
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<LoginForm>({
-    resolver: zodResolver(loginSchema),
-  });
-
-  const onSubmit = async (data: LoginForm) => {
-    try {
-      // await login(data.email, data.password);
-      
-      /*Redirecting to dashboard if correct, else shows error */
-      router.push('/dashboard');
-    } catch (error) {
-      alert('Login failed. Please check your credentials.');
-      console.error(error);
-    }
-  };
-
-  // if (isAuthenticated) {
-  //   router.push('/dashboard');
-  //   return null;
-  // }
+  // If already logged in, the context handles the redirect or you can do it here
+  if (isAuthenticated) return null;
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[#686279]">
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="p-8 border rounded-lg w-96 space-y-4 bg-[#2C2638] shadow-xl/100"
-      >
-        <h1 className="text-2xl font-bold text-center text-white">Login</h1>
-
-        <div>
-          <input 
-            {...register('email')} 
-            placeholder="Email" 
-            className="w-full p-2 border rounded text-white outline-none focus:ring-2 focus:ring-blue-500" 
-          />
-          {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
+    // 1. OUTER WRAPPER: Centers the box and provides the page background
+    <div className="flex items-center justify-center min-h-screen bg-[#001220] p-6">
+      {/* 2. THE MAIN BOX: Fixed max-width, border, and overflow-hidden */}
+      <div className="flex w-full max-w-250 h-150 bg-[#1A1625] rounded-3xl border border-white/10 shadow-2xl overflow-hidden">
+        {/* LEFT SIDE: Image/Branding (Hidden on mobile) */}
+        <div className="relative hidden lg:flex w-1/2 flex-col justify-between p-12">
+          <div className="absolute inset-0 z-0">
+            <Image
+              src="/Pinnacle.png"
+              alt="Website logo"
+              fill
+              className="object-cover opacity-50"
+              priority
+            />
+            <div className="absolute" />
+          </div>
         </div>
 
-        <div>
-          <input
-            {...register('password')}
-            type="password"
-            placeholder="Password"
-            className="w-full p-2 border rounded text-white outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>}
+        {/* RIGHT SIDE: Login Section */}
+        <div className="flex w-full flex-col justify-center px-8 lg:w-1/2 lg:px-16 bg-[#001F38]">
+          <div className="w-full space-y-8">
+            <div className="space-y-2 text-center">
+              <h1 className="text-3xl font-bold text-white tracking-tight">Welcome!</h1>
+              <p className="text-gray-400 text-sm">Please login to your account</p>
+            </div>
+            <div className="space-y-6">
+              <Button
+                onClick={() => login()}
+                disabled={isLoading}
+                className="group flex h-14 w-full items-center justify-center gap-3 rounded-xl bg-[#200E00] text-white transition-all hover:bg-[#5a4399] active:scale-[0.95] hover:cursor-pointer"
+              >
+                <Chrome className="h-5 w-5" />
+                {isLoading ? 'Connecting...' : 'Continue with Google'}
+              </Button>
+
+              <div className="relative flex items-center justify-center py-2">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-800"></div>
+                </div>
+                <span className="relative bg-[#1A1625] px-4 text-[10px] uppercase text-gray-500 tracking-widest font-bold">
+                  Secure OAuth
+                </span>
+              </div>
+            </div>
+
+            <p className="text-center text-xs text-gray-500">
+              By clicking continue, you agree to our <br />
+              <span className="text-gray-300 underline cursor-pointer">Terms</span> and{' '}
+              <span className="text-gray-300 underline cursor-pointer">Privacy Policy</span>.
+            </p>
+          </div>
         </div>
-
-        <Button variant={'outline'} type="submit"  disabled={isSubmitting}
-          className="w-full bg-[#6D54B4] text-white p-2 rounded border-black hover:cursor-pointer disabled:bg-gray-400 transition-colors">{isSubmitting ? 'Authenticating...' : 'Log In'}</Button>
-
-      </form>
+      </div>
     </div>
   );
 }

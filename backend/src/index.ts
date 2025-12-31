@@ -3,6 +3,7 @@ import path from 'path';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import dotenv from 'dotenv';
+dotenv.config();
 import express, { type Request, type Response } from 'express';
 import pinoHttp from 'pino-http';
 import swaggerUi from 'swagger-ui-express';
@@ -24,9 +25,10 @@ import resumeRoutes from './services/resume-service/routes/resume.routes';
 import { initializeStorage } from './services/storage-service/storage-init';
 
 // Load environment variables
-dotenv.config();
 
 const app = express();
+
+console.log('DEBUG: Google ID is:', process.env.GOOGLE_CLIENT_ID);
 
 // Middleware
 app.use(cors({ origin: config.frontendUrl, credentials: true }));
