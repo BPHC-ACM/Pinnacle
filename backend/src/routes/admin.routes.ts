@@ -21,6 +21,8 @@ import {
   deleteApplication,
   getApplicantProfile,
   getJobApplicationsAdmin,
+  // Verification
+  verifyItem,
 } from '@/controllers/admin.controller';
 import { createJob } from '@/controllers/job.controller';
 
@@ -50,5 +52,8 @@ router.patch('/applications/:id/status', updateApplicationStatus); // Update sta
 router.post('/applications/bulk-status', bulkUpdateApplicationStatus); // Bulk update status
 router.delete('/applications/:id', deleteApplication); // Delete application
 router.get('/applications/:id/profile', getApplicantProfile); // Get applicant's full profile
+
+// ==================== VERIFICATION ====================
+router.patch('/verify/:itemType/:itemId', verifyItem as RequestHandler); // Verify any profile item (experience, education, etc.)
 
 export default router;
