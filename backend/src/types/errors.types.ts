@@ -27,6 +27,11 @@ export class AuthError extends AppError {
   statusCode = 401;
 }
 
+export class ForbiddenError extends AppError {
+  name = 'ForbiddenError';
+  statusCode = 403;
+}
+
 export class InternalError extends AppError {
   name = 'InternalError';
   statusCode = 500;

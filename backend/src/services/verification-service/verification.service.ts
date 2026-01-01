@@ -24,6 +24,7 @@ interface VerifiableItem {
   isVerified: boolean;
   userId: string;
   deletedAt: Date | null;
+  verificationDoc?: string | null;
 }
 
 interface PrismaModelClient {
@@ -99,6 +100,20 @@ async function verifyItem({
           `${itemType} with ID ${itemId} not found or has been deleted`,
           `${itemType} not found`,
         );
+      }
+
+      if (
+        status === true &&
+        [
+          'experience',
+          'education',
+          'project',
+          'certification',
+          'position_of_responsibility',
+        ].includes(normalizedType) &&
+        !itemExists.verificationDoc
+      ) {
+        return itemExists as unknown as Record<string, unknown>;
       }
 
       const updated = await modelClient.update({

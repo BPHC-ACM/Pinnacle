@@ -89,6 +89,7 @@ model Experience {
   highlights  String[] @default([])
   order       Int      @default(0)
   isVerified  Boolean  @default(false)
+  verificationDoc String?
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -113,6 +114,7 @@ model Education {
   achievements String[] @default([])
   order        Int      @default(0)
   isVerified   Boolean  @default(false)
+  verificationDoc String?
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -153,6 +155,7 @@ model Project {
   highlights   String[] @default([])
   order        Int      @default(0)
   isVerified   Boolean  @default(false)
+  verificationDoc String?
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -173,6 +176,7 @@ model Certification {
   url    String?
   order  Int     @default(0)
   isVerified Boolean @default(false)
+  verificationDoc String?
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -212,6 +216,7 @@ model Accomplishment {
   url         String?
   metadata    Json? // For type-specific additional data
   order       Int     @default(0)
+  verificationDoc String?
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -258,6 +263,8 @@ model PositionOfResponsibility {
   description  String?
   highlights   String[] @default([])
   order        Int      @default(0)
+  isVerified   Boolean  @default(false)
+  verificationDoc String?
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
