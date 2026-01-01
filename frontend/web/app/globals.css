@@ -1,5 +1,209 @@
 @import 'tailwindcss';
 
-body {
-  font-family: system-ui, -apple-system, sans-serif;
+@theme {
+  /* Neutral Scale */
+  --color-neutral-50: hsl(210 20% 98%);
+  --color-neutral-100: hsl(210 20% 95%);
+  --color-neutral-200: hsl(210 16% 90%);
+  --color-neutral-300: hsl(210 14% 80%);
+  --color-neutral-400: hsl(210 12% 65%);
+  --color-neutral-500: hsl(210 10% 50%);
+  --color-neutral-600: hsl(210 12% 40%);
+  --color-neutral-700: hsl(210 14% 30%);
+  --color-neutral-800: hsl(210 16% 20%);
+  --color-neutral-900: hsl(210 20% 12%);
+  --color-neutral-950: hsl(210 24% 8%);
+
+  /* Primary - Blue */
+  --color-primary-50: hsl(210 100% 97%);
+  --color-primary-100: hsl(210 100% 92%);
+  --color-primary-200: hsl(210 100% 82%);
+  --color-primary-300: hsl(210 100% 72%);
+  --color-primary-400: hsl(210 98% 62%);
+  --color-primary-500: hsl(210 94% 52%);
+  --color-primary-600: hsl(210 90% 45%);
+  --color-primary-700: hsl(210 86% 38%);
+  --color-primary-800: hsl(210 82% 30%);
+  --color-primary-900: hsl(210 78% 22%);
+
+  /* Accent - Purple/Violet */
+  --color-accent-50: hsl(250 100% 97%);
+  --color-accent-100: hsl(251 91% 95%);
+  --color-accent-200: hsl(251 95% 92%);
+  --color-accent-300: hsl(252 95% 85%);
+  --color-accent-400: hsl(258 90% 66%);
+  --color-accent-500: hsl(259 91% 57%); /* #7C3AED */
+  --color-accent-600: hsl(262 83% 51%); /* #6D28D9 */
+  --color-accent-700: hsl(263 70% 45%);
+  --color-accent-800: hsl(263 69% 38%);
+  --color-accent-900: hsl(264 67% 32%);
+
+  /* Semantic Colors */
+  --color-success: #16a34a;
+  --color-success-foreground: #ffffff;
+  --color-warning: #d4a017;
+  --color-warning-foreground: #ffffff;
+  --color-error: #dc2626;
+  --color-error-foreground: #ffffff;
+  --color-info: hsl(210 94% 52%);
+  --color-info-foreground: #ffffff;
+}
+
+@layer base {
+  :root {
+    /* Semantic Colors */
+    --success: 142 71% 45%; /* #16A34A green */
+    --success-foreground: 0 0% 100%;
+    --warning: 43 74% 46%; /* #D4A017 muted amber */
+    --warning-foreground: 0 0% 100%;
+    --error: 0 72% 51%; /* #DC2626 restrained red */
+    --error-foreground: 0 0% 100%;
+    --info: 210 94% 52%; /* blue-tinted from primary */
+    --info-foreground: 0 0% 100%;
+
+    /* Light Mode Theme */
+    --background: 0 0% 100%;
+    --foreground: 210 20% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 210 20% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 20% 12%;
+
+    --primary: 210 90% 45%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 20% 95%;
+    --secondary-foreground: 210 20% 12%;
+    --muted: 210 20% 95%;
+    --muted-foreground: 210 12% 40%;
+    --accent: 259 91% 57%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 210 16% 90%;
+    --input: 210 20% 95%;
+    --ring: 259 91% 57%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    /* Neutral Scale - Dark Mode */
+    --neutral-50: 210 20% 98%;
+    --neutral-100: 210 20% 95%;
+    --neutral-200: 210 16% 90%;
+    --neutral-300: 210 14% 80%;
+    --neutral-400: 210 12% 65%;
+    --neutral-500: 210 10% 50%;
+    --neutral-600: 210 12% 40%;
+    --neutral-700: 210 14% 30%;
+    --neutral-800: 210 16% 20%;
+    --neutral-900: 210 20% 12%;
+    --neutral-950: 210 24% 8%;
+
+    /* Primary - Blue (deeper for dark mode) */
+    --primary-50: 210 100% 97%;
+    --primary-100: 210 100% 92%;
+    --primary-200: 210 100% 82%;
+    --primary-300: 210 100% 72%;
+    --primary-400: 210 98% 62%;
+    --primary-500: 210 94% 52%;
+    --primary-600: 210 90% 45%;
+    --primary-700: 210 86% 38%;
+    --primary-800: 210 82% 30%;
+    --primary-900: 210 78% 22%;
+
+    /* Semantic Colors */
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+    --warning: 43 74% 46%;
+    --warning-foreground: 0 0% 100%;
+    --error: 0 72% 51%;
+    --error-foreground: 0 0% 100%;
+    --info: 210 94% 52%;
+    --info-foreground: 0 0% 100%;
+
+    /* Dark Mode Theme */
+    --background: 210 24% 8%;
+    --foreground: 210 20% 98%;
+    --card: 210 20% 12%;
+    --card-foreground: 210 20% 98%;
+    --popover: 210 20% 12%;
+    --popover-foreground: 210 20% 98%;
+
+    --primary: 210 86% 38%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 16% 20%;
+    --secondary-foreground: 210 20% 98%;
+    --muted: 210 16% 20%;
+    --muted-foreground: 210 12% 65%;
+    --accent: 259 91% 57%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 210 16% 20%;
+    --input: 210 16% 20%;
+    --ring: 259 91% 57%;
+  }
+
+  .light {
+    /* Same as :root for consistency */
+    --background: 0 0% 100%;
+    --foreground: 210 20% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 210 20% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 20% 12%;
+
+    --primary: 210 90% 45%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 20% 95%;
+    --secondary-foreground: 210 20% 12%;
+    --muted: 210 20% 95%;
+    --muted-foreground: 210 12% 40%;
+    --accent: 168 70% 45%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 210 16% 90%;
+    --input: 210 20% 95%;
+    --ring: 168 70% 45%;
+  }
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+
+  /* Typography Hierarchy */
+  h1 {
+    font-size: 2.25rem;
+    line-height: 2.5rem;
+    font-weight: 700;
+  }
+
+  h2 {
+    font-size: 1.875rem;
+    line-height: 2.25rem;
+    font-weight: 700;
+  }
+
+  h3 {
+    font-size: 1.5rem;
+    line-height: 2rem;
+    font-weight: 600;
+  }
 }
