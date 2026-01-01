@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@prisma/client';
+import type { PrismaClient } from '@pinnacle/types';
 
 import prisma from '../../db/client';
 import { ValidationError, NotFoundError } from '../../types/errors.types';
