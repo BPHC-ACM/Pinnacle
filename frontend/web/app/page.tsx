@@ -3,6 +3,7 @@
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/logo';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 // Google icon SVG component
 const Google = ({ className }: { className?: string }) => (
@@ -58,11 +59,29 @@ const UsersIcon = ({ className }: { className?: string }) => (
 );
 
 export default function Home() {
-  const { login, isLoading, isAuthenticated } = useAuth();
+  const { login, isLoading: authLoading, isAuthenticated } = useAuth();
+
+  console.log('Landing page - authLoading:', authLoading, 'isAuthenticated:', isAuthenticated);
+
+  // Show loading while checking auth
+  if (authLoading) {
+    console.log('Landing page - showing loading state');
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold">Loading...</h2>
+        </div>
+      </div>
+    );
+  }
 
   // If already logged in, the context handles the redirect
-  if (isAuthenticated) return null;
+  if (isAuthenticated) {
+    console.log('Landing page - user is authenticated, returning null');
+    return null;
+  }
 
+  console.log('Landing page - rendering main content');
   return (
     <div className="flex flex-col min-h-screen bg-background relative">
       {/* Grid background pattern */}
@@ -79,17 +98,20 @@ export default function Home() {
 
       {/* Header */}
       <header className="w-full border-b border-border bg-background/90 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto py-4 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <Logo size="md" />
-          <Button
-            onClick={() => login()}
-            disabled={isLoading}
-            variant="accent"
-            className="flex bg-primary-500 hover:bg-primary-600 active:bg-primary-600 h-10 items-center justify-center gap-2 rounded-lg px-6 text-sm font-medium shadow-sm transition-transform"
-          >
-            <Google className="h-4 w-4" />
-            {isLoading ? 'Connecting…' : 'Sign in with Google'}
-          </Button>
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <Button
+              onClick={() => login()}
+              disabled={authLoading}
+              variant="accent"
+              className="flex bg-primary-500 hover:bg-primary-600 active:bg-primary-600 h-10 items-center justify-center gap-2 rounded-lg px-6 text-sm font-medium shadow-sm transition-transform"
+            >
+              <Google className="h-4 w-4" />
+              {authLoading ? 'Connecting…' : 'Sign in with Google'}
+            </Button>
+          </div>
         </div>
       </header>
 

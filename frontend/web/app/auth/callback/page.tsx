@@ -10,17 +10,37 @@ function CallbackContent() {
   const { refreshUser } = useAuth();
 
   useEffect(() => {
-    const token = searchParams.get('token');
+    const accessToken = searchParams.get('access_token');
+    const refreshToken = searchParams.get('refresh_token');
 
-    if (token) {
-      localStorage.setItem('token', token);
-      refreshUser().then(() => {
-        router.push('/dashboard');
-      });
+    console.log('Callback - Access Token:', accessToken ? 'Present' : 'Missing');
+    console.log('Callback - Refresh Token:', refreshToken ? 'Present' : 'Missing');
+
+    if (accessToken) {
+      console.log('Saving tokens to localStorage...');
+      localStorage.setItem('token', accessToken);
+      if (refreshToken) {
+        localStorage.setItem('refreshToken', refreshToken);
+      }
+
+      console.log('Calling refreshUser...');
+      refreshUser()
+        .then(() => {
+          console.log('refreshUser succeeded! Redirecting to dashboard...');
+          setTimeout(() => router.push('/dashboard'), 500);
+        })
+        .catch((error) => {
+          console.error('Auth callback error:', error);
+          alert('Authentication failed. Please try again.');
+          setTimeout(() => router.push('/'), 2000);
+        });
     } else {
-      router.push('/');
+      console.error('No access token found in callback URL');
+      alert('No authentication token received. Please try again.');
+      setTimeout(() => router.push('/'), 2000);
     }
-  }, [searchParams, router, refreshUser]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, router]);
 
   return (
     <div className="flex min-h-screen items-center justify-center">
