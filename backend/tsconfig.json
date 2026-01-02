@@ -5,10 +5,9 @@
     "module": "node16",
     "rootDir": "./src",
     "moduleResolution": "node16",
-    "baseUrl": "./",
     "paths": {
-      "@/*": ["src/*"],
-      "@pinnacle/types": ["../packages/types"]
+      "@/*": ["./src/*"],
+      "@pinnacle/types": ["./node_modules/@pinnacle/types"]
     },
     "resolveJsonModule": true,
     "outDir": "./dist",
