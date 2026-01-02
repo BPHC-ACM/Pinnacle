@@ -30,6 +30,33 @@ enum AccomplishmentType {
   SCHOLARSHIP
 }
 
+enum Sector {
+  ALL_SECTORS
+  ANALYTICS
+  CONSULTING
+  COMPUTER_SCIENCE_SOFTWARE_IT
+  E_COMMERCE
+  EDUCATION
+  ENGINEERING_TECHNOLOGY
+  FINANCE_BFSI
+  FMCG
+  HEALTHCARE
+  MEDIA_ENTERTAINMENT
+  RESEARCH_DEVELOPMENT
+  TELECOM
+  ENERGY
+  MANUFACTURING_TECHNOLOGY
+  OTHERS
+}
+
+enum ProficiencyLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+  NATIVE
+}
+
 model User {
   id       String   @id @default(uuid())
   email    String   @unique
@@ -81,6 +108,8 @@ model Experience {
   company     String
   position    String
   location    String
+  sector      Sector?
+  salaryRange String? // e.g., "50000-75000" or "10000-15000/month"
   startDate   String
   endDate     String?
   current     Boolean  @default(false)
@@ -103,7 +132,8 @@ model Education {
 
   institution  String
   degree       String
-  field        String
+  branch       String
+  rollNumber   String?
   location     String
   startDate    String
   endDate      String?
@@ -124,9 +154,10 @@ model Skill {
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  category String
-  items    String[] @default([])
-  order    Int      @default(0)
+  category    String
+  items       String[]         @default([])
+  proficiency ProficiencyLevel?
+  order       Int              @default(0)
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -142,10 +173,9 @@ model Project {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   name         String
-  description  String
   technologies String[] @default([])
   url          String?
-  github       String?
+  repoUrl      String? // Repository or source code URL
   highlights   String[] @default([])
   order        Int      @default(0)
 
@@ -182,8 +212,8 @@ model Language {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   name        String
-  proficiency String // Native, Fluent, Professional, Basic
-  order       Int    @default(0)
+  proficiency ProficiencyLevel
+  order       Int              @default(0)
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt

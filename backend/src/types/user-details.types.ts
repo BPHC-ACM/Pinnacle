@@ -5,6 +5,33 @@ export enum UserRole {
   ADMIN = 'ADMIN',
 }
 
+export enum Sector {
+  ALL_SECTORS = 'ALL_SECTORS',
+  ANALYTICS = 'ANALYTICS',
+  CONSULTING = 'CONSULTING',
+  COMPUTER_SCIENCE_SOFTWARE_IT = 'COMPUTER_SCIENCE_SOFTWARE_IT',
+  E_COMMERCE = 'E_COMMERCE',
+  EDUCATION = 'EDUCATION',
+  ENGINEERING_TECHNOLOGY = 'ENGINEERING_TECHNOLOGY',
+  FINANCE_BFSI = 'FINANCE_BFSI',
+  FMCG = 'FMCG',
+  HEALTHCARE = 'HEALTHCARE',
+  MEDIA_ENTERTAINMENT = 'MEDIA_ENTERTAINMENT',
+  RESEARCH_DEVELOPMENT = 'RESEARCH_DEVELOPMENT',
+  TELECOM = 'TELECOM',
+  ENERGY = 'ENERGY',
+  MANUFACTURING_TECHNOLOGY = 'MANUFACTURING_TECHNOLOGY',
+  OTHERS = 'OTHERS',
+}
+
+export enum ProficiencyLevel {
+  BEGINNER = 'BEGINNER',
+  INTERMEDIATE = 'INTERMEDIATE',
+  ADVANCED = 'ADVANCED',
+  EXPERT = 'EXPERT',
+  NATIVE = 'NATIVE',
+}
+
 export interface UserProfile {
   id: string;
   email: string;
@@ -41,6 +68,8 @@ export interface Experience {
   company: string;
   position: string;
   location: string;
+  sector?: Sector;
+  salaryRange?: string;
   startDate: string;
   endDate?: string;
   current: boolean;
@@ -55,6 +84,8 @@ export interface CreateExperienceRequest {
   company: string;
   position: string;
   location: string;
+  sector?: Sector;
+  salaryRange?: string;
   startDate: string;
   endDate?: string;
   current?: boolean;
@@ -67,6 +98,8 @@ export interface UpdateExperienceRequest {
   company?: string;
   position?: string;
   location?: string;
+  sector?: Sector;
+  salaryRange?: string;
   startDate?: string;
   endDate?: string;
   current?: boolean;
@@ -80,7 +113,8 @@ export interface Education {
   userId: string;
   institution: string;
   degree: string;
-  field: string;
+  branch: string;
+  rollNumber?: string;
   location: string;
   startDate: string;
   endDate?: string;
@@ -94,7 +128,8 @@ export interface Education {
 export interface CreateEducationRequest {
   institution: string;
   degree: string;
-  field: string;
+  branch: string;
+  rollNumber?: string;
   location: string;
   startDate: string;
   endDate?: string;
@@ -106,7 +141,8 @@ export interface CreateEducationRequest {
 export interface UpdateEducationRequest {
   institution?: string;
   degree?: string;
-  field?: string;
+  branch?: string;
+  rollNumber?: string;
   location?: string;
   startDate?: string;
   endDate?: string;
@@ -120,6 +156,7 @@ export interface Skill {
   userId: string;
   category: string;
   items: string[];
+  proficiency?: ProficiencyLevel;
   order: number;
   createdAt: Date;
   updatedAt: Date;
@@ -128,12 +165,14 @@ export interface Skill {
 export interface CreateSkillRequest {
   category: string;
   items: string[];
+  proficiency?: ProficiencyLevel;
   order?: number;
 }
 
 export interface UpdateSkillRequest {
   category?: string;
   items?: string[];
+  proficiency?: ProficiencyLevel;
   order?: number;
 }
 
@@ -141,10 +180,9 @@ export interface Project {
   id: string;
   userId: string;
   name: string;
-  description: string;
   technologies: string[];
   url?: string;
-  github?: string;
+  repoUrl?: string;
   highlights: string[];
   order: number;
   createdAt: Date;
@@ -153,20 +191,18 @@ export interface Project {
 
 export interface CreateProjectRequest {
   name: string;
-  description: string;
   technologies?: string[];
   url?: string;
-  github?: string;
+  repoUrl?: string;
   highlights?: string[];
   order?: number;
 }
 
 export interface UpdateProjectRequest {
   name?: string;
-  description?: string;
   technologies?: string[];
   url?: string;
-  github?: string;
+  repoUrl?: string;
   highlights?: string[];
   order?: number;
 }
@@ -203,7 +239,7 @@ export interface Language {
   id: string;
   userId: string;
   name: string;
-  proficiency: 'Native' | 'Fluent' | 'Professional' | 'Basic';
+  proficiency: ProficiencyLevel;
   order: number;
   createdAt: Date;
   updatedAt: Date;
@@ -211,13 +247,13 @@ export interface Language {
 
 export interface CreateLanguageRequest {
   name: string;
-  proficiency: 'Native' | 'Fluent' | 'Professional' | 'Basic';
+  proficiency: ProficiencyLevel;
   order?: number;
 }
 
 export interface UpdateLanguageRequest {
   name?: string;
-  proficiency?: 'Native' | 'Fluent' | 'Professional' | 'Basic';
+  proficiency?: ProficiencyLevel;
   order?: number;
 }
 
@@ -241,6 +277,27 @@ export const createExperienceSchema = z.object({
   company: z.string().min(1).max(255),
   position: z.string().min(1).max(255),
   location: z.string().min(1).max(255),
+  sector: z
+    .enum([
+      'ALL_SECTORS',
+      'ANALYTICS',
+      'CONSULTING',
+      'COMPUTER_SCIENCE_SOFTWARE_IT',
+      'E_COMMERCE',
+      'EDUCATION',
+      'ENGINEERING_TECHNOLOGY',
+      'FINANCE_BFSI',
+      'FMCG',
+      'HEALTHCARE',
+      'MEDIA_ENTERTAINMENT',
+      'RESEARCH_DEVELOPMENT',
+      'TELECOM',
+      'ENERGY',
+      'MANUFACTURING_TECHNOLOGY',
+      'OTHERS',
+    ])
+    .optional(),
+  salaryRange: z.string().max(100).optional(),
   startDate: z.string().regex(/^\d{4}-\d{2}$/),
   endDate: z
     .string()
@@ -256,6 +313,27 @@ export const updateExperienceSchema = z.object({
   company: z.string().min(1).max(255).optional(),
   position: z.string().min(1).max(255).optional(),
   location: z.string().min(1).max(255).optional(),
+  sector: z
+    .enum([
+      'ALL_SECTORS',
+      'ANALYTICS',
+      'CONSULTING',
+      'COMPUTER_SCIENCE_SOFTWARE_IT',
+      'E_COMMERCE',
+      'EDUCATION',
+      'ENGINEERING_TECHNOLOGY',
+      'FINANCE_BFSI',
+      'FMCG',
+      'HEALTHCARE',
+      'MEDIA_ENTERTAINMENT',
+      'RESEARCH_DEVELOPMENT',
+      'TELECOM',
+      'ENERGY',
+      'MANUFACTURING_TECHNOLOGY',
+      'OTHERS',
+    ])
+    .optional(),
+  salaryRange: z.string().max(100).optional(),
   startDate: z
     .string()
     .regex(/^\d{4}-\d{2}$/)
@@ -274,7 +352,8 @@ export const updateExperienceSchema = z.object({
 export const createEducationSchema = z.object({
   institution: z.string().min(1).max(255),
   degree: z.string().min(1).max(255),
-  field: z.string().min(1).max(255),
+  branch: z.string().min(1).max(255),
+  rollNumber: z.string().max(100).optional(),
   location: z.string().min(1).max(255),
   startDate: z.string().regex(/^\d{4}-\d{2}$/),
   endDate: z
@@ -289,7 +368,8 @@ export const createEducationSchema = z.object({
 export const updateEducationSchema = z.object({
   institution: z.string().min(1).max(255).optional(),
   degree: z.string().min(1).max(255).optional(),
-  field: z.string().min(1).max(255).optional(),
+  branch: z.string().min(1).max(255).optional(),
+  rollNumber: z.string().max(100).optional(),
   location: z.string().min(1).max(255).optional(),
   startDate: z
     .string()
@@ -308,32 +388,32 @@ export const updateEducationSchema = z.object({
 export const createSkillSchema = z.object({
   category: z.string().min(1).max(255),
   items: z.array(z.string().min(1).max(255)).min(1),
+  proficiency: z.enum(['BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'EXPERT', 'NATIVE']).optional(),
   order: z.number().int().min(0).optional(),
 });
 
 export const updateSkillSchema = z.object({
   category: z.string().min(1).max(255).optional(),
   items: z.array(z.string().min(1).max(255)).min(1).optional(),
+  proficiency: z.enum(['BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'EXPERT', 'NATIVE']).optional(),
   order: z.number().int().min(0).optional(),
 });
 
 // Project Schemas
 export const createProjectSchema = z.object({
   name: z.string().min(1).max(255),
-  description: z.string().min(1).max(2000),
   technologies: z.array(z.string().max(100)).optional(),
   url: z.string().url().optional().or(z.literal('')),
-  github: z.string().url().optional().or(z.literal('')),
+  repoUrl: z.string().url().optional().or(z.literal('')),
   highlights: z.array(z.string().max(500)).optional(),
   order: z.number().int().min(0).optional(),
 });
 
 export const updateProjectSchema = z.object({
   name: z.string().min(1).max(255).optional(),
-  description: z.string().min(1).max(2000).optional(),
   technologies: z.array(z.string().max(100)).optional(),
   url: z.string().url().optional().or(z.literal('')),
-  github: z.string().url().optional().or(z.literal('')),
+  repoUrl: z.string().url().optional().or(z.literal('')),
   highlights: z.array(z.string().max(500)).optional(),
   order: z.number().int().min(0).optional(),
 });
@@ -361,13 +441,13 @@ export const updateCertificationSchema = z.object({
 // Language Schemas
 export const createLanguageSchema = z.object({
   name: z.string().min(1).max(255),
-  proficiency: z.enum(['Native', 'Fluent', 'Professional', 'Basic']),
+  proficiency: z.enum(['BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'EXPERT', 'NATIVE']),
   order: z.number().int().min(0).optional(),
 });
 
 export const updateLanguageSchema = z.object({
   name: z.string().min(1).max(255).optional(),
-  proficiency: z.enum(['Native', 'Fluent', 'Professional', 'Basic']).optional(),
+  proficiency: z.enum(['BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'EXPERT', 'NATIVE']).optional(),
   order: z.number().int().min(0).optional(),
 });
 
