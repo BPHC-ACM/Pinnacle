@@ -4,7 +4,7 @@ import { OAuth2Client } from 'google-auth-library';
 import { logger } from '../../config/logger.config';
 import prisma from '../../db/client';
 import { config } from '../config/env.config';
-import { User, UserRole } from '../types/user.types';
+import { UserRole } from '../types/user.types';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../utils/jwt.utils';
 
 interface RefreshTokenRequestBody {
