@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Logo } from '@/components/logo';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { api } from '@/lib/api-client';
 
 // Icon components
 const FileTextIcon = ({ className }: { className?: string }) => (
@@ -26,35 +25,6 @@ const UserIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
-const BriefcaseIcon = ({ className }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
-    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
-  </svg>
-);
-
-const CheckCircleIcon = ({ className }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-    <polyline points="22 4 12 14.01 9 11.01" />
-  </svg>
-);
-
-const ClockIcon = ({ className }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <circle cx="12" cy="12" r="10" />
-    <polyline points="12 6 12 12 16 14" />
-  </svg>
-);
-
-const XCircleIcon = ({ className }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <circle cx="12" cy="12" r="10" />
-    <line x1="15" y1="9" x2="9" y2="15" />
-    <line x1="9" y1="9" x2="15" y2="15" />
-  </svg>
-);
-
 const BellIcon = ({ className }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
@@ -66,19 +36,9 @@ export default function Dashboard() {
   const { user, isAuthenticated, isLoading: authLoading, logout } = useAuth();
   const router = useRouter();
   const [showNotifications, setShowNotifications] = useState(false);
-  const [notifications, setNotifications] = useState<any[]>([]);
-
-  useEffect(() => {
-    // Don't check auth while still loading
-    if (authLoading) return;
-
-    if (!isAuthenticated) {
-      console.log('Dashboard: Not authenticated, redirecting to home');
-      router.push('/');
-    } else {
-      fetchNotifications();
-    }
-  }, [isAuthenticated, authLoading, router]);
+  const [notifications, setNotifications] = useState<
+    Array<{ id: number; message: string; time: string; read: boolean }>
+  >([]);
 
   const fetchNotifications = async () => {
     try {
@@ -96,6 +56,19 @@ export default function Dashboard() {
       console.error('Failed to fetch notifications:', error);
     }
   };
+
+  useEffect(() => {
+    // Don't check auth while still loading
+    if (authLoading) return;
+
+    if (!isAuthenticated) {
+      console.log('Dashboard: Not authenticated, redirecting to home');
+      router.push('/');
+    } else {
+      void fetchNotifications();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, authLoading, router]);
 
   const markAsRead = (id: number) => {
     setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
