@@ -1,4 +1,4 @@
-import express, { type RequestHandler } from 'express';
+import express from 'express';
 
 import { authenticateToken, isAdmin, adminRateLimiter } from '../auth/middleware';
 import * as companyController from '../controllers/company.controller';
@@ -24,7 +24,7 @@ router.get('/:id', companyController.getCompany);
 // POST /api/companies - Create company (admin only with rate limiting)
 router.post(
   '/',
-  adminRateLimiter as RequestHandler,
+  adminRateLimiter,
   isAdmin,
   validateBody(createCompanySchema),
   companyController.createCompany,
@@ -33,13 +33,13 @@ router.post(
 // PATCH /api/companies/:id - Update company (admin only with rate limiting)
 router.patch(
   '/:id',
-  adminRateLimiter as RequestHandler,
+  adminRateLimiter,
   isAdmin,
   validateBody(updateCompanySchema),
   companyController.updateCompany,
 );
 
 // DELETE /api/companies/:id - Soft delete company (admin only with rate limiting)
-router.delete('/:id', adminRateLimiter as RequestHandler, isAdmin, companyController.deleteCompany);
+router.delete('/:id', adminRateLimiter, isAdmin, companyController.deleteCompany);
 
 export default router;

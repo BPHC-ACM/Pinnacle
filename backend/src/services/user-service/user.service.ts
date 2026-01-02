@@ -53,7 +53,7 @@ export class UserService {
       where: { id: userId },
       data: {
         ...data,
-        isVerified: false,
+        verificationStatus: 'PENDING',
       },
     })) as UserProfile;
   }
@@ -110,7 +110,7 @@ export class UserService {
       where: { id },
       data: {
         ...data,
-        isVerified: false,
+        verificationStatus: 'PENDING',
       },
     })) as Experience;
   }
@@ -177,7 +177,7 @@ export class UserService {
       where: { id },
       data: {
         ...data,
-        isVerified: false,
+        verificationStatus: 'PENDING',
       },
     })) as Education;
   }
@@ -235,7 +235,7 @@ export class UserService {
       where: { id },
       data: {
         ...data,
-        isVerified: false,
+        verificationStatus: 'PENDING',
       },
     })) as Skill;
   }
@@ -300,7 +300,7 @@ export class UserService {
       where: { id },
       data: {
         ...data,
-        isVerified: false,
+        verificationStatus: 'PENDING',
       },
     })) as Project;
   }
@@ -368,7 +368,7 @@ export class UserService {
       where: { id },
       data: {
         ...data,
-        isVerified: false,
+        verificationStatus: 'PENDING',
       },
     })) as Certification;
   }

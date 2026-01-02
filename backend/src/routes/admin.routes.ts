@@ -54,6 +54,6 @@ router.delete('/applications/:id', deleteApplication); // Delete application
 router.get('/applications/:id/profile', getApplicantProfile); // Get applicant's full profile
 
 // ==================== VERIFICATION ====================
-router.patch('/verify/:itemType/:itemId', verifyItem as RequestHandler); // Verify any profile item (experience, education, etc.)
+router.patch('/verify/:itemType/:itemId', verifyItem as unknown as RequestHandler); // Verify any profile item (experience, education, etc.)
 
 export default router;

@@ -1,11 +1,11 @@
-import type { Request, Response, NextFunction } from 'express';
+import type { Request, Response, NextFunction, RequestHandler } from 'express';
 import type { ZodSchema, ZodIssue } from 'zod';
 import { ZodError } from 'zod';
 
 import { ValidationError } from '../types/errors.types';
 
 // Middleware to validate request body against a Zod schema
-export const validateBody = (schema: ZodSchema) => {
+export const validateBody = (schema: ZodSchema): RequestHandler => {
   return (req: Request, _res: Response, next: NextFunction): void => {
     try {
       schema.parse(req.body);
