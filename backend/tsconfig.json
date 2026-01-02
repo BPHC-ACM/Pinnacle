@@ -8,7 +8,7 @@
     "baseUrl": "./",
     "paths": {
       "@/*": ["src/*"],
-      "@pinnacle/types": ["../packages/types/node_modules/.prisma/client"]
+      "@pinnacle/types": ["../packages/types"]
     },
     "resolveJsonModule": true,
     "outDir": "./dist",
