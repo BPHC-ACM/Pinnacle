@@ -36,10 +36,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(false);
   }, []);
 
-  const login = () => {
-    // Redirect to backend Google OAuth
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-    window.location.href = `${apiUrl}/auth/google/login`;
+  const login = async () => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+
+      // 1. Fetch the JSON from your backend
+      const response = await fetch(`${apiUrl}/auth/google/login`);
+      const data = await response.json();
+
+      // 2. Redirect the browser to the URL provided in the JSON
+      if (data.authUrl) {
+        window.location.href = data.authUrl;
+      } else {
+        console.error('No authUrl found in backend response');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+    }
   };
 
   const logout = async () => {

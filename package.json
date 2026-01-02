@@ -17,5 +17,8 @@
   "bugs": {
     "url": "https://github.com/BPHC-ACM/Pinnacle/issues"
   },
-  "homepage": "https://github.com/BPHC-ACM/Pinnacle#readme"
+  "homepage": "https://github.com/BPHC-ACM/Pinnacle#readme",
+  "dependencies": {
+    "@prisma/client-runtime-utils": "^7.2.0"
+  }
 }
