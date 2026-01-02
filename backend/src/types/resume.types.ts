@@ -78,6 +78,8 @@ export interface ResumePreviewData {
     company: string;
     position: string;
     location: string;
+    sector: string | null;
+    salaryRange: string | null;
     startDate: string;
     endDate: string | null;
     current: boolean;
@@ -89,7 +91,8 @@ export interface ResumePreviewData {
     id: string;
     institution: string;
     degree: string;
-    field: string;
+    branch: string;
+    rollNumber: string | null;
     location: string;
     startDate: string;
     endDate: string | null;
@@ -101,15 +104,15 @@ export interface ResumePreviewData {
     id: string;
     category: string;
     items: string[];
+    proficiency: string | null;
     order: number;
   }[];
   projects: {
     id: string;
     name: string;
-    description: string;
     technologies: string[];
     url: string | null;
-    github: string | null;
+    repoUrl: string | null;
     highlights: string[];
     order: number;
   }[];

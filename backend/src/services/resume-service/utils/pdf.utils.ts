@@ -74,7 +74,7 @@ export const generateResumePDF = (resumeData: ResumeData): Promise<Buffer> => {
 
       education.forEach((edu) => {
         doc.fontSize(12).font('Helvetica-Bold').text(edu.institution);
-        doc.fontSize(10).font('Helvetica').text(`${edu.degree} in ${edu.field}`);
+        doc.fontSize(10).font('Helvetica').text(`${edu.degree} in ${edu.branch}`);
         doc.text(`${edu.startDate} - ${edu.endDate ?? 'Present'}`);
         if (edu.gpa) {
           doc.text(`GPA: ${edu.gpa}`);
@@ -132,12 +132,14 @@ export const generateResumePDF = (resumeData: ResumeData): Promise<Buffer> => {
 
       projects.forEach((project) => {
         doc.fontSize(12).font('Helvetica-Bold').text(project.name);
-        doc.fontSize(10).font('Helvetica').text(project.description);
         if (project.technologies && project.technologies.length > 0) {
-          doc.text(`Technologies: ${project.technologies.join(', ')}`);
+          doc
+            .fontSize(10)
+            .font('Helvetica')
+            .text(`Technologies: ${project.technologies.join(', ')}`);
         }
-        if (project.github) {
-          doc.fillColor('blue').text(project.github, { link: project.github });
+        if (project.repoUrl) {
+          doc.fillColor('blue').text(project.repoUrl, { link: project.repoUrl });
           doc.fillColor('black');
         }
         if (project.highlights && project.highlights.length > 0) {
