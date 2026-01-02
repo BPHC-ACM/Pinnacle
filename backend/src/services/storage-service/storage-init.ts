@@ -7,12 +7,12 @@ const BUCKETS = [
   'company-logos',
   'job-documents',
   'por-verification',
-  'experience_docs',
-  'education_docs',
-  'project_docs',
-  'certification_docs',
-  'accomplishment_docs',
-  'position_of_responsibility_docs',
+  'experience-docs',
+  'education-docs',
+  'project-docs',
+  'certification-docs',
+  'accomplishment-docs',
+  'position-of-responsibility-docs',
 ];
 
 /**

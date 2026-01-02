@@ -35,13 +35,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // const login = () => {
-  //   // Redirect to backend Google OAuth
-  //   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-  //   console.log('API URL:', apiUrl);
-  //   window.location.href = `${apiUrl}/auth/google/login`;
-  // };
-
   const login = async () => {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';

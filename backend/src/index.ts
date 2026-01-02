@@ -28,8 +28,6 @@ import { initializeStorage } from './services/storage-service/storage-init';
 
 const app = express();
 
-console.log('DEBUG: Google ID is:', process.env.GOOGLE_CLIENT_ID);
-
 // Middleware
 app.use(cors({ origin: config.frontendUrl, credentials: true }));
 app.use(express.json());
