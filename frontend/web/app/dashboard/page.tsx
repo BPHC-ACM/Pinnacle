@@ -65,6 +65,7 @@ export default function Dashboard() {
       console.log('Dashboard: Not authenticated, redirecting to home');
       router.push('/');
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       void fetchNotifications();
     }
   }, [isAuthenticated, authLoading, router]);
