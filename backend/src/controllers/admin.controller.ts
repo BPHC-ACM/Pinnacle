@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 
 import applicationService from '../services/application-service/application.service';
 import jobService from '../services/job-service/job.service';
+import { verificationService } from '../services/verification-service/verification.service';
 import type {
   AdminApplicationFilters,
   BulkStatusUpdateRequest,
@@ -235,4 +236,32 @@ export const getJobApplicationsAdmin = async (req: Request, res: Response): Prom
   const params = parsePagination(req.query as Record<string, unknown>);
   const applications = await applicationService.getAllApplications({ jobId }, params);
   res.json(applications);
+};
+
+//  VERIFICATION
+
+export const verifyItem = async (req: Request, res: Response): Promise<void> => {
+  const { itemType, itemId } = req.params;
+  const { status } = req.body as { status: boolean };
+
+  if (!itemType) {
+    res.status(400).json({ error: 'Item type required' });
+    return;
+  }
+  if (!itemId) {
+    res.status(400).json({ error: 'Item ID required' });
+    return;
+  }
+  if (typeof status !== 'boolean') {
+    res.status(400).json({ error: 'Status must be a boolean value' });
+    return;
+  }
+
+  const updatedItem = await verificationService.verifyItem({
+    itemType,
+    itemId,
+    status,
+  });
+
+  res.json(updatedItem);
 };

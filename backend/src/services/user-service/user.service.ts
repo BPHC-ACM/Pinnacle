@@ -51,7 +51,10 @@ export class UserService {
   async updateUserProfile(userId: string, data: UpdateUserProfileRequest): Promise<UserProfile> {
     return (await prisma.user.update({
       where: { id: userId },
-      data,
+      data: {
+        ...data,
+        isVerified: false,
+      },
     })) as UserProfile;
   }
 
@@ -103,7 +106,13 @@ export class UserService {
         'Experience not found',
       );
     }
-    return (await prisma.experience.update({ where: { id }, data })) as Experience;
+    return (await prisma.experience.update({
+      where: { id },
+      data: {
+        ...data,
+        isVerified: false,
+      },
+    })) as Experience;
   }
 
   async deleteExperience(userId: string, id: string): Promise<Experience> {
@@ -164,7 +173,13 @@ export class UserService {
         'Education not found',
       );
     }
-    return (await prisma.education.update({ where: { id }, data })) as Education;
+    return (await prisma.education.update({
+      where: { id },
+      data: {
+        ...data,
+        isVerified: false,
+      },
+    })) as Education;
   }
 
   async deleteEducation(userId: string, id: string): Promise<Education> {
@@ -216,7 +231,13 @@ export class UserService {
         'Skill not found',
       );
     }
-    return (await prisma.skill.update({ where: { id }, data })) as Skill;
+    return (await prisma.skill.update({
+      where: { id },
+      data: {
+        ...data,
+        isVerified: false,
+      },
+    })) as Skill;
   }
 
   async deleteSkill(userId: string, id: string): Promise<Skill> {
@@ -275,7 +296,13 @@ export class UserService {
         'Project not found',
       );
     }
-    return (await prisma.project.update({ where: { id }, data })) as Project;
+    return (await prisma.project.update({
+      where: { id },
+      data: {
+        ...data,
+        isVerified: false,
+      },
+    })) as Project;
   }
 
   async deleteProject(userId: string, id: string): Promise<Project> {
@@ -337,7 +364,13 @@ export class UserService {
         'Certification not found',
       );
     }
-    return (await prisma.certification.update({ where: { id }, data })) as Certification;
+    return (await prisma.certification.update({
+      where: { id },
+      data: {
+        ...data,
+        isVerified: false,
+      },
+    })) as Certification;
   }
 
   async deleteCertification(userId: string, id: string): Promise<Certification> {

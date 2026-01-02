@@ -75,7 +75,8 @@ model User {
   title    String?
 
   // Resume-related fields
-  summary String?
+  summary    String?
+  isVerified Boolean @default(false)
 
   // Timestamps
   createdAt DateTime  @default(now())
@@ -116,6 +117,8 @@ model Experience {
   description String?
   highlights  String[] @default([])
   order       Int      @default(0)
+  isVerified  Boolean  @default(false)
+  verificationDoc String?
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -140,6 +143,8 @@ model Education {
   gpa          String?
   achievements String[] @default([])
   order        Int      @default(0)
+  isVerified   Boolean  @default(false)
+  verificationDoc String?
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -158,6 +163,7 @@ model Skill {
   items       String[]         @default([])
   proficiency ProficiencyLevel?
   order       Int              @default(0)
+  isVerified  Boolean          @default(false)
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -178,6 +184,8 @@ model Project {
   repoUrl      String? // Repository or source code URL
   highlights   String[] @default([])
   order        Int      @default(0)
+  isVerified   Boolean  @default(false)
+  verificationDoc String?
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -197,6 +205,8 @@ model Certification {
   date   String
   url    String?
   order  Int     @default(0)
+  isVerified Boolean @default(false)
+  verificationDoc String?
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -236,6 +246,7 @@ model Accomplishment {
   url         String?
   metadata    Json? // For type-specific additional data
   order       Int     @default(0)
+  verificationDoc String?
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -282,6 +293,8 @@ model PositionOfResponsibility {
   description  String?
   highlights   String[] @default([])
   order        Int      @default(0)
+  isVerified   Boolean  @default(false)
+  verificationDoc String?
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt

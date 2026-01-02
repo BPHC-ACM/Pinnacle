@@ -443,6 +443,45 @@ paths:
       description: 'Admin only - update status of multiple applications at once'
       tags: [Admin]
 
+  /api/admin/verify/{itemType}/{itemId}:
+    patch:
+      summary: 'Verify profile item (Admin)'
+      description: 'Admin only - verify any user profile item (user, experience, education, skill, project, certification). For user verification, ALL related items must be verified first.'
+      tags: [Admin]
+      parameters:
+        - name: itemType
+          in: path
+          required: true
+          description: 'Type of item to verify'
+          schema:
+            type: string
+            enum: [user, experience, education, skill, project, certification]
+        - name: itemId
+          in: path
+          required: true
+          description: 'ID of the item to verify (for user type, this is the userId)'
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: boolean
+                  description: 'Verification status (true for verified, false for unverified)'
+      responses:
+        '200':
+          description: 'Item verified successfully'
+        '400':
+          description: 'Invalid item type, missing required fields, or prerequisites not met (for user verification)'
+        '404':
+          description: 'Item not found'
+
   # Upload / CDN
   /api/upload/profile-picture:
     post:
