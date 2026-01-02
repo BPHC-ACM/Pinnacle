@@ -5,27 +5,27 @@ import { ForbiddenError, NotFoundError, ValidationError } from '../../types/erro
 
 const ITEM_CONFIG = {
   experience: {
-    bucket: 'experience_docs',
+    bucket: 'experience-docs',
     model: prisma.experience,
   },
   education: {
-    bucket: 'education_docs',
+    bucket: 'education-docs',
     model: prisma.education,
   },
   project: {
-    bucket: 'project_docs',
+    bucket: 'project-docs',
     model: prisma.project,
   },
   certification: {
-    bucket: 'certification_docs',
+    bucket: 'certification-docs',
     model: prisma.certification,
   },
   accomplishment: {
-    bucket: 'accomplishment_docs',
+    bucket: 'accomplishment-docs',
     model: prisma.accomplishment,
   },
   position_of_responsibility: {
-    bucket: 'position_of_responsibility_docs',
+    bucket: 'position-of-responsibility-docs',
     model: prisma.positionOfResponsibility,
   },
 } as const;
