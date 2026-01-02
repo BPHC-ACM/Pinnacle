@@ -59,6 +59,8 @@ export const generateResumePDF = (resumeData: ResumeData): Promise<Buffer> => {
 
     doc.moveDown(1.5);
 
+    const formatDate = (d: Date): string => d.toLocaleDateString();
+
     // Summary
     if (profile.summary) {
       doc.fontSize(14).font('Helvetica-Bold').text('SUMMARY');
@@ -75,7 +77,10 @@ export const generateResumePDF = (resumeData: ResumeData): Promise<Buffer> => {
       education.forEach((edu) => {
         doc.fontSize(12).font('Helvetica-Bold').text(edu.institution);
         doc.fontSize(10).font('Helvetica').text(`${edu.degree} in ${edu.branch}`);
-        doc.text(`${edu.startDate} - ${edu.endDate ?? 'Present'}`);
+        doc.text(
+          `${formatDate(edu.startDate)} - ${edu.endDate ? formatDate(edu.endDate) : 'Present'}`,
+        );
+
         if (edu.gpa) {
           doc.text(`GPA: ${edu.gpa}`);
         }
@@ -97,7 +102,11 @@ export const generateResumePDF = (resumeData: ResumeData): Promise<Buffer> => {
       experiences.forEach((exp) => {
         doc.fontSize(12).font('Helvetica-Bold').text(exp.position);
         doc.fontSize(10).font('Helvetica-Oblique').text(exp.company);
-        doc.font('Helvetica').text(`${exp.startDate} - ${exp.endDate ?? 'Present'}`);
+        doc
+          .font('Helvetica')
+          .text(
+            `${formatDate(exp.startDate)} - ${exp.endDate ? formatDate(exp.endDate) : 'Present'}`,
+          );
         doc.moveDown(0.3);
 
         if (exp.description) {
