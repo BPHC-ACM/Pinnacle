@@ -67,7 +67,6 @@ export default function Dashboard() {
     } else {
       void fetchNotifications();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, authLoading, router]);
 
   const markAsRead = (id: number) => {
@@ -177,15 +176,7 @@ export default function Dashboard() {
                                 <p className="text-sm text-foreground font-medium mb-1">
                                   {notif.message}
                                 </p>
-                                <p className="text-xs text-muted-foreground">
-                                  {new Date(notif.createdAt).toLocaleDateString('en-US', {
-                                    month: 'short',
-                                    day: 'numeric',
-                                    year: 'numeric',
-                                    hour: '2-digit',
-                                    minute: '2-digit',
-                                  })}
-                                </p>
+                                <p className="text-xs text-muted-foreground">{notif.time}</p>
                               </div>
                               {!notif.read && (
                                 <button
