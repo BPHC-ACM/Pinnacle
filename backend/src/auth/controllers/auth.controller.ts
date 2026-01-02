@@ -25,7 +25,7 @@ export const googleLogin = (_req: Request, res: Response): void => {
     prompt: 'consent',
   });
 
-  res.redirect(authUrl);
+  res.json({ authUrl });
 };
 
 // Step 2: Handle Google OAuth callback
