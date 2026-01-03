@@ -2,7 +2,6 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { api } from '@/lib/api-client';
 import { User } from '@/types/auth.types';
 
 interface AuthContextType {
@@ -27,12 +26,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const storedUser = localStorage.getItem('user');
 
     if (token && storedUser) {
-      setUser(JSON.parse(storedUser));
-      // Optionally verify token is still valid
-      refreshUser();
-    } else {
-      setIsLoading(false);
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (error) {
+        console.error('Failed to parse stored user:', error);
+        localStorage.clear();
+      }
     }
+    setIsLoading(false);
   }, []);
 
   const login = async () => {
@@ -56,7 +57,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
-      await api.post('/auth/logout');
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+      const token = localStorage.getItem('token');
+
+      await fetch(`${apiUrl}/auth/logout`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
@@ -69,17 +78,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const refreshUser = async () => {
     try {
-      const response = await api.get('/auth/me');
-      const userData = response.data;
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+      const token = localStorage.getItem('token');
+
+      if (!token) {
+        throw new Error('No token found');
+      }
+
+      const response = await fetch(`${apiUrl}/auth/me`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch user');
+      }
+
+      const data = await response.json();
+      const userData = data.user;
       setUser(userData);
       localStorage.setItem('user', JSON.stringify(userData));
     } catch (error) {
       console.error('Failed to fetch user:', error);
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      // Clear invalid tokens
+      localStorage.clear();
       setUser(null);
-    } finally {
-      setIsLoading(false);
+      // Redirect to home page
+      window.location.href = '/';
     }
   };
 
