@@ -1,5 +1,8 @@
 /*eslint-disable*/
+import 'dotenv/config';
 import { faker } from '@faker-js/faker';
+import { PrismaPg } from '@prisma/adapter-pg';
+import pg from 'pg';
 import {
   PrismaClient,
   UserRole,
@@ -11,7 +14,11 @@ import {
   Resume,
 } from '@pinnacle/types';
 
-const prisma = new PrismaClient();
+const pool = new pg.Pool({
+  connectionString: process.env.DATABASE_URL,
+});
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 async function main(): Promise<void> {
   console.log('Starting database seeding...');
@@ -200,7 +207,6 @@ async function main(): Promise<void> {
         data: {
           userId: user.id,
           name: faker.commerce.productName() + ' Platform',
-          description: faker.lorem.paragraph(),
           technologies: faker.helpers.arrayElements(
             ['React', 'Node.js', 'TypeScript', 'PostgreSQL', 'Docker', 'AWS'],
             { min: 3, max: 5 },
