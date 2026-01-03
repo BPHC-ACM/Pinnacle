@@ -2,8 +2,9 @@ import type { Request, Response } from 'express';
 import { OAuth2Client } from 'google-auth-library';
 
 import { logger } from '../../config/logger.config';
+import prisma from '../../db/client';
 import { config } from '../config/env.config';
-import { User, UserRole } from '../types/user.types';
+import { UserRole } from '../types/user.types';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../utils/jwt.utils';
 
 interface RefreshTokenRequestBody {
@@ -16,7 +17,7 @@ const oauth2Client = new OAuth2Client(
   config.googleRedirectUri,
 );
 
-// Step 1: Generate Google OAuth URL
+// Step 1: Generate Google OAuth URL and redirect
 export const googleLogin = (_req: Request, res: Response): void => {
   const authUrl = oauth2Client.generateAuthUrl({
     access_type: 'offline',
@@ -54,29 +55,36 @@ export const googleCallback = async (req: Request, res: Response): Promise<void>
       return;
     }
 
-    // Create user object (in production, save/fetch from database to get actual role)
-    const user: User = {
-      id: payload.sub,
-      email: payload.email!,
-      name: payload.name!,
-      role: UserRole.USER, // Default role, fetch from DB in production
-      picture: payload.picture,
-      googleId: payload.sub,
-    };
+    // Create or update user in database
+    const dbUser = await prisma.user.upsert({
+      where: { googleId: payload.sub },
+      update: {
+        email: payload.email!,
+        name: payload.name!,
+        picture: payload.picture,
+      },
+      create: {
+        googleId: payload.sub,
+        email: payload.email!,
+        name: payload.name!,
+        picture: payload.picture,
+        role: 'USER',
+      },
+    });
 
-    logger.info({ userId: user.id, email: user.email }, 'User authenticated via Google OAuth');
+    logger.info({ userId: dbUser.id, email: dbUser.email }, 'User authenticated via Google OAuth');
 
     // Generate JWT tokens
     const accessToken = generateAccessToken({
-      userId: user.id,
-      email: user.email,
-      role: user.role,
+      userId: dbUser.id,
+      email: dbUser.email,
+      role: dbUser.role as UserRole,
     });
 
     const refreshToken = generateRefreshToken({
-      userId: user.id,
-      email: user.email,
-      role: user.role,
+      userId: dbUser.id,
+      email: dbUser.email,
+      role: dbUser.role as UserRole,
     });
 
     // In production, save refreshToken to database
@@ -122,7 +130,36 @@ export const refreshAccessToken = (
 };
 
 // Get current user info
-export const getMe = (req: Request, res: Response): void => {
-  // req.user is set by auth middleware
-  res.json({ user: req.user });
+export const getMe = async (req: Request, res: Response): Promise<void> => {
+  try {
+    // req.user is set by auth middleware, contains basic info from JWT
+    const userId = req.user?.id;
+
+    if (!userId) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
+
+    // Fetch full user details from database
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        picture: true,
+        role: true,
+      },
+    });
+
+    if (!user) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+
+    res.json({ user });
+  } catch (error) {
+    logger.error({ err: error }, 'Failed to fetch user details');
+    res.status(500).json({ error: 'Failed to fetch user details' });
+  }
 };

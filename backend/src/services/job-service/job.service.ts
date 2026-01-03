@@ -61,10 +61,11 @@ export class JobService {
   async closeJob(id: string): Promise<Job | null> {
     const job = await prisma.job.findFirst({ where: { id, deletedAt: null } });
     if (!job) return null;
-    return prisma.job.update({
+
+    return (await prisma.job.update({
       where: { id },
       data: { status: 'CLOSED' },
-    }) as unknown as Promise<Job>;
+    })) as unknown as Job;
   }
 
   // ADMIN METHODS
@@ -100,31 +101,32 @@ export class JobService {
       prisma.job.count({ where }),
     ]);
 
-    // Get application stats for each job
-    const jobsWithStats = await Promise.all(
-      jobs.map(async (job) => {
-        const stats = await prisma.application.groupBy({
-          by: ['status'],
-          where: { jobId: job.id },
-          _count: true,
-        });
+    // Get application stats for all jobs in one query
+    const jobIds = jobs.map((j) => j.id);
+    const allStats = await prisma.application.groupBy({
+      by: ['jobId', 'status'],
+      where: { jobId: { in: jobIds } },
+      _count: true,
+    });
 
-        const statMap = Object.fromEntries(stats.map((s) => [s.status, s._count]));
+    // Map stats to jobs
+    const jobsWithStats = jobs.map((job) => {
+      const jobStats = allStats.filter((s) => s.jobId === job.id);
+      const statMap = Object.fromEntries(jobStats.map((s) => [s.status, s._count]));
 
-        return {
-          ...job,
-          applicationStats: {
-            total: job._count.applications,
-            applied: statMap.APPLIED ?? 0,
-            shortlisted: statMap.SHORTLISTED ?? 0,
-            interviewing: statMap.INTERVIEWING ?? 0,
-            rejected: statMap.REJECTED ?? 0,
-            hired: statMap.HIRED ?? 0,
-            withdrawn: statMap.WITHDRAWN ?? 0,
-          },
-        };
-      }),
-    );
+      return {
+        ...job,
+        applicationStats: {
+          total: job._count.applications,
+          applied: statMap.APPLIED ?? 0,
+          shortlisted: statMap.SHORTLISTED ?? 0,
+          interviewing: statMap.INTERVIEWING ?? 0,
+          rejected: statMap.REJECTED ?? 0,
+          hired: statMap.HIRED ?? 0,
+          withdrawn: statMap.WITHDRAWN ?? 0,
+        },
+      };
+    });
 
     return {
       data: jobsWithStats as unknown as JobWithStats[],
@@ -176,20 +178,6 @@ export class JobService {
     });
 
     logger.info({ jobId: id }, 'Job reopened');
-    return updated as unknown as Job;
-  }
-
-  // Pause a job (Admin)
-  async pauseJob(id: string): Promise<Job | null> {
-    const job = await prisma.job.findFirst({ where: { id, deletedAt: null } });
-    if (!job) return null;
-
-    const updated = await prisma.job.update({
-      where: { id },
-      data: { status: 'PAUSED' },
-    });
-
-    logger.info({ jobId: id }, 'Job paused');
     return updated as unknown as Job;
   }
 

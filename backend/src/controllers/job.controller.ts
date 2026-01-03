@@ -2,26 +2,11 @@ import type { Request, Response } from 'express';
 
 import applicationService from '../services/application-service/application.service';
 import jobService from '../services/job-service/job.service';
+import { notifyJobApplicants } from '../services/notification-service/job-notifications.helper';
 import type { ApplyRequest } from '../types/application.types';
 import { ValidationError, AuthError, NotFoundError } from '../types/errors.types';
 import type { CreateJobRequest } from '../types/job.types';
 import { parsePagination } from '../types/pagination.types';
-
-const getUserId = (req: Request): string => {
-  const userId = req.user?.id;
-  if (!userId) {
-    throw new AuthError('User not authenticated', 'Unauthorized');
-  }
-  return userId;
-};
-
-const getParamId = (req: Request): string => {
-  const { id } = req.params;
-  if (!id) {
-    throw new ValidationError('ID parameter is missing', 'ID parameter is required');
-  }
-  return id;
-};
 
 export async function createJob(req: Request, res: Response): Promise<void> {
   const data = req.body as CreateJobRequest;
@@ -30,7 +15,9 @@ export async function createJob(req: Request, res: Response): Promise<void> {
 }
 
 export async function getJob(req: Request, res: Response): Promise<void> {
-  const id = getParamId(req);
+  const { id } = req.params;
+  if (!id) throw new ValidationError('ID parameter is missing', 'ID parameter is required');
+
   const job = await jobService.getJob(id);
   if (!job) {
     throw new NotFoundError(`Job with ID ${id} not found`, 'Job not found');
@@ -45,13 +32,29 @@ export async function getJobs(req: Request, res: Response): Promise<void> {
 }
 
 export async function closeJob(req: Request, res: Response): Promise<void> {
-  const id = getParamId(req);
+  const { id } = req.params;
+  if (!id) throw new ValidationError('ID parameter is missing', 'ID parameter is required');
+
   const job = await jobService.closeJob(id);
+  if (!job) {
+    throw new NotFoundError(`Job with ID ${id} not found`, 'Job not found');
+  }
+
+  // Notify all applicants
+  await notifyJobApplicants(
+    id,
+    'JOB_CLOSED',
+    'Job Closed',
+    `${job.title} has been closed. Thank you for your application.`,
+  );
+
   res.json(job);
 }
 
 export async function apply(req: Request, res: Response): Promise<void> {
-  const userId = getUserId(req);
+  const userId = req.user?.id;
+  if (!userId) throw new AuthError('User not authenticated', 'Unauthorized');
+
   const { jobId } = req.params;
   if (!jobId) {
     throw new ValidationError('Job ID is required', 'Job ID is required');

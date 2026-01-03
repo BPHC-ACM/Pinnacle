@@ -10,46 +10,56 @@ import type {
   ApplicationWithDetails,
   AdminDashboardStats,
 } from '../../types/application.types';
-import type { PaginationParams, PaginatedResponse } from '../../types/pagination.types';
+import { NotFoundError, ValidationError } from '../../types/errors.types';
+import type { PaginatedResponse, PaginationParams } from '../../types/pagination.types';
 
 export class ApplicationService {
-  async apply(
-    userId: string,
-    jobId: string,
-    data: ApplyRequest,
-  ): Promise<Application | { error: string }> {
+  async apply(userId: string, jobId: string, data: ApplyRequest): Promise<Application> {
     const job = await prisma.job.findFirst({
       where: { id: jobId, deletedAt: null },
       include: { questions: true },
     });
-    if (!job) return { error: 'Job not found' };
-    if (job.status !== 'OPEN') return { error: 'Job is no longer accepting applications' };
+    if (!job) throw new NotFoundError('Job not found', 'Job not found');
+    if (job.status !== 'OPEN')
+      throw new ValidationError(
+        'Job is no longer accepting applications',
+        'Job is no longer accepting applications',
+      );
     if (job.deadline && new Date() > job.deadline) {
-      return { error: 'Application deadline has passed' };
+      throw new ValidationError(
+        'Application deadline has passed',
+        'Application deadline has passed',
+      );
     }
 
     // Validate required questions are answered
     const requiredQuestions = job.questions.filter((q) => q.required);
     if (requiredQuestions.length > 0) {
       const answersObj = data.answers ?? {};
-      const unanswered = requiredQuestions.filter((q) => !answersObj[q.id]);
+      const unanswered = requiredQuestions.filter((q) => !(q.id in answersObj));
       if (unanswered.length > 0) {
-        return {
-          error: `Required questions not answered: ${unanswered.map((q) => q.question).join(', ')}`,
-        };
+        const questionsList = unanswered.map((q) => q.question).join(', ');
+        throw new ValidationError(
+          `Required questions not answered: ${questionsList}`,
+          'Please answer all required questions',
+        );
       }
     }
 
     const existing = await prisma.application.findUnique({
       where: { userId_jobId: { userId, jobId } },
     });
-    if (existing) return { error: 'You have already applied to this job' };
+    if (existing)
+      throw new ValidationError(
+        'You have already applied to this job',
+        'You have already applied to this job',
+      );
 
     if (data.resumeId) {
       const resume = await prisma.resume.findFirst({
         where: { id: data.resumeId, userId, deletedAt: null },
       });
-      if (!resume) return { error: 'Resume not found' };
+      if (!resume) throw new NotFoundError('Resume not found', 'Resume not found');
     }
 
     const application = await prisma.application.create({
@@ -115,11 +125,12 @@ export class ApplicationService {
     return updated as unknown as Application;
   }
 
-  async withdraw(userId: string, id: string): Promise<Application | { error: string }> {
+  async withdraw(userId: string, id: string): Promise<Application> {
     const app = await prisma.application.findUnique({ where: { id } });
-    if (!app) return { error: 'Application not found' };
-    if (app.userId !== userId) return { error: 'Unauthorized' };
-    if (app.status === 'WITHDRAWN') return { error: 'Already withdrawn' };
+    if (!app) throw new NotFoundError('Application not found', 'Application not found');
+    if (app.userId !== userId) throw new ValidationError('Unauthorized', 'Unauthorized');
+    if (app.status === 'WITHDRAWN')
+      throw new ValidationError('Already withdrawn', 'Already withdrawn');
 
     const withdrawn = await prisma.application.update({
       where: { id },
@@ -270,24 +281,28 @@ export class ApplicationService {
   async bulkUpdateStatus(
     applicationIds: string[],
     status: ApplicationStatus,
-  ): Promise<{ updated: number; failed: string[] }> {
+  ): Promise<{ updated: number; failed: string[]; updatedApplications: Application[] }> {
     const failed: string[] = [];
-    let updated = 0;
+    const updatedApplications: Application[] = [];
 
     for (const id of applicationIds) {
       try {
-        await prisma.application.update({
+        const updated = await prisma.application.update({
           where: { id },
           data: { status },
+          include: { job: true },
         });
-        updated++;
+        updatedApplications.push(updated as unknown as Application);
       } catch {
         failed.push(id);
       }
     }
 
-    logger.info({ updated, failed: failed.length, status }, 'Bulk status update completed');
-    return { updated, failed };
+    logger.info(
+      { updated: updatedApplications.length, failed: failed.length, status },
+      'Bulk status update completed',
+    );
+    return { updated: updatedApplications.length, failed, updatedApplications };
   }
 
   // Delete application (Admin)
