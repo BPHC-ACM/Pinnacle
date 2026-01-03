@@ -12,7 +12,6 @@ interface StudentData {
   id: string;
   name: string;
   email: string;
-  rollNumber: string;
   applications: ApplicationWithDetails[];
 }
 
@@ -38,7 +37,6 @@ export default function StudentProfilePage() {
             id: studentId,
             name: firstApp.user?.name || 'N/A',
             email: firstApp.user?.email || 'N/A',
-            rollNumber: firstApp.user?.rollNumber || 'N/A',
             applications: userApplications,
           });
         }
@@ -100,7 +98,6 @@ export default function StudentProfilePage() {
             <div className="flex-1">
               <CardTitle className="text-2xl">{student.name}</CardTitle>
               <p className="text-muted-foreground">{student.email}</p>
-              <p className="text-sm text-muted-foreground">Roll: {student.rollNumber}</p>
             </div>
           </div>
         </CardHeader>
