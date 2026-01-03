@@ -2,7 +2,7 @@
 CREATE TYPE "ApplicationStatus" AS ENUM ('APPLIED', 'SHORTLISTED', 'INTERVIEWING', 'REJECTED', 'HIRED', 'WITHDRAWN');
 
 -- CreateEnum
-CREATE TYPE "JobStatus" AS ENUM ('OPEN', 'CLOSED', 'PAUSED');
+CREATE TYPE "JobStatus" AS ENUM ('OPEN', 'CLOSED');
 
 -- CreateTable
 CREATE TABLE "Job" (

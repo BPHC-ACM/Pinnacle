@@ -377,17 +377,10 @@ paths:
       tags: [Admin]
       parameters: [{ $ref: '#/components/parameters/id' }]
 
-  /api/admin/jobs/{id}/pause:
-    patch:
-      summary: 'Pause a job (Admin)'
-      description: 'Admin only - pause a job posting'
-      tags: [Admin]
-      parameters: [{ $ref: '#/components/parameters/id' }]
-
   /api/admin/jobs/{id}/reopen:
     patch:
       summary: 'Reopen a job (Admin)'
-      description: 'Admin only - reopen a closed or paused job posting'
+      description: 'Admin only - reopen a closed job posting'
       tags: [Admin]
       parameters: [{ $ref: '#/components/parameters/id' }]
 

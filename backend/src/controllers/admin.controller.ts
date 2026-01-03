@@ -96,28 +96,6 @@ export const deleteJob = async (req: Request, res: Response): Promise<void> => {
   res.json({ message: 'Job deleted successfully', job });
 };
 
-export const pauseJob = async (req: Request, res: Response): Promise<void> => {
-  const { id } = req.params;
-  if (!id) {
-    throw new ValidationError('Job ID required', 'Job ID required');
-  }
-
-  const job = await jobService.pauseJob(id);
-  if (!job) {
-    throw new NotFoundError('Job not found', 'Job not found');
-  }
-
-  // Notify all applicants
-  await notifyJobApplicants(
-    id,
-    'JOB_PAUSED',
-    'Job Temporarily Paused',
-    `${job.title} has been temporarily paused. We'll notify you when it reopens.`,
-  );
-
-  res.json(job);
-};
-
 export const reopenJob = async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
   if (!id) {

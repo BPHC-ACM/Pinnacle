@@ -419,7 +419,6 @@ enum ApplicationStatus {
 enum JobStatus {
   OPEN
   CLOSED
-  PAUSED
 }
 
 model Job {
@@ -490,7 +489,6 @@ enum NotificationType {
   JOB_DEADLINE_EXTENDED
   JOB_CLOSED
   JOB_REOPENED
-  JOB_PAUSED
   APPLICATION_SUBMITTED
   APPLICATION_STATUS_CHANGED
   INTERVIEW_SCHEDULED

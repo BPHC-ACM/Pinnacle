@@ -181,20 +181,6 @@ export class JobService {
     return updated as unknown as Job;
   }
 
-  // Pause a job (Admin)
-  async pauseJob(id: string): Promise<Job | null> {
-    const job = await prisma.job.findFirst({ where: { id, deletedAt: null } });
-    if (!job) return null;
-
-    const updated = await prisma.job.update({
-      where: { id },
-      data: { status: 'PAUSED' },
-    });
-
-    logger.info({ jobId: id }, 'Job paused');
-    return updated as unknown as Job;
-  }
-
   // Export applications data for a job (Admin)
   async exportJobApplications(
     jobId: string,

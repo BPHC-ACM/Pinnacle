@@ -1,6 +1,15 @@
 /*eslint-disable*/
 import { faker } from '@faker-js/faker';
-import { PrismaClient, UserRole, ApplicationStatus, JobStatus } from '@prisma/client';
+import {
+  PrismaClient,
+  UserRole,
+  ApplicationStatus,
+  JobStatus,
+  ProficiencyLevel,
+  Sector,
+  AccomplishmentType,
+  Resume,
+} from '@pinnacle/types';
 
 const prisma = new PrismaClient();
 
@@ -9,12 +18,17 @@ async function main(): Promise<void> {
 
   // Clear existing data (optional - be careful in production!)
   console.log('Cleaning existing data...');
+  await prisma.notification.deleteMany();
   await prisma.application.deleteMany();
   await prisma.jobQuestion.deleteMany();
   await prisma.job.deleteMany();
   await prisma.company.deleteMany();
   await prisma.resumeFile.deleteMany();
   await prisma.resume.deleteMany();
+  await prisma.course.deleteMany();
+  await prisma.positionOfResponsibility.deleteMany();
+  await prisma.extracurricular.deleteMany();
+  await prisma.accomplishment.deleteMany();
   await prisma.certification.deleteMany();
   await prisma.language.deleteMany();
   await prisma.project.deleteMany();
@@ -77,8 +91,14 @@ async function main(): Promise<void> {
           company: faker.company.name(),
           position: faker.person.jobTitle(),
           location: faker.location.city(),
-          startDate: faker.date.past({ years: 3 }).toISOString().split('T')[0],
-          endDate: i === 0 ? null : faker.date.recent({ days: 365 }).toISOString().split('T')[0],
+          sector: faker.helpers.arrayElement(Object.values(Sector)),
+          salaryRange: faker.helpers.arrayElement([
+            '50000-75000',
+            '10000-15000/month',
+            '10-12 LPA',
+          ]),
+          startDate: faker.date.past({ years: 3 }),
+          endDate: i === 0 ? null : faker.date.recent({ days: 365 }),
           current: i === 0,
           description: faker.lorem.paragraph(),
           highlights: faker.helpers.multiple(() => faker.lorem.sentence(), {
@@ -104,15 +124,16 @@ async function main(): Promise<void> {
             'Master of Science',
             'Bachelor of Science',
           ]),
-          field: faker.helpers.arrayElement([
+          branch: faker.helpers.arrayElement([
             'Computer Science',
             'Information Technology',
             'Electronics',
             'Mechanical Engineering',
           ]),
+          rollNumber: faker.string.alphanumeric(10).toUpperCase(),
           location: faker.location.city(),
-          startDate: faker.date.past({ years: 4 }).toISOString().split('T')[0],
-          endDate: i === 0 ? null : faker.date.recent({ days: 365 }).toISOString().split('T')[0],
+          startDate: faker.date.past({ years: 4 }),
+          endDate: i === 0 ? null : faker.date.recent({ days: 365 }),
           gpa: faker.number.float({ min: 7.0, max: 10.0, fractionDigits: 2 }).toString(),
           achievements: faker.helpers.multiple(() => faker.lorem.sentence(), {
             count: { min: 1, max: 3 },
@@ -157,13 +178,14 @@ async function main(): Promise<void> {
       },
     ];
 
-    for (let i = 0; i < skillCategories.length; i++) {
+    for (const category of skillCategories) {
       await prisma.skill.create({
         data: {
           userId: user.id,
-          category: skillCategories[i].category,
-          items: skillCategories[i].items,
-          order: i,
+          category: category.category,
+          items: category.items,
+          proficiency: faker.helpers.arrayElement(Object.values(ProficiencyLevel)),
+          order: skillCategories.indexOf(category),
         },
       });
     }
@@ -184,7 +206,7 @@ async function main(): Promise<void> {
             { min: 3, max: 5 },
           ),
           url: faker.helpers.maybe(() => faker.internet.url(), { probability: 0.5 }),
-          github: `https://github.com/${user.name.toLowerCase().replace(' ', '-')}/${faker.lorem.word()}`,
+          repoUrl: `https://github.com/${user.name.toLowerCase().replace(' ', '-')}/${faker.lorem.word()}`,
           highlights: faker.helpers.multiple(() => faker.lorem.sentence(), {
             count: { min: 2, max: 4 },
           }),
@@ -214,7 +236,7 @@ async function main(): Promise<void> {
             'Microsoft',
             'Linux Foundation',
           ]),
-          date: faker.date.past({ years: 2 }).toISOString().split('T')[0],
+          date: faker.date.past({ years: 2 }),
           url: faker.internet.url(),
           order: i,
         },
@@ -226,26 +248,115 @@ async function main(): Promise<void> {
   console.log('Creating language proficiencies...');
   for (const user of users) {
     const languages = [
-      { name: 'English', proficiency: 'Fluent' },
+      { name: 'English', proficiency: ProficiencyLevel.NATIVE },
       {
         name: 'Hindi',
-        proficiency: faker.helpers.arrayElement(['Native', 'Fluent', 'Professional']),
+        proficiency: faker.helpers.arrayElement([
+          ProficiencyLevel.NATIVE,
+          ProficiencyLevel.ADVANCED,
+          ProficiencyLevel.INTERMEDIATE,
+        ]),
       },
     ];
 
-    for (let i = 0; i < languages.length; i++) {
+    for (const language of languages) {
       await prisma.language.create({
         data: {
           userId: user.id,
-          name: languages[i].name,
-          proficiency: languages[i].proficiency,
+          name: language.name,
+          proficiency: language.proficiency,
+          order: languages.indexOf(language),
+        },
+      });
+    }
+  }
+
+  // 9. Add Accomplishments
+  console.log('Creating accomplishments...');
+  for (const user of users) {
+    const count = faker.number.int({ min: 1, max: 3 });
+    for (let i = 0; i < count; i++) {
+      await prisma.accomplishment.create({
+        data: {
+          userId: user.id,
+          type: faker.helpers.arrayElement(Object.values(AccomplishmentType)),
+          title: faker.lorem.sentence(),
+          issuer: faker.company.name(),
+          date: faker.date.past({ years: 2 }),
+          description: faker.lorem.paragraph(),
+          url: faker.internet.url(),
           order: i,
         },
       });
     }
   }
 
-  // 9. Create Resumes for users
+  // 10. Add Positions of Responsibility
+  console.log('Creating positions of responsibility...');
+  for (const user of users) {
+    const count = faker.number.int({ min: 1, max: 2 });
+    for (let i = 0; i < count; i++) {
+      await prisma.positionOfResponsibility.create({
+        data: {
+          userId: user.id,
+          title: faker.person.jobTitle(),
+          organization: faker.company.name(),
+          location: faker.location.city(),
+          startDate: faker.date.past({ years: 2 }),
+          endDate: faker.date.recent(),
+          current: false,
+          description: faker.lorem.paragraph(),
+          highlights: faker.helpers.multiple(() => faker.lorem.sentence(), {
+            count: { min: 2, max: 4 },
+          }),
+          order: i,
+        },
+      });
+    }
+  }
+
+  // 11. Add Courses
+  console.log('Creating courses...');
+  for (const user of users) {
+    const count = faker.number.int({ min: 1, max: 3 });
+    for (let i = 0; i < count; i++) {
+      await prisma.course.create({
+        data: {
+          userId: user.id,
+          name: faker.lorem.words(3),
+          institution: faker.company.name(),
+          completionDate: faker.date.past({ years: 1 }),
+          grade: 'A',
+          description: faker.lorem.sentence(),
+          url: faker.internet.url(),
+          order: i,
+        },
+      });
+    }
+  }
+
+  // 12. Add Extracurriculars
+  console.log('Creating extracurriculars...');
+  for (const user of users) {
+    const count = faker.number.int({ min: 1, max: 2 });
+    for (let i = 0; i < count; i++) {
+      await prisma.extracurricular.create({
+        data: {
+          userId: user.id,
+          activity: faker.hacker.verb() + ' Club',
+          role: 'Member',
+          organization: faker.company.name(),
+          startDate: faker.date.past({ years: 2 }),
+          endDate: faker.date.recent(),
+          current: false,
+          description: faker.lorem.sentence(),
+          order: i,
+        },
+      });
+    }
+  }
+
+  // 13. Create Resumes for users
   console.log('Creating resumes...');
   for (const user of users.slice(0, 8)) {
     const resumeCount = faker.number.int({ min: 1, max: 2 });
@@ -269,7 +380,7 @@ async function main(): Promise<void> {
     }
   }
 
-  // 10. Create Companies
+  // 14. Create Companies
   console.log('Creating companies...');
   const companies = await Promise.all(
     Array.from({ length: 5 }).map(async () => {
@@ -303,7 +414,7 @@ async function main(): Promise<void> {
     }),
   );
 
-  // 11. Create Jobs
+  // 15. Create Jobs
   console.log('Creating job postings...');
   const jobs = [];
   for (const company of companies) {
@@ -328,7 +439,7 @@ async function main(): Promise<void> {
             JobStatus.OPEN,
             JobStatus.OPEN,
             JobStatus.OPEN,
-            JobStatus.PAUSED,
+            JobStatus.CLOSED,
           ]),
         },
       });
@@ -355,7 +466,7 @@ async function main(): Promise<void> {
     }
   }
 
-  // 12. Create Applications
+  // 16. Create Applications
   console.log('Creating job applications...');
   for (const user of users) {
     const selectedJobs = faker.helpers.arrayElements(jobs, { min: 2, max: 5 });
@@ -368,11 +479,7 @@ async function main(): Promise<void> {
           userId: user.id,
           jobId: job.id,
           resumeId:
-            userResumes.length > 0
-              ? faker.helpers.maybe(() => faker.helpers.arrayElement(userResumes).id, {
-                  probability: 0.7,
-                })
-              : null,
+            userResumes.length > 0 ? (faker.helpers.arrayElement(userResumes) as Resume).id : null,
           status: faker.helpers.arrayElement([
             ApplicationStatus.APPLIED,
             ApplicationStatus.APPLIED,
@@ -406,6 +513,10 @@ Summary:
 - Projects: ${await prisma.project.count()}
 - Certifications: ${await prisma.certification.count()}
 - Languages: ${await prisma.language.count()}
+- Accomplishments: ${await prisma.accomplishment.count()}
+- Positions of Responsibility: ${await prisma.positionOfResponsibility.count()}
+- Courses: ${await prisma.course.count()}
+- Extracurriculars: ${await prisma.extracurricular.count()}
   `);
 }
 

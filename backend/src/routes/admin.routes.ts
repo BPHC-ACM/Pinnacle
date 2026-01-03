@@ -10,7 +10,6 @@ import {
   getJobById,
   updateJob,
   deleteJob,
-  pauseJob,
   reopenJob,
   exportJobApplications,
   // Applications
@@ -40,8 +39,7 @@ router.get('/jobs', getAllJobs); // List all jobs with stats
 router.get('/jobs/:id', getJobById); // Get single job
 router.patch('/jobs/:id', updateJob); // Update job details
 router.delete('/jobs/:id', deleteJob); // Soft delete job
-router.patch('/jobs/:id/pause', pauseJob); // Pause job
-router.patch('/jobs/:id/reopen', reopenJob); // Reopen closed/paused job
+router.patch('/jobs/:id/reopen', reopenJob); // Reopen closed job
 router.get('/jobs/:id/export', exportJobApplications); // Export job applications data
 router.get('/jobs/:jobId/applications', getJobApplicationsAdmin); // Get all applications for a job
 
