@@ -114,9 +114,9 @@ export default function StudentProfilePage() {
               </p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground mb-1">Accepted</p>
+              <p className="text-sm text-muted-foreground mb-1">Hired</p>
               <p className="font-medium text-green-600">
-                {student.applications.filter((a) => a.status === 'ACCEPTED').length}
+                {student.applications.filter((a) => a.status === 'HIRED').length}
               </p>
             </div>
           </div>
@@ -146,7 +146,7 @@ export default function StudentProfilePage() {
                   </div>
                   <Badge
                     variant={
-                      app.status === 'ACCEPTED'
+                      app.status === 'HIRED'
                         ? 'success'
                         : app.status === 'REJECTED'
                         ? 'destructive'

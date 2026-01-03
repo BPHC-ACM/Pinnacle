@@ -19,7 +19,6 @@ import type { PlacementStatus, ProfileStatus, ApplicationWithDetails } from '@/t
 interface Student {
   id: string;
   name: string;
-  rollNumber: string;
   email: string;
   batch: number;
   department: string;
@@ -61,7 +60,6 @@ export default function StudentsPage() {
             studentMap.set(userId, {
               id: userId,
               name: app.user?.name || 'N/A',
-              rollNumber: app.user?.rollNumber || 'N/A',
               email: app.user?.email || 'N/A',
               batch: 2024, // Default, you may want to extract from user profile
               department: 'CSE', // Default, you may want to extract from user profile
@@ -80,7 +78,7 @@ export default function StudentsPage() {
 
           if (app.status === 'SHORTLISTED') student.shortlisted++;
           if (app.status === 'INTERVIEWING') student.interviewed++;
-          if (app.status === 'ACCEPTED' || app.status === 'OFFERED') student.offered++;
+          if (app.status === 'HIRED') student.offered++;
         });
 
         setStudents(Array.from(studentMap.values()));
@@ -105,7 +103,6 @@ export default function StudentsPage() {
       const query = searchQuery.toLowerCase();
       if (
         !student.name.toLowerCase().includes(query) &&
-        !student.rollNumber.toLowerCase().includes(query) &&
         !student.email.toLowerCase().includes(query)
       ) {
         return false;
@@ -421,12 +418,9 @@ export default function StudentsPage() {
                         />
                       </TableHead>
                       <TableHead>Student</TableHead>
-                      <TableHead>Roll Number</TableHead>
                       <TableHead>Department</TableHead>
                       <TableHead>Batch</TableHead>
                       <TableHead>CGPA</TableHead>
-                      <TableHead>Backlogs</TableHead>
-                      <TableHead>Eligible</TableHead>
                       <TableHead>Placement</TableHead>
                       <TableHead>Profile</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
@@ -461,27 +455,12 @@ export default function StudentsPage() {
                             </div>
                           </div>
                         </TableCell>
-                        <TableCell className="font-mono text-sm">{student.rollNumber}</TableCell>
                         <TableCell>{student.department}</TableCell>
                         <TableCell>{student.batch}</TableCell>
                         <TableCell>
                           <span className={student.cgpa >= 8 ? 'font-semibold text-green-600' : ''}>
                             {student.cgpa.toFixed(2)}
                           </span>
-                        </TableCell>
-                        <TableCell>
-                          <span
-                            className={student.backlogs > 0 ? 'text-destructive font-semibold' : ''}
-                          >
-                            {student.backlogs}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          {student.isEligible ? (
-                            <Badge variant="success">✓</Badge>
-                          ) : (
-                            <Badge variant="destructive">✗</Badge>
-                          )}
                         </TableCell>
                         <TableCell>{getPlacementBadge(student.placementStatus)}</TableCell>
                         <TableCell>{getProfileBadge(student.profileStatus)}</TableCell>
