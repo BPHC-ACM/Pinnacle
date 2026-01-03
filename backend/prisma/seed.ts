@@ -25,6 +25,7 @@ async function main(): Promise<void> {
 
   // Clear existing data (optional - be careful in production!)
   console.log('Cleaning existing data...');
+  await prisma.announcement.deleteMany();
   await prisma.notification.deleteMany();
   await prisma.application.deleteMany();
   await prisma.jobQuestion.deleteMany();
@@ -46,7 +47,7 @@ async function main(): Promise<void> {
 
   // 1. Create Admin User
   console.log('Creating admin user...');
-  await prisma.user.create({
+  const adminUser = await prisma.user.create({
     data: {
       email: 'admin@gmail.com',
       name: 'Admin User',
@@ -59,6 +60,21 @@ async function main(): Promise<void> {
       summary: 'Managing the placement portal and ensuring smooth operations.',
     },
   });
+
+  // Create Announcements
+  console.log('Creating announcements...');
+  await Promise.all(
+    Array.from({ length: 5 }).map(() =>
+      prisma.announcement.create({
+        data: {
+          title: faker.lorem.sentence(),
+          content: faker.lorem.paragraphs(2),
+          senderId: adminUser.id,
+          createdAt: faker.date.past(),
+        },
+      }),
+    ),
+  );
 
   // 2. Create Regular Users (Students)
   console.log('Creating regular users...');

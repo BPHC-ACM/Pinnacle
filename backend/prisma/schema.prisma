@@ -112,6 +112,7 @@ model User {
   accomplishments           Accomplishment[]
   extracurriculars          Extracurricular[]
   notifications             Notification[]
+  sentAnnouncements         Announcement[]
 
   @@index([email])
   @@index([googleId])
@@ -522,4 +523,17 @@ model Notification {
   @@index([isRead])
   @@index([createdAt])
   @@index([userId, isRead])
+}
+
+model Announcement {
+  id        String   @id @default(uuid())
+  title     String
+  content   String
+  createdAt DateTime @default(now())
+  
+  // Optional: Link to the admin who created it
+  senderId  String?
+  sender    User?    @relation(fields: [senderId], references: [id])
+
+  @@index([createdAt])
 }

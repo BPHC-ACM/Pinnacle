@@ -131,6 +131,40 @@ class UnifiedNotificationService {
     }
   }
 
+  // Queue announcement emails via RabbitMQ
+  public async sendAnnouncementEmails(
+    users: { email: string }[],
+    subject: string,
+    body: string,
+  ): Promise<void> {
+    try {
+      await this.initRabbitMQ();
+
+      if (!this.rabbitMQChannel) {
+        logger.warn('RabbitMQ channel not available. Skipping announcement emails.');
+        return;
+      }
+
+      for (const user of users) {
+        const emailNotification = {
+          to: user.email,
+          subject,
+          text: body,
+        };
+
+        this.rabbitMQChannel.sendToQueue(
+          this.queueName,
+          Buffer.from(JSON.stringify(emailNotification)),
+          { persistent: true },
+        );
+      }
+
+      logger.info({ count: users.length }, 'Announcement emails queued');
+    } catch (error: unknown) {
+      logger.error({ err: error }, 'Failed to queue announcement emails');
+    }
+  }
+
   /**
    * Queue email notifications via RabbitMQ
    */
