@@ -81,15 +81,17 @@ export default function Home() {
       <header className="w-full border-b border-border bg-background/90 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-6xl mx-auto py-4 flex items-center justify-between">
           <Logo size="md" />
-          <Button
-            onClick={() => login()}
-            disabled={isLoading}
-            variant="accent"
-            className="flex bg-primary-500 hover:bg-primary-600 active:bg-primary-600 h-10 items-center justify-center gap-2 rounded-lg px-6 text-sm font-medium shadow-sm transition-transform"
-          >
-            <Google className="h-4 w-4" />
-            {isLoading ? 'Connecting…' : 'Sign in with Google'}
-          </Button>
+          <div className="flex items-center gap-3">
+            <Button
+              onClick={() => login()}
+              disabled={isLoading}
+              variant="accent"
+              className="flex bg-primary-500 hover:bg-primary-600 active:bg-primary-600 h-10 items-center justify-center gap-2 rounded-lg px-6 text-sm font-medium shadow-sm transition-transform"
+            >
+              <Google className="h-4 w-4" />
+              {isLoading ? 'Connecting…' : 'Sign in with Google'}
+            </Button>
+          </div>
         </div>
       </header>
 
