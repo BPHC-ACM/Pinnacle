@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 import { OAuth2Client } from 'google-auth-library';
 
 import { logger } from '../../config/logger.config';
+import prisma from '../../db/client';
 import { config } from '../config/env.config';
 import { User, UserRole } from '../types/user.types';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../utils/jwt.utils';
@@ -54,14 +55,31 @@ export const googleCallback = async (req: Request, res: Response): Promise<void>
       return;
     }
 
-    // Create user object (in production, save/fetch from database to get actual role)
+    // Find or create user in database
+    const dbUser = await prisma.user.upsert({
+      where: { googleId: payload.sub },
+      update: {
+        name: payload.name!,
+        email: payload.email!,
+        picture: payload.picture,
+      },
+      create: {
+        googleId: payload.sub,
+        email: payload.email!,
+        name: payload.name!,
+        picture: payload.picture,
+        role: 'USER',
+      },
+    });
+
+    // Create user object for JWT
     const user: User = {
-      id: payload.sub,
-      email: payload.email!,
-      name: payload.name!,
-      role: UserRole.USER, // Default role, fetch from DB in production
-      picture: payload.picture,
-      googleId: payload.sub,
+      id: dbUser.id,
+      email: dbUser.email,
+      name: dbUser.name,
+      role: dbUser.role as UserRole,
+      picture: dbUser.picture ?? undefined,
+      googleId: dbUser.googleId,
     };
 
     logger.info({ userId: user.id, email: user.email }, 'User authenticated via Google OAuth');
