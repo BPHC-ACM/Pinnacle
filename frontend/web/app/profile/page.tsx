@@ -958,7 +958,7 @@ export default function ProfilePage() {
 
       {/* Header */}
       <header className="w-full border-b border-border bg-background/90 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="cursor-pointer" onClick={() => router.push('/dashboard')}>
             <Logo size="md" />
           </div>
@@ -982,7 +982,7 @@ export default function ProfilePage() {
         </div>
       )}
 
-      <main className="flex-1 max-w-6xl mx-auto w-full px-6 py-8">
+      <main className="flex-1 max-w-7xl mx-auto w-full px-6 py-8">
         <h1 className="text-3xl font-bold text-foreground mb-6">My Profile</h1>
 
         {loading ? (
@@ -1029,7 +1029,7 @@ export default function ProfilePage() {
 
       {/* Footer */}
       <footer className="w-full border-t border-border bg-background/80 backdrop-blur-xl">
-        <div className="max-w-6xl mx-auto px-6 py-6">
+        <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <span>© {new Date().getFullYear()} Pinnacle. All rights reserved.</span>

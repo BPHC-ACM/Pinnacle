@@ -98,7 +98,7 @@ export default function Home() {
 
       {/* Header */}
       <header className="w-full border-b border-border bg-background/90 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <Logo size="md" />
           <div className="flex items-center gap-3">
             <ThemeToggle />
