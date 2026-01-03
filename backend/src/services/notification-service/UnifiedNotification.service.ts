@@ -3,7 +3,9 @@ import * as amqplib from 'amqplib';
 
 import { getFirebaseAdmin } from '../../config/firebase.config';
 import { logger } from '../../config/logger.config';
-import prisma from '../../db/client';
+import prismaClient from '../../db/client';
+
+const prisma = prismaClient;
 
 interface NotificationArgs {
   userIds: string[];

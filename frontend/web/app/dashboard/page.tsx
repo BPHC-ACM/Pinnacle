@@ -3,9 +3,10 @@
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Logo } from '@/components/logo';
 import { ThemeToggle } from '@/components/theme-toggle';
+import NotificationButton from '@/components/NotificationButton';
 
 // Icon components
 const FileTextIcon = ({ className }: { className?: string }) => (
@@ -25,37 +26,9 @@ const UserIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
-const BellIcon = ({ className }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-  </svg>
-);
-
 export default function Dashboard() {
   const { user, isAuthenticated, isLoading: authLoading, logout } = useAuth();
   const router = useRouter();
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [notifications, setNotifications] = useState<
-    Array<{ id: number; message: string; time: string; read: boolean }>
-  >([]);
-
-  const fetchNotifications = async () => {
-    try {
-      // Check if notifications were cleared
-      const cleared = localStorage.getItem('notificationsCleared');
-      if (cleared === 'true') {
-        setNotifications([]);
-        return;
-      }
-
-      // In the future, fetch from API: const response = await api.get('/notifications');
-      // For now, just leave empty since there's no backend endpoint yet
-      setNotifications([]);
-    } catch (error) {
-      console.error('Failed to fetch notifications:', error);
-    }
-  };
 
   useEffect(() => {
     // Don't check auth while still loading
@@ -64,21 +37,8 @@ export default function Dashboard() {
     if (!isAuthenticated) {
       console.log('Dashboard: Not authenticated, redirecting to home');
       router.push('/');
-    } else {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      void fetchNotifications();
     }
   }, [isAuthenticated, authLoading, router]);
-
-  const markAsRead = (id: number) => {
-    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
-  };
-
-  const clearAllNotifications = () => {
-    setNotifications([]);
-    localStorage.setItem('notificationsCleared', 'true');
-    setShowNotifications(false);
-  };
 
   if (authLoading || !user) {
     return (
@@ -109,93 +69,7 @@ export default function Dashboard() {
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <Logo size="md" />
           <div className="flex items-center gap-3">
-            <div className="relative">
-              <Button
-                onClick={() => setShowNotifications(!showNotifications)}
-                variant="outline"
-                size="sm"
-                className="relative flex items-center gap-2"
-              >
-                <BellIcon className="h-4 w-4" />
-                <span>Notifications</span>
-                {notifications.filter((n) => !n.read).length > 0 && (
-                  <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-xs text-white flex items-center justify-center font-semibold">
-                    {notifications.filter((n) => !n.read).length}
-                  </span>
-                )}
-              </Button>
-
-              {/* Notifications Dropdown */}
-              {showNotifications && (
-                <>
-                  <div className="fixed inset-0 z-40" onClick={() => setShowNotifications(false)} />
-                  <div
-                    className="absolute right-0 mt-2 w-96 rounded-xl border border-border shadow-2xl z-50 overflow-hidden"
-                    style={{ backgroundColor: 'hsl(var(--card))' }}
-                  >
-                    <div
-                      className="p-4 border-b border-border flex items-center justify-between"
-                      style={{ backgroundColor: 'hsl(var(--card))' }}
-                    >
-                      <h3 className="font-semibold text-foreground text-lg">Notifications</h3>
-                      <div className="flex items-center gap-2">
-                        {notifications.length > 0 && (
-                          <button
-                            onClick={clearAllNotifications}
-                            className="text-xs text-primary-500 hover:text-primary-600 font-medium"
-                          >
-                            Clear All
-                          </button>
-                        )}
-                        <button
-                          onClick={() => setShowNotifications(false)}
-                          className="text-muted-foreground hover:text-foreground text-xl leading-none"
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    </div>
-                    <div
-                      className="max-h-96 overflow-y-auto"
-                      style={{ backgroundColor: 'hsl(var(--card))' }}
-                    >
-                      {notifications.length === 0 ? (
-                        <div className="p-8 text-center text-muted-foreground">
-                          <BellIcon className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                          <p>No notifications</p>
-                        </div>
-                      ) : (
-                        notifications.map((notif) => (
-                          <div
-                            key={notif.id}
-                            className={`p-4 border-b border-border last:border-b-0 hover:bg-accent/5 transition-colors group ${
-                              !notif.read ? 'bg-accent/10' : ''
-                            }`}
-                          >
-                            <div className="flex items-start justify-between gap-3">
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm text-foreground font-medium mb-1">
-                                  {notif.message}
-                                </p>
-                                <p className="text-xs text-muted-foreground">{notif.time}</p>
-                              </div>
-                              {!notif.read && (
-                                <button
-                                  onClick={() => markAsRead(notif.id)}
-                                  className="text-xs text-primary-500 hover:text-primary-600 font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity"
-                                >
-                                  Mark Read
-                                </button>
-                              )}
-                            </div>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
+            <NotificationButton />
             <ThemeToggle />
             <Button onClick={logout} variant="outline" size="sm">
               Sign Out
