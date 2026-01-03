@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="1600"
+   height="420"
+   viewBox="0 0 1600 420"
+   version="1.1"
+   id="svg6"
+   sodipodi:docname="app_icon_wide.svg"
+   inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview6"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="4.0133261"
+     inkscape:cx="757.22727"
+     inkscape:cy="204.94223"
+     inkscape:window-width="1920"
+     inkscape:window-height="1051"
+     inkscape:window-x="-9"
+     inkscape:window-y="-9"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg6" />
+  <defs
+     id="defs3">
+    <pattern
+       inkscape:collect="always"
+       xlink:href="#Grid1"
+       preserveAspectRatio="xMidYMid"
+       id="pattern16"
+       patternTransform="scale(0.3)"
+       x="0"
+       y="0" />
+    <pattern
+       patternUnits="userSpaceOnUse"
+       width="20"
+       height="20"
+       preserveAspectRatio="xMidYMid"
+       id="Grid1"
+       x="0"
+       y="0"
+       style="fill:#00d9ff"
+       inkscape:label="Regular grid"
+       inkscape:collect="always"
+       inkscape:isstock="true">
+      <g
+         id="g63950-5">
+        <rect
+           style="fill-opacity:1;stroke:none;stroke-width:1;stroke-dasharray:none"
+           id="rect62492-2"
+           width="1"
+           height="20"
+           x="9.5"
+           y="0" />
+        <rect
+           style="fill-opacity:1;stroke:none;stroke-width:1;stroke-dasharray:none"
+           id="rect63583-4"
+           width="1"
+           height="20"
+           x="-10.5"
+           y="0"
+           transform="rotate(-90)" />
+      </g>
+    </pattern>
+    <pattern
+       inkscape:collect="always"
+       xlink:href="#WireFence"
+       preserveAspectRatio="xMidYMid"
+       id="pattern15"
+       patternTransform="scale(0.2)"
+       x="0"
+       y="0" />
+    <pattern
+       patternUnits="userSpaceOnUse"
+       width="52"
+       height="61.14"
+       id="WireFence"
+       patternTransform="scale(0.3,0.3)"
+       preserveAspectRatio="xMidYMid"
+       style="fill:#00d9ff"
+       inkscape:label="Wire Fence"
+       inkscape:collect="always"
+       inkscape:isstock="true">
+      <path
+         id="rect9"
+         style="stroke:none"
+         d="m 31.437499,0 7.257813,7.2578126 c -0.879538,1.3312883 -0.879117,3.0161644 10e-7,4.3476564 L 26.072266,24.228516 14,36.300782 0,22.302735 v 2.828124 l 12.640625,12.640625 c -0.89873,1.34129 -0.898729,3.115742 0,4.457031 L 0,54.86914 v 2.828126 l 14,-14 17.443359,17.443359 2.828125,10e-7 -18.912109,-18.91211 c 0.898055,-1.340861 0.898042,-3.116186 0,-4.457031 L 27.488281,25.642578 40,13.128906 l 12.000001,12 L 52,22.300781 41.302734,11.605469 c 0.879644,-1.331587 0.879713,-3.0161029 0,-4.3476564 L 48.560547,0 H 45.732422 L 40,5.732422 34.267578,0 Z M 52,54.869141 l -6.271484,6.271484 2.828124,0 L 52,57.697265 Z" />
+    </pattern>
+    <!-- Wireframe pattern -->
+    <pattern
+       id="wire"
+       width="12"
+       height="12"
+       patternUnits="userSpaceOnUse">
+      <path
+         d="M12 0L0 12M0 0L12 12"
+         stroke="#00d9ff59"
+         stroke-width="1"
+         id="path1" />
+      <path
+         d="M0 6H12M6 0V12"
+         stroke="rgba(0,217,255,0.35)"
+         stroke-width="1"
+         id="path2" />
+    </pattern>
+    <!-- Neon glow -->
+    <filter
+       id="glow"
+       x="-0.0097713893"
+       y="-0.073041232"
+       width="1.0195428"
+       height="1.1460825">
+      <feGaussianBlur
+         stdDeviation="3.9873833"
+         result="blur"
+         id="feGaussianBlur2" />
+      <feMerge
+         id="feMerge3">
+        <feMergeNode
+           in="blur"
+           id="feMergeNode2" />
+        <feMergeNode
+           in="SourceGraphic"
+           id="feMergeNode3" />
+      </feMerge>
+    </filter>
+    <filter
+       id="filter14"
+       x="-0.0016898118"
+       y="-0.01263136"
+       width="1.0033796"
+       height="1.0252627">
+      <feGaussianBlur
+         stdDeviation="0.00033561007"
+         result="blur"
+         id="feGaussianBlur13" />
+      <feMerge
+         id="feMerge14">
+        <feMergeNode
+           in="blur"
+           id="feMergeNode13" />
+        <feMergeNode
+           in="SourceGraphic"
+           id="feMergeNode14" />
+      </feMerge>
+    </filter>
+    <filter
+       id="filter16"
+       x="-0.0016898118"
+       y="-0.01263136"
+       width="1.0033796"
+       height="1.0252627">
+      <feGaussianBlur
+         stdDeviation="0.00033561007"
+         result="blur"
+         id="feGaussianBlur15" />
+      <feMerge
+         id="feMerge16">
+        <feMergeNode
+           in="blur"
+           id="feMergeNode15" />
+        <feMergeNode
+           in="SourceGraphic"
+           id="feMergeNode16" />
+      </feMerge>
+    </filter>
+  </defs>
+  <!-- Depth / extrusion -->
+  <g
+     fill="url(#wire)"
+     stroke="#70B8FF"
+     stroke-width="3"
+     font-family="Bungee, sans-serif"
+     font-size="220"
+     text-transform="uppercase"
+     id="g5">
+    <text
+       x="200"
+       y="270"
+       opacity="0.12"
+       transform="translate(36,36)"
+       id="text3">
+      PINNACLE
+    </text>
+    <text
+       x="200"
+       y="270"
+       opacity="0.18"
+       transform="translate(24,24)"
+       id="text4">
+      PINNACLE
+    </text>
+    <text
+       x="200"
+       y="270"
+       opacity="0.25"
+       transform="translate(12,12)"
+       id="text5">
+      PINNACLE
+    </text>
+  </g>
+  <!-- Main logo text -->
+  <text
+     x="200"
+     y="270"
+     font-family="Bungee, sans-serif"
+     font-size="220"
+     text-transform="uppercase"
+     fill="url(#wire)"
+     stroke="#70B8FF"
+     stroke-width="4"
+     filter="url(#glow)"
+     id="text6">
+    PINNACLE
+  </text>
+  <text
+     x="200"
+     y="270"
+     font-family="Bungee, sans-serif"
+     font-size="220"
+     text-transform="uppercase"
+     fill="url(#wire)"
+     stroke="#70B8FF"
+     stroke-width="4"
+     filter="url(#glow)"
+     id="text13"
+     style="filter:url(#filter14);fill:url(#pattern15);fill-opacity:1">
+    PINNACLE
+  </text>
+  <text
+     x="200"
+     y="270"
+     font-family="Bungee, sans-serif"
+     font-size="220"
+     text-transform="uppercase"
+     fill="url(#wire)"
+     stroke="#70B8FF"
+     stroke-width="4"
+     filter="url(#glow)"
+     id="text12"
+     style="filter:url(#filter16);fill:url(#pattern16);fill-opacity:1">
+    PINNACLE
+  </text>
+</svg>
