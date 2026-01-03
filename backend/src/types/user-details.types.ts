@@ -70,8 +70,8 @@ export interface Experience {
   location: string;
   sector?: Sector;
   salaryRange?: string;
-  startDate: string;
-  endDate?: string;
+  startDate: Date;
+  endDate?: Date;
   current: boolean;
   description?: string;
   highlights: string[];
@@ -116,8 +116,8 @@ export interface Education {
   branch: string;
   rollNumber?: string;
   location: string;
-  startDate: string;
-  endDate?: string;
+  startDate: Date;
+  endDate?: Date;
   gpa?: string;
   achievements: string[];
   order: number;
@@ -212,7 +212,7 @@ export interface Certification {
   userId: string;
   name: string;
   issuer: string;
-  date: string;
+  date: Date;
   url?: string;
   order: number;
   createdAt: Date;

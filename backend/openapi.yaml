@@ -38,6 +38,30 @@ components:
       schema:
         type: string
 
+  schemas:
+    Announcement:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        content:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        sender:
+          type: object
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+            email:
+              type: string
+
 security:
   - bearerAuth: []
 
@@ -377,17 +401,10 @@ paths:
       tags: [Admin]
       parameters: [{ $ref: '#/components/parameters/id' }]
 
-  /api/admin/jobs/{id}/pause:
-    patch:
-      summary: 'Pause a job (Admin)'
-      description: 'Admin only - pause a job posting'
-      tags: [Admin]
-      parameters: [{ $ref: '#/components/parameters/id' }]
-
   /api/admin/jobs/{id}/reopen:
     patch:
       summary: 'Reopen a job (Admin)'
-      description: 'Admin only - reopen a closed or paused job posting'
+      description: 'Admin only - reopen a closed job posting'
       tags: [Admin]
       parameters: [{ $ref: '#/components/parameters/id' }]
 
@@ -598,3 +615,164 @@ paths:
       responses:
         '200':
           description: 'Job document deleted successfully'
+
+  # Notifications
+  /api/notifications:
+    get:
+      summary: "Get user's notifications"
+      tags: [Notifications]
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+          description: Number of notifications to return
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+          description: Number of notifications to skip
+      responses:
+        '200':
+          description: List of notifications
+  /api/notifications/mark-read:
+    post:
+      summary: 'Mark specific notifications as read'
+      tags: [Notifications]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                notificationIds:
+                  type: array
+                  items:
+                    type: string
+              required:
+                - notificationIds
+      responses:
+        '200':
+          description: Notifications marked as read
+  /api/notifications/mark-all-read:
+    post:
+      summary: 'Mark all notifications as read'
+      tags: [Notifications]
+      responses:
+        '200':
+          description: All notifications marked as read
+  /api/notifications/device-token:
+    post:
+      summary: 'Register device token for push notifications'
+      tags: [Notifications]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                platform:
+                  type: string
+                  enum: [ios, android, web]
+              required:
+                - token
+      responses:
+        '200':
+          description: Device token registered successfully
+    delete:
+      summary: 'Unregister device token'
+      tags: [Notifications]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+              required:
+                - token
+      responses:
+        '200':
+          description: Device token unregistered successfully
+
+  # Announcements
+  /api/announcements:
+    get:
+      summary: 'Get all announcements'
+      tags: [Announcements]
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+          description: Page number
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+          description: Number of announcements per page
+      responses:
+        '200':
+          description: List of announcements
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      announcements:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Announcement'
+                      total:
+                        type: integer
+                      pages:
+                        type: integer
+    post:
+      summary: 'Create a new announcement (Admin only)'
+      tags: [Announcements]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+                - content
+              properties:
+                title:
+                  type: string
+                content:
+                  type: string
+      responses:
+        '201':
+          description: Announcement created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      announcement:
+                        $ref: '#/components/schemas/Announcement'
