@@ -1,4 +1,4 @@
-import express, { type RequestHandler } from 'express';
+import express from 'express';
 
 import { authenticateToken, sensitiveEndpointRateLimiter } from '../auth/middleware';
 import * as userDetailsController from '../controllers/user-details.controller';
@@ -32,7 +32,7 @@ router.get('/profile', userDetailsController.getUserProfile);
 // PATCH /api/user-details/profile - Update user profile (with rate limiting)
 router.patch(
   '/profile',
-  sensitiveEndpointRateLimiter as RequestHandler,
+  sensitiveEndpointRateLimiter,
   validateBody(updateUserProfileSchema),
   userDetailsController.updateUserProfile,
 );

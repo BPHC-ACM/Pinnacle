@@ -80,8 +80,8 @@ export interface ResumePreviewData {
     location: string;
     sector: string | null;
     salaryRange: string | null;
-    startDate: string;
-    endDate: string | null;
+    startDate: Date;
+    endDate: Date | null;
     current: boolean;
     description: string | null;
     highlights: string[];
@@ -94,8 +94,8 @@ export interface ResumePreviewData {
     branch: string;
     rollNumber: string | null;
     location: string;
-    startDate: string;
-    endDate: string | null;
+    startDate: Date;
+    endDate: Date | null;
     gpa: string | null;
     achievements: string[];
     order: number;
@@ -120,7 +120,7 @@ export interface ResumePreviewData {
     id: string;
     name: string;
     issuer: string;
-    date: string;
+    date: Date;
     url: string | null;
     order: number;
   }[];

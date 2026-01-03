@@ -1,4 +1,3 @@
-import type { RequestHandler } from 'express';
 import { Router } from 'express';
 
 import {
@@ -21,17 +20,12 @@ const router = Router();
 router.get('/', authenticateToken, getUserApplications);
 router.patch(
   '/:id/status',
-  adminRateLimiter as RequestHandler,
+  adminRateLimiter,
   authenticateToken,
   isAdmin,
   validateBody(updateApplicationStatusSchema),
   updateApplicationStatus,
 );
-router.post(
-  '/:id/withdraw',
-  sensitiveEndpointRateLimiter as RequestHandler,
-  authenticateToken,
-  withdrawApplication,
-);
+router.post('/:id/withdraw', sensitiveEndpointRateLimiter, authenticateToken, withdrawApplication);
 
 export default router;

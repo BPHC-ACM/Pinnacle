@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@pinnacle/types';
+import { PrismaClient } from '@pinnacle/types';
 
 import prisma from '../../db/client';
 import { ValidationError, NotFoundError } from '../../types/errors.types';
@@ -6,7 +6,7 @@ import { ValidationError, NotFoundError } from '../../types/errors.types';
 interface VerifyItemArgs {
   itemType: string;
   itemId: string;
-  status: boolean;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
 }
 
 const modelMap = {
@@ -16,20 +16,52 @@ const modelMap = {
   project: 'project',
   certification: 'certification',
   skill: 'skill',
+  accomplishment: 'accomplishment',
+  positionofresponsibility: 'positionOfResponsibility',
 } as const;
 
 type ValidItemType = keyof typeof modelMap;
 
 interface VerifiableItem {
-  isVerified: boolean;
+  verificationStatus: 'PENDING' | 'APPROVED' | 'REJECTED';
   userId: string;
   deletedAt: Date | null;
   verificationDoc?: string | null;
 }
 
 interface PrismaModelClient {
-  findFirst: (args: unknown) => Promise<VerifiableItem | null>;
-  update: (args: unknown) => Promise<VerifiableItem>;
+  findFirst: (args: {
+    where: { id: string; deletedAt?: Date | null };
+  }) => Promise<VerifiableItem | null>;
+  update: (args: {
+    where: { id: string };
+    data: { verificationStatus: 'PENDING' | 'APPROVED' | 'REJECTED' };
+  }) => Promise<VerifiableItem>;
+  findMany: (args: { where: { userId: string; deletedAt: null } }) => Promise<VerifiableItem[]>;
+}
+
+function getModelDelegate(
+  tx: Omit<PrismaClient, '$connect' | '$disconnect' | '$on' | '$transaction' | '$extends'>,
+  type: ValidItemType,
+): PrismaModelClient {
+  switch (type) {
+    case 'user':
+      return tx.user as unknown as PrismaModelClient;
+    case 'experience':
+      return tx.experience as unknown as PrismaModelClient;
+    case 'education':
+      return tx.education as unknown as PrismaModelClient;
+    case 'project':
+      return tx.project as unknown as PrismaModelClient;
+    case 'certification':
+      return tx.certification as unknown as PrismaModelClient;
+    case 'skill':
+      return tx.skill as unknown as PrismaModelClient;
+    case 'accomplishment':
+      return tx.accomplishment as unknown as PrismaModelClient;
+    case 'positionofresponsibility':
+      return tx.positionOfResponsibility as unknown as PrismaModelClient;
+  }
 }
 
 async function checkAllUserItemsVerified(userId: string): Promise<boolean> {
@@ -39,9 +71,7 @@ async function checkAllUserItemsVerified(userId: string): Promise<boolean> {
 
   const results = await Promise.all(
     verifiableTypes.map(async (itemType) => {
-      const model = prisma[itemType as keyof typeof prisma] as {
-        findMany: (args: unknown) => Promise<VerifiableItem[]>;
-      };
+      const model = getModelDelegate(prisma, itemType);
 
       const items = await model.findMany({
         where: { userId, deletedAt: null },
@@ -49,7 +79,7 @@ async function checkAllUserItemsVerified(userId: string): Promise<boolean> {
 
       return {
         items,
-        allVerified: items.every((item) => item.isVerified),
+        allVerified: items.every((item) => item.verificationStatus === 'APPROVED'),
       };
     }),
   );
@@ -75,7 +105,7 @@ async function verifyItem({
     );
   }
 
-  if (normalizedType === 'user' && status === true) {
+  if (normalizedType === 'user' && status === 'APPROVED') {
     const allItemsVerified = await checkAllUserItemsVerified(itemId);
     if (!allItemsVerified) {
       throw new ValidationError(
@@ -89,7 +119,7 @@ async function verifyItem({
     async (
       tx: Omit<PrismaClient, '$connect' | '$disconnect' | '$on' | '$transaction' | '$extends'>,
     ): Promise<Record<string, unknown>> => {
-      const modelClient = tx[normalizedType] as unknown as PrismaModelClient;
+      const modelClient = getModelDelegate(tx, normalizedType);
 
       const itemExists = await modelClient.findFirst({
         where: normalizedType === 'user' ? { id: itemId } : { id: itemId, deletedAt: null },
@@ -103,13 +133,14 @@ async function verifyItem({
       }
 
       if (
-        status === true &&
+        status === 'APPROVED' &&
         [
           'experience',
           'education',
           'project',
           'certification',
-          'position_of_responsibility',
+          'positionofresponsibility',
+          'accomplishment',
         ].includes(normalizedType) &&
         !itemExists.verificationDoc
       ) {
@@ -118,7 +149,7 @@ async function verifyItem({
 
       const updated = await modelClient.update({
         where: { id: itemId },
-        data: { isVerified: status },
+        data: { verificationStatus: status },
       });
 
       return updated as unknown as Record<string, unknown>;

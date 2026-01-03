@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export type JobStatus = 'OPEN' | 'CLOSED' | 'PAUSED';
+export type JobStatus = 'OPEN' | 'CLOSED';
 
 export interface Job {
   id: string;
@@ -100,5 +100,5 @@ export const updateJobSchema = z.object({
   type: z.string().max(100).optional(),
   salary: z.string().max(255).optional(),
   deadline: z.coerce.date().optional(),
-  status: z.enum(['OPEN', 'CLOSED', 'PAUSED']).optional(),
+  status: z.enum(['OPEN', 'CLOSED']).optional(),
 });
