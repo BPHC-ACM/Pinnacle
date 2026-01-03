@@ -2,12 +2,15 @@ import type { Request, Response } from 'express';
 
 import applicationService from '../services/application-service/application.service';
 import jobService from '../services/job-service/job.service';
+import { unifiedNotificationService } from '../services/notification-service/UnifiedNotification.service';
+import { notifyJobApplicants } from '../services/notification-service/job-notifications.helper';
 import { verificationService } from '../services/verification-service/verification.service';
 import type {
   AdminApplicationFilters,
   BulkStatusUpdateRequest,
   ApplicationStatus,
 } from '../types/application.types';
+import { ValidationError, NotFoundError } from '../types/errors.types';
 import type { AdminJobFilters, UpdateJobRequest } from '../types/job.types';
 import { parsePagination } from '../types/pagination.types';
 
@@ -36,14 +39,12 @@ export const getAllJobs = async (req: Request, res: Response): Promise<void> => 
 export const getJobById = async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
   if (!id) {
-    res.status(400).json({ error: 'Job ID required' });
-    return;
+    throw new ValidationError('Job ID required', 'Job ID required');
   }
 
   const job = await jobService.getJob(id);
   if (!job) {
-    res.status(404).json({ error: 'Job not found' });
-    return;
+    throw new NotFoundError('Job not found', 'Job not found');
   }
   res.json(job);
 };
@@ -51,55 +52,54 @@ export const getJobById = async (req: Request, res: Response): Promise<void> => 
 export const updateJob = async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
   if (!id) {
-    res.status(400).json({ error: 'Job ID required' });
-    return;
+    throw new ValidationError('Job ID required', 'Job ID required');
   }
 
   const data = req.body as UpdateJobRequest;
   const job = await jobService.updateJob(id, data);
 
   if (!job) {
-    res.status(404).json({ error: 'Job not found' });
-    return;
+    throw new NotFoundError('Job not found', 'Job not found');
   }
+
+  // Send notifications to applicants
+  if (data.deadline) {
+    await notifyJobApplicants(
+      id,
+      'JOB_DEADLINE_EXTENDED',
+      'Job Deadline Extended',
+      `The deadline for ${job.title} has been updated. Check the job details for more information.`,
+      { newDeadline: data.deadline.toISOString() },
+    );
+  } else if (Object.keys(data).length > 0) {
+    await notifyJobApplicants(
+      id,
+      'JOB_UPDATED',
+      'Job Updated',
+      `${job.title} has been updated. Please review the latest job details.`,
+    );
+  }
+
   res.json(job);
 };
 
 export const deleteJob = async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
   if (!id) {
-    res.status(400).json({ error: 'Job ID required' });
-    return;
+    throw new ValidationError('Job ID required', 'Job ID required');
   }
 
   const job = await jobService.deleteJob(id);
   if (!job) {
-    res.status(404).json({ error: 'Job not found' });
-    return;
+    throw new NotFoundError('Job not found', 'Job not found');
   }
   res.json({ message: 'Job deleted successfully', job });
-};
-
-export const pauseJob = async (req: Request, res: Response): Promise<void> => {
-  const { id } = req.params;
-  if (!id) {
-    res.status(400).json({ error: 'Job ID required' });
-    return;
-  }
-
-  const job = await jobService.pauseJob(id);
-  if (!job) {
-    res.status(404).json({ error: 'Job not found' });
-    return;
-  }
-  res.json(job);
 };
 
 export const reopenJob = async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
   if (!id) {
-    res.status(400).json({ error: 'Job ID required' });
-    return;
+    throw new ValidationError('Job ID required', 'Job ID required');
   }
 
   const { deadline } = req.body as { deadline?: string };
@@ -107,23 +107,30 @@ export const reopenJob = async (req: Request, res: Response): Promise<void> => {
 
   const job = await jobService.reopenJob(id, newDeadline);
   if (!job) {
-    res.status(404).json({ error: 'Job not found' });
-    return;
+    throw new NotFoundError('Job not found', 'Job not found');
   }
+
+  // Notify all applicants
+  await notifyJobApplicants(
+    id,
+    'JOB_REOPENED',
+    'Job Reopened',
+    `Good news! ${job.title} has been reopened${newDeadline ? ` with a new deadline of ${newDeadline.toLocaleDateString()}` : ''}.`,
+    newDeadline ? { newDeadline: newDeadline.toISOString() } : undefined,
+  );
+
   res.json(job);
 };
 
 export const exportJobApplications = async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
   if (!id) {
-    res.status(400).json({ error: 'Job ID required' });
-    return;
+    throw new ValidationError('Job ID required', 'Job ID required');
   }
 
   const data = await jobService.exportJobApplications(id);
   if (!data) {
-    res.status(404).json({ error: 'Job not found' });
-    return;
+    throw new NotFoundError('Job not found', 'Job not found');
   }
   res.json(data);
 };
@@ -147,14 +154,12 @@ export const getAllApplications = async (req: Request, res: Response): Promise<v
 export const getApplicationById = async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
   if (!id) {
-    res.status(400).json({ error: 'Application ID required' });
-    return;
+    throw new ValidationError('Application ID required', 'Application ID required');
   }
 
   const application = await applicationService.getApplicationDetails(id);
   if (!application) {
-    res.status(404).json({ error: 'Application not found' });
-    return;
+    throw new NotFoundError('Application not found', 'Application not found');
   }
   res.json(application);
 };
@@ -162,51 +167,90 @@ export const getApplicationById = async (req: Request, res: Response): Promise<v
 export const updateApplicationStatus = async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
   if (!id) {
-    res.status(400).json({ error: 'Application ID required' });
-    return;
+    throw new ValidationError('Application ID required', 'Application ID required');
   }
 
   const { status } = req.body as { status: ApplicationStatus };
   if (!status) {
-    res.status(400).json({ error: 'Status required' });
-    return;
+    throw new ValidationError('Status required', 'Status required');
   }
 
   const application = await applicationService.updateStatus(id, status);
   if (!application) {
-    res.status(404).json({ error: 'Application not found' });
-    return;
+    throw new NotFoundError('Application not found', 'Application not found');
   }
+
+  // Send notification to the user
+  const appWithJob = await applicationService.getApplicationDetails(id);
+  if (appWithJob) {
+    await unifiedNotificationService.notifyUsers({
+      userIds: [application.userId],
+      type: 'APPLICATION_STATUS_CHANGED',
+      title: 'Application Status Updated',
+      message: `Your application status for ${appWithJob.job?.title ?? 'a job'} has been updated to ${status}`,
+      data: {
+        applicationId: application.id,
+        newStatus: status,
+        jobId: application.jobId,
+      },
+    });
+  }
+
   res.json(application);
 };
 
 export const bulkUpdateApplicationStatus = async (req: Request, res: Response): Promise<void> => {
-  const { applicationIds, status } = req.body as BulkStatusUpdateRequest;
+  const body = req.body as BulkStatusUpdateRequest;
+  const { applicationIds, status } = body;
 
-  if (!applicationIds || !Array.isArray(applicationIds) || applicationIds.length === 0) {
-    res.status(400).json({ error: 'Application IDs required' });
-    return;
+  if (!applicationIds || applicationIds.length === 0) {
+    throw new ValidationError(
+      'applicationIds array is required',
+      'applicationIds array is required',
+    );
   }
+
   if (!status) {
-    res.status(400).json({ error: 'Status required' });
-    return;
+    throw new ValidationError('status is required', 'status is required');
   }
 
   const result = await applicationService.bulkUpdateStatus(applicationIds, status);
+
+  // Send notifications to all affected users
+  if (result.updatedApplications.length > 0) {
+    const userIds = result.updatedApplications.map((app) => app.userId);
+    const uniqueUserIds = [...new Set(userIds)];
+
+    const firstApp = result.updatedApplications[0];
+    if (firstApp) {
+      const jobTitle = (firstApp as unknown as { job?: { title?: string } }).job?.title ?? 'a job';
+
+      await unifiedNotificationService.notifyUsers({
+        userIds: uniqueUserIds,
+        type: 'APPLICATION_STATUS_CHANGED',
+        title: 'Application Status Updated',
+        message: `Your application status for ${jobTitle} has been updated to ${status}`,
+        data: {
+          applicationIds: result.updatedApplications.map((app) => app.id),
+          newStatus: status,
+          jobId: firstApp.jobId,
+        },
+      });
+    }
+  }
+
   res.json(result);
 };
 
 export const deleteApplication = async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
   if (!id) {
-    res.status(400).json({ error: 'Application ID required' });
-    return;
+    throw new ValidationError('Application ID required', 'Application ID required');
   }
 
   const application = await applicationService.deleteApplication(id);
   if (!application) {
-    res.status(404).json({ error: 'Application not found' });
-    return;
+    throw new NotFoundError('Application not found', 'Application not found');
   }
   res.json({ message: 'Application deleted successfully', application });
 };
@@ -214,14 +258,15 @@ export const deleteApplication = async (req: Request, res: Response): Promise<vo
 export const getApplicantProfile = async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
   if (!id) {
-    res.status(400).json({ error: 'Application ID required' });
-    return;
+    throw new ValidationError('Application ID required', 'Application ID required');
   }
+  const profile = await applicationService.getApplicantProfile(id);
 
-  const profile: unknown = await applicationService.getApplicantProfile(id);
   if (!profile) {
-    res.status(404).json({ error: 'Application or applicant not found' });
-    return;
+    throw new NotFoundError(
+      'Application or applicant not found',
+      'Application or applicant not found',
+    );
   }
   res.json(profile);
 };
@@ -230,8 +275,7 @@ export const getApplicantProfile = async (req: Request, res: Response): Promise<
 export const getJobApplicationsAdmin = async (req: Request, res: Response): Promise<void> => {
   const { jobId } = req.params;
   if (!jobId) {
-    res.status(400).json({ error: 'Job ID required' });
-    return;
+    throw new ValidationError('Job ID required', 'Job ID required');
   }
   const params = parsePagination(req.query as Record<string, unknown>);
   const applications = await applicationService.getAllApplications({ jobId }, params);
@@ -240,27 +284,28 @@ export const getJobApplicationsAdmin = async (req: Request, res: Response): Prom
 
 //  VERIFICATION
 
-export const verifyItem = async (req: Request, res: Response): Promise<void> => {
+export const verifyItem = async (
+  req: Request<{ itemType: string; itemId: string }, unknown, { status?: unknown }>,
+  res: Response,
+): Promise<void> => {
   const { itemType, itemId } = req.params;
-  const { status } = req.body as { status: boolean };
+  const { status } = req.body;
 
   if (!itemType) {
-    res.status(400).json({ error: 'Item type required' });
-    return;
+    throw new ValidationError('Item type required', 'Item type required');
   }
   if (!itemId) {
-    res.status(400).json({ error: 'Item ID required' });
-    return;
+    throw new ValidationError('Item ID required', 'Item ID required');
   }
-  if (typeof status !== 'boolean') {
-    res.status(400).json({ error: 'Status must be a boolean value' });
-    return;
+
+  if (typeof status !== 'string' || !['PENDING', 'APPROVED', 'REJECTED'].includes(status)) {
+    throw new ValidationError('Invalid status', 'Status must be PENDING, APPROVED, or REJECTED');
   }
 
   const updatedItem = await verificationService.verifyItem({
     itemType,
     itemId,
-    status,
+    status: status as 'PENDING' | 'APPROVED' | 'REJECTED',
   });
 
   res.json(updatedItem);

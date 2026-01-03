@@ -18,6 +18,19 @@ enum UserRole {
   ADMIN
 }
 
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ProfileStatus {
+  DRAFT
+  SUBMITTED_FOR_REVIEW
+  VERIFIED
+  REJECTED
+}
+
 enum AccomplishmentType {
   AWARD
   CERTIFICATION
@@ -74,8 +87,12 @@ model User {
   title    String?
 
   // Resume-related fields
-  summary    String?
-  isVerified Boolean @default(false)
+  summary            String?
+  verificationStatus VerificationStatus @default(PENDING)
+  profileStatus      ProfileStatus      @default(DRAFT)
+
+  // Device tokens for push notifications
+  deviceTokens String[] @default([])
 
   // Timestamps
   createdAt DateTime  @default(now())
@@ -94,6 +111,8 @@ model User {
   courses                   Course[]
   accomplishments           Accomplishment[]
   extracurriculars          Extracurricular[]
+  notifications             Notification[]
+  sentAnnouncements         Announcement[]
 
   @@index([email])
   @@index([googleId])
@@ -105,19 +124,19 @@ model Experience {
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  company     String
-  position    String
-  location    String
-  sector      Sector?
-  salaryRange String? // e.g., "50000-75000" or "10000-15000/month"
-  startDate   String
-  endDate     String?
-  current     Boolean  @default(false)
-  description String?
-  highlights  String[] @default([])
-  order       Int      @default(0)
-  isVerified  Boolean  @default(false)
-  verificationDoc String?
+  company            String
+  position           String
+  location           String
+  sector             Sector?
+  salaryRange        String? // e.g., "50000-75000" or "10000-15000/month"
+  startDate          DateTime
+  endDate            DateTime?
+  current            Boolean            @default(false)
+  description        String?
+  highlights         String[]           @default([])
+  order              Int                @default(0)
+  verificationStatus VerificationStatus @default(PENDING)
+  verificationDoc    String?
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -132,18 +151,18 @@ model Education {
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  institution  String
-  degree       String
-  branch       String
-  rollNumber   String?
-  location     String
-  startDate    String
-  endDate      String?
-  gpa          String?
-  achievements String[] @default([])
-  order        Int      @default(0)
-  isVerified   Boolean  @default(false)
-  verificationDoc String?
+  institution        String
+  degree             String
+  branch             String
+  rollNumber         String?
+  location           String
+  startDate          DateTime
+  endDate            DateTime?
+  gpa                String?
+  achievements       String[]           @default([])
+  order              Int                @default(0)
+  verificationStatus VerificationStatus @default(PENDING)
+  verificationDoc    String?
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -158,11 +177,11 @@ model Skill {
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  category    String
-  items       String[]         @default([])
-  proficiency ProficiencyLevel?
-  order       Int              @default(0)
-  isVerified  Boolean          @default(false)
+  category           String
+  items              String[]           @default([])
+  proficiency        ProficiencyLevel?
+  order              Int                @default(0)
+  verificationStatus VerificationStatus @default(PENDING)
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -177,14 +196,14 @@ model Project {
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  name         String
-  technologies String[] @default([])
-  url          String?
-  repoUrl      String? // Repository or source code URL
-  highlights   String[] @default([])
-  order        Int      @default(0)
-  isVerified   Boolean  @default(false)
-  verificationDoc String?
+  name               String
+  technologies       String[]           @default([])
+  url                String?
+  repoUrl            String? // Repository or source code URL
+  highlights         String[]           @default([])
+  order              Int                @default(0)
+  verificationStatus VerificationStatus @default(PENDING)
+  verificationDoc    String?
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -199,13 +218,13 @@ model Certification {
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  name   String
-  issuer String
-  date   String
-  url    String?
-  order  Int     @default(0)
-  isVerified Boolean @default(false)
-  verificationDoc String?
+  name               String
+  issuer             String
+  date               DateTime
+  url                String?
+  order              Int                @default(0)
+  verificationStatus VerificationStatus @default(PENDING)
+  verificationDoc    String?
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -233,19 +252,20 @@ model Language {
 }
 
 model Accomplishment {
-  id     String            @id @default(uuid())
+  id     String @id @default(uuid())
   userId String
-  user   User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  type        AccomplishmentType
-  title       String
-  issuer      String? // Organization, institution, or issuing body
-  date        String
-  description String?
-  url         String?
-  metadata    Json? // For type-specific additional data
-  order       Int     @default(0)
-  verificationDoc String?
+  type               AccomplishmentType
+  title              String
+  issuer             String? // Organization, institution, or issuing body
+  date               DateTime
+  description        String?
+  url                String?
+  metadata           Json? // For type-specific additional data
+  order              Int                @default(0)
+  verificationStatus VerificationStatus @default(PENDING)
+  verificationDoc    String?
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -261,14 +281,14 @@ model Extracurricular {
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  activity    String
-  role        String?
+  activity     String
+  role         String?
   organization String?
-  startDate   String?
-  endDate     String?
-  current     Boolean  @default(false)
-  description String?
-  order       Int      @default(0)
+  startDate    DateTime?
+  endDate      DateTime?
+  current      Boolean   @default(false)
+  description  String?
+  order        Int       @default(0)
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -283,17 +303,17 @@ model PositionOfResponsibility {
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  title        String
-  organization String
-  location     String?
-  startDate    String
-  endDate      String?
-  current      Boolean  @default(false)
-  description  String?
-  highlights   String[] @default([])
-  order        Int      @default(0)
-  isVerified   Boolean  @default(false)
-  verificationDoc String?
+  title              String
+  organization       String
+  location           String?
+  startDate          DateTime
+  endDate            DateTime?
+  current            Boolean            @default(false)
+  description        String?
+  highlights         String[]           @default([])
+  order              Int                @default(0)
+  verificationStatus VerificationStatus @default(PENDING)
+  verificationDoc    String?
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -308,13 +328,13 @@ model Course {
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  name         String
-  institution  String
-  completionDate String?
-  grade        String?
-  description  String?
-  url          String?
-  order        Int     @default(0)
+  name           String
+  institution    String
+  completionDate DateTime?
+  grade          String?
+  description    String?
+  url            String?
+  order          Int       @default(0)
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -333,10 +353,10 @@ model Resume {
   template String @default("modern")
   data     Json // Full resume data structure
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  file       ResumeFile?
+  file ResumeFile?
 
   deletedAt DateTime? // Soft delete
 
@@ -344,18 +364,18 @@ model Resume {
   @@index([deletedAt])
 }
 
-model ResumeFile{
-  id         String   @id @default(uuid())
-  resumeId   String   @unique
+model ResumeFile {
+  id       String @id @default(uuid())
+  resumeId String @unique
 
-  bucket     String
-  objectKey  String
-  mimeType   String
-  size       Int
+  bucket    String
+  objectKey String
+  mimeType  String
+  size      Int
 
   createdAt DateTime @default(now())
 
-  resume     Resume   @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  resume Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
 }
 
 model Company {
@@ -388,8 +408,6 @@ model Company {
   @@index([deletedAt])
 }
 
-
-
 enum ApplicationStatus {
   APPLIED
   SHORTLISTED
@@ -402,7 +420,6 @@ enum ApplicationStatus {
 enum JobStatus {
   OPEN
   CLOSED
-  PAUSED
 }
 
 model Job {
@@ -465,4 +482,58 @@ model Application {
   @@index([userId])
   @@index([jobId])
   @@index([status])
+}
+
+enum NotificationType {
+  JOB_CREATED
+  JOB_UPDATED
+  JOB_DEADLINE_EXTENDED
+  JOB_CLOSED
+  JOB_REOPENED
+  APPLICATION_SUBMITTED
+  APPLICATION_STATUS_CHANGED
+  INTERVIEW_SCHEDULED
+  OFFER_RECEIVED
+  APPLICATION_REJECTED
+}
+
+enum NotificationChannel {
+  IN_APP
+  EMAIL
+  PUSH
+}
+
+model Notification {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type    NotificationType
+  channel NotificationChannel @default(IN_APP)
+  title   String
+  message String
+  data    Json? // Additional metadata (jobId, applicationId, etc.)
+
+  isRead Boolean   @default(false)
+  readAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+  @@index([userId, isRead])
+}
+
+model Announcement {
+  id        String   @id @default(uuid())
+  title     String
+  content   String
+  createdAt DateTime @default(now())
+  
+  // Optional: Link to the admin who created it
+  senderId  String?
+  sender    User?    @relation(fields: [senderId], references: [id])
+
+  @@index([createdAt])
 }
