@@ -50,7 +50,7 @@ export function ThemeToggle() {
   return (
     <Button
       variant="outline"
-      size="icon"
+      size="icon-sm"
       onClick={cycleTheme}
       title={`Current theme: ${theme}`}
       className="relative"

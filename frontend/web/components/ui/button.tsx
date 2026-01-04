@@ -13,7 +13,7 @@ const buttonVariants = cva(
         accent: 'bg-accent-500 text-white hover:bg-accent-600 active:bg-accent-600 shadow-sm',
         destructive: 'bg-error text-error-foreground hover:bg-error/90 active:bg-error/80',
         outline:
-          'border border-input bg-background hover:bg-accent-100 hover:text-accent-900 dark:hover:bg-accent-900/10',
+          'border border-input bg-background text-foreground hover:text-accent [&>*]:text-inherit',
         secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
         ghost: 'hover:bg-accent-100 hover:text-accent-900 dark:hover:bg-accent-900/10',
         link: 'text-primary underline-offset-4 hover:underline',
