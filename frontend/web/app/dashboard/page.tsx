@@ -1,12 +1,9 @@
 'use client';
 
 import { useAuth } from '@/contexts/auth-context';
-import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import { Logo } from '@/components/logo';
-import { ThemeToggle } from '@/components/theme-toggle';
-import NotificationButton from '@/components/NotificationButton';
+import AnnouncementsFeed from '@/components/AnnouncementsFeed';
 
 // Icon components
 const FileTextIcon = ({ className }: { className?: string }) => (
@@ -27,7 +24,7 @@ const UserIcon = ({ className }: { className?: string }) => (
 );
 
 export default function Dashboard() {
-  const { user, isAuthenticated, isLoading: authLoading, logout } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -64,27 +61,19 @@ export default function Dashboard() {
         }}
       />
 
-      {/* Header */}
-      <header className="w-full border-b border-border bg-background/90 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Logo size="md" />
-          <div className="flex items-center gap-3">
-            <NotificationButton />
-            <ThemeToggle />
-            <Button onClick={logout} variant="outline" size="sm">
-              Sign Out
-            </Button>
-          </div>
-        </div>
-      </header>
-
       {/* Main Content */}
       <main className="flex-1 max-w-7xl mx-auto w-full px-6 py-12">
         <>
           {/* Welcome Section */}
           <div className="text-center w-full mb-16">
             <h1 className="text-5xl font-bold text-foreground mb-3">
-              Hello, {user.name?.split(' ')[0] || 'there'}!
+              Hello,{' '}
+              {user.name
+                ?.trim()
+                .split(' ')[0]
+                .toLowerCase()
+                .replace(/^\w/, (c) => c.toUpperCase()) || 'there'}
+              !
             </h1>
             <p className="text-lg text-muted-foreground">
               Track your job applications and manage your profile in one place.
@@ -92,35 +81,41 @@ export default function Dashboard() {
           </div>
 
           {/* Action Buttons */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div
-              onClick={() => router.push('/jobs')}
-              className="group p-8 rounded-2xl border border-border bg-card hover:shadow-lg transition-all duration-300 cursor-pointer"
-              style={{ backgroundColor: 'hsl(var(--card))' }}
-            >
-              <div className="p-4 rounded-xl bg-accent/10 w-fit mb-4">
-                <FileTextIcon className="h-8 w-8 text-accent" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2 text-foreground">
-                Browse Jobs & Applications
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                View all available job opportunities and track your application status
-              </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="order-2 md:order-1 md:col-span-2 p-8 rounded-2xl border border-border bg-card">
+              <AnnouncementsFeed />
             </div>
 
-            <div
-              onClick={() => router.push('/profile')}
-              className="group p-8 rounded-2xl border border-border bg-card hover:shadow-lg transition-all duration-300 cursor-pointer"
-              style={{ backgroundColor: 'hsl(var(--card))' }}
-            >
-              <div className="p-4 rounded-xl bg-accent/10 w-fit mb-4">
-                <UserIcon className="h-8 w-8 text-accent" />
+            <div className="order-1 md:order-2 md:col-span-1 flex flex-col gap-6">
+              <div
+                onClick={() => router.push('/jobs')}
+                className="group p-8 rounded-2xl border border-border bg-card hover:shadow-lg transition-all duration-300 cursor-pointer h-64 flex flex-col justify-center"
+              >
+                <div className="p-4 rounded-xl bg-accent/10 w-fit mb-4">
+                  <FileTextIcon className="h-8 w-8 text-accent" />
+                </div>
+                <h3 className="text-xl font-semibold mb-2 text-foreground">
+                  Browse Jobs & Applications
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  View all available job opportunities and track your application status
+                </p>
               </div>
-              <h3 className="text-xl font-semibold mb-2 text-foreground">Complete Your Profile</h3>
-              <p className="text-sm text-muted-foreground">
-                Add your details, education, and experience to improve your applications
-              </p>
+
+              <div
+                onClick={() => router.push('/profile')}
+                className="group p-8 rounded-2xl border border-border bg-card hover:shadow-lg transition-all duration-300 cursor-pointer h-64 flex flex-col justify-center"
+              >
+                <div className="p-4 rounded-xl bg-accent/10 w-fit mb-4">
+                  <UserIcon className="h-8 w-8 text-accent" />
+                </div>
+                <h3 className="text-xl font-semibold mb-2 text-foreground">
+                  Complete Your Profile
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Add your details, education, and experience to improve your applications
+                </p>
+              </div>
             </div>
           </div>
         </>

@@ -4,8 +4,6 @@ import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Logo } from '@/components/logo';
-import { ThemeToggle } from '@/components/theme-toggle';
 import { api } from '@/lib/api-client';
 import Image from 'next/image';
 
@@ -175,7 +173,7 @@ type TabType =
   | 'languages';
 
 export default function ProfilePage() {
-  const { user, isAuthenticated, isLoading: authLoading, logout, refreshUser } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading, refreshUser } = useAuth();
   const router = useRouter();
 
   const [activeTab, setActiveTab] = useState<TabType>('personal');
@@ -955,21 +953,6 @@ export default function ProfilePage() {
           backgroundSize: '40px 40px',
         }}
       />
-
-      {/* Header */}
-      <header className="w-full border-b border-border bg-background/90 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="cursor-pointer" onClick={() => router.push('/dashboard')}>
-            <Logo size="md" />
-          </div>
-          <div className="flex items-center gap-3">
-            <ThemeToggle />
-            <Button onClick={logout} variant="outline" size="sm">
-              Sign Out
-            </Button>
-          </div>
-        </div>
-      </header>
 
       {/* Message Toast */}
       {message && (

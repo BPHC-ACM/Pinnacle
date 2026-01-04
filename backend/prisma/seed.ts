@@ -12,6 +12,8 @@ import {
   Sector,
   AccomplishmentType,
   Resume,
+  NotificationType,
+  NotificationChannel,
 } from '@pinnacle/types';
 
 const pool = new pg.Pool({
@@ -520,6 +522,27 @@ async function main(): Promise<void> {
     }
   }
 
+  // 17. Create Notifications
+  console.log('Creating notifications...');
+  for (const user of users) {
+    const notificationCount = faker.number.int({ min: 3, max: 8 });
+    for (let i = 0; i < notificationCount; i++) {
+      const isRead = faker.datatype.boolean();
+      await prisma.notification.create({
+        data: {
+          userId: user.id,
+          type: faker.helpers.arrayElement(Object.values(NotificationType)),
+          channel: NotificationChannel.IN_APP,
+          title: faker.lorem.sentence(),
+          message: faker.lorem.paragraph(),
+          isRead: isRead,
+          readAt: isRead ? faker.date.recent() : null,
+          createdAt: faker.date.recent({ days: 30 }),
+        },
+      });
+    }
+  }
+
   console.log('Seeding completed successfully!');
   console.log(`
 Summary:
@@ -539,6 +562,8 @@ Summary:
 - Positions of Responsibility: ${await prisma.positionOfResponsibility.count()}
 - Courses: ${await prisma.course.count()}
 - Extracurriculars: ${await prisma.extracurricular.count()}
+- Notifications: ${await prisma.notification.count()}
+- Announcements: ${await prisma.announcement.count()}
   `);
 }
 

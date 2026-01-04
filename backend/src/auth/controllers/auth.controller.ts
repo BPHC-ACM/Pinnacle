@@ -55,22 +55,57 @@ export const googleCallback = async (req: Request, res: Response): Promise<void>
       return;
     }
 
-    // Create or update user in database
-    const dbUser = await prisma.user.upsert({
+    if (!payload.email) {
+      res.status(400).json({ error: 'Email is required from Google' });
+      return;
+    }
+
+    const name = payload.name ?? payload.email.split('@')[0];
+
+    // Check if user exists by googleId
+    let dbUser = await prisma.user.findUnique({
       where: { googleId: payload.sub },
-      update: {
-        email: payload.email!,
-        name: payload.name!,
-        picture: payload.picture,
-      },
-      create: {
-        googleId: payload.sub,
-        email: payload.email!,
-        name: payload.name!,
-        picture: payload.picture,
-        role: 'USER',
-      },
     });
+
+    if (dbUser) {
+      // Update existing user
+      dbUser = await prisma.user.update({
+        where: { id: dbUser.id },
+        data: {
+          email: payload.email,
+          name: name,
+          picture: payload.picture,
+        },
+      });
+    } else {
+      // Check if user exists by email
+      const existingUserByEmail = await prisma.user.findUnique({
+        where: { email: payload.email },
+      });
+
+      if (existingUserByEmail) {
+        // Link Google account to existing user
+        dbUser = await prisma.user.update({
+          where: { id: existingUserByEmail.id },
+          data: {
+            googleId: payload.sub,
+            name: name,
+            picture: payload.picture,
+          },
+        });
+      } else {
+        // Create new user
+        dbUser = await prisma.user.create({
+          data: {
+            googleId: payload.sub,
+            email: payload.email,
+            name: name ?? payload.email.split('@')[0] ?? '',
+            picture: payload.picture,
+            role: 'USER',
+          },
+        });
+      }
+    }
 
     logger.info({ userId: dbUser.id, email: dbUser.email }, 'User authenticated via Google OAuth');
 
@@ -94,7 +129,10 @@ export const googleCallback = async (req: Request, res: Response): Promise<void>
     );
   } catch (error) {
     logger.error({ err: error }, 'Google OAuth authentication failed');
-    res.status(500).json({ error: 'Authentication failed' });
+    res.status(500).json({
+      error: 'Authentication failed',
+      details: error instanceof Error ? error.message : String(error),
+    });
   }
 };
 

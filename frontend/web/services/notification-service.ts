@@ -13,20 +13,6 @@ export const notificationService = {
   },
 
   /**
-   * Mark specific notifications as read
-   */
-  async markAsRead(notificationIds: string[]): Promise<void> {
-    await api.post('/notifications/mark-read', { notificationIds });
-  },
-
-  /**
-   * Mark all notifications as read
-   */
-  async markAllAsRead(): Promise<void> {
-    await api.post('/notifications/mark-all-read');
-  },
-
-  /**
    * Register device token for push notifications
    */
   async registerDeviceToken(token: string, platform?: 'ios' | 'android' | 'web'): Promise<void> {

@@ -4,8 +4,6 @@ import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Logo } from '@/components/logo';
-import { ThemeToggle } from '@/components/theme-toggle';
 import { api } from '@/lib/api-client';
 
 // Icon components
@@ -36,7 +34,7 @@ interface Application {
 }
 
 export default function JobsPage() {
-  const { user, isAuthenticated, isLoading: authLoading, logout } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'all' | 'applied'>('all');
   const [sector, setSector] = useState('All Sectors');
@@ -149,25 +147,10 @@ export default function JobsPage() {
         }}
       />
 
-      {/* Header */}
-      <header className="w-full border-b border-border bg-background/90 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="cursor-pointer" onClick={() => router.push('/dashboard')}>
-            <Logo size="md" />
-          </div>
-          <div className="flex items-center gap-3">
-            <ThemeToggle />
-            <Button onClick={logout} variant="outline" size="sm">
-              Sign Out
-            </Button>
-          </div>
-        </div>
-      </header>
-
       <div className="flex-1 max-w-7xl mx-auto w-full px-6 py-8">
         <div className="flex gap-6">
           {/* Sidebar */}
-          <div className="w-64 flex-shrink-0">
+          <div className="w-64 shrink-0">
             <nav className="space-y-1">
               <button
                 onClick={() => router.push('/dashboard')}
@@ -374,8 +357,8 @@ export default function JobsPage() {
                                     closesIn.includes('Closed')
                                       ? 'text-red-500'
                                       : closesIn.includes('today') || closesIn.includes('1 day')
-                                        ? 'text-red-500'
-                                        : ''
+                                      ? 'text-red-500'
+                                      : ''
                                   }
                                 >
                                   {closesIn}
@@ -385,7 +368,9 @@ export default function JobsPage() {
                           </div>
                         </div>
                         <div
-                          className={`px-4 py-2 rounded-lg text-sm font-medium border ${getStatusColor(applicationStatus)}`}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium border ${getStatusColor(
+                            applicationStatus
+                          )}`}
                         >
                           {applicationStatus}
                         </div>
