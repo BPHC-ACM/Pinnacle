@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 // import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import 'dart:ui'; // For BackdropFilter
+import 'dart:ui';
 
 import '../models/job_model.dart';
 import '../providers/jobs_provider.dart';
@@ -399,7 +399,7 @@ class _QuestionsDialog extends StatefulWidget {
   const _QuestionsDialog({required this.questions});
 
   @override
-  State<_QuestionsDialog> createState() => _QuestionsDialogState();
+State<_QuestionsDialog> createState() => _QuestionsDialogState();
 }
 
 class _QuestionsDialogState extends State<_QuestionsDialog> {

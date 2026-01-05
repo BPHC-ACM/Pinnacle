@@ -78,10 +78,18 @@ class JobsRepository {
   Future<List<ApplicationModel>> getUserApplications() async {
     try {
       final response = await _apiClient.client.get('/api/applications');
-      return (response.data as List)
+      
+      // DEBUG PRINT
+      print("Fetched Applications: ${response.data}"); 
+
+      // FIX: Access ['data'] because the backend returns a paginated response
+      final List<dynamic> applicationsJson = response.data['data']; 
+      
+      return applicationsJson
           .map((e) => ApplicationModel.fromJson(e))
           .toList();
     } catch (e) {
+      print("Error fetching applications: $e"); // Print error to see casting issues
       return [];
     }
   }

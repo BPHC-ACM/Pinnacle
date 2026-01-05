@@ -16,7 +16,11 @@ class ApplicationModel {
       id: json['id'],
       jobId: json['jobId'],
       status: json['status'],
-      createdAt: DateTime.parse(json['createdAt']),
+      createdAt: DateTime.parse(
+        json['appliedAt'] ??
+            json['createdAt'] ??
+            DateTime.now().toIso8601String(),
+      ),
     );
   }
 }
