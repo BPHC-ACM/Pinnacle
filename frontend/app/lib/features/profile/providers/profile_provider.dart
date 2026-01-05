@@ -58,13 +58,9 @@ class ProfileNotifier extends StateNotifier<AsyncValue<StudentProfile>> {
         github: github,
         website: website,
       );
-      
-      // Optionally reload to ensure sync
-      // await loadProfile(); 
-    } catch (e, stack) {
-      // Revert on failure
+    
+    } catch (e) {
       state = AsyncValue.data(currentProfile);
-      // Show error in UI via listener or snackbar (handled by UI layer)
       rethrow;
     }
   }

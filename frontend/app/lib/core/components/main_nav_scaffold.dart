@@ -20,7 +20,6 @@ class MainNavScaffold extends StatefulWidget {
 }
 
 class _MainNavScaffoldState extends State<MainNavScaffold> {
-  // State to track if the nav bar should be visible
   bool _isNavBarVisible = true;
 
   void _onNavTap(int index) {
@@ -49,7 +48,7 @@ class _MainNavScaffoldState extends State<MainNavScaffold> {
 
     return Scaffold(
       extendBody: true,
-      // Wrap the body in a NotificationListener to detect scrolling
+
       body: NotificationListener<UserScrollNotification>(
         onNotification: (notification) {
           if (notification.direction == ScrollDirection.reverse) {
@@ -65,7 +64,7 @@ class _MainNavScaffoldState extends State<MainNavScaffold> {
           ? AnimatedSlide(
               duration: const Duration(milliseconds: 300),
               curve: Curves.easeInOut,
-              // Slide down (Y: 2) when hidden, return to original (Y: 0) when visible
+
               offset: _isNavBarVisible ? Offset.zero : const Offset(0, 2),
               child: SafeArea(
                 bottom: true,
@@ -75,7 +74,6 @@ class _MainNavScaffoldState extends State<MainNavScaffold> {
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
-                      // 1. Deep Shadow Layer
                       Container(
                         height: navHeight,
                         decoration: BoxDecoration(
@@ -97,7 +95,6 @@ class _MainNavScaffoldState extends State<MainNavScaffold> {
                         ),
                       ),
 
-                      // 2. Glass Effect Layer
                       ClipRRect(
                         borderRadius: BorderRadius.circular(outerRadius),
                         child: BackdropFilter(
@@ -109,7 +106,6 @@ class _MainNavScaffoldState extends State<MainNavScaffold> {
                         ),
                       ),
 
-                      // 3. Border Overlay Layer
                       IgnorePointer(
                         child: Container(
                           height: navHeight,
@@ -124,7 +120,6 @@ class _MainNavScaffoldState extends State<MainNavScaffold> {
                         ),
                       ),
 
-                      // 4. Content Layer
                       SizedBox(
                         height: navHeight,
                         child: Row(
