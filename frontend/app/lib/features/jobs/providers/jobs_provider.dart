@@ -51,7 +51,7 @@ class JobsNotifier extends StateNotifier<JobsState> {
         _repository.getJobs(),
         _repository.getUserApplications(),
       ]);
-      
+
       state = state.copyWith(
         isLoading: false,
         jobs: results[0] as List<JobModel>,
@@ -62,9 +62,9 @@ class JobsNotifier extends StateNotifier<JobsState> {
     }
   }
 
-  Future<void> apply(String jobId) async {
+  Future<void> apply(String jobId, {Map<String, dynamic>? answers}) async {
     try {
-      await _repository.applyToJob(jobId);
+      await _repository.applyToJob(jobId, answers: answers);
       // Refresh applications to update UI status
       final apps = await _repository.getUserApplications();
       state = state.copyWith(applications: apps);
@@ -72,15 +72,15 @@ class JobsNotifier extends StateNotifier<JobsState> {
       rethrow;
     }
   }
-  
+
   String getApplicationStatus(String jobId) {
     final app = state.applications.firstWhere(
       (element) => element.jobId == jobId,
       orElse: () => ApplicationModel(
-        id: '', 
-        jobId: '', 
-        status: 'Yet to apply', 
-        createdAt: DateTime.now()
+        id: '',
+        jobId: '',
+        status: 'Yet to apply',
+        createdAt: DateTime.now(),
       ),
     );
     // If ID is empty, it means we returned the dummy object above

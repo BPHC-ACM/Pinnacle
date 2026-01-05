@@ -86,14 +86,20 @@ class JobsRepository {
     }
   }
 
-  Future<void> applyToJob(String jobId) async {
+  Future<void> applyToJob(String jobId, {Map<String, dynamic>? answers}) async {
     try {
-      await _apiClient.client.post('/api/jobs/$jobId/applications', data: {});
+      // Send answers in the body if provided, otherwise empty map
+      final data = {if (answers != null) 'answers': answers};
+
+      await _apiClient.client.post('/api/jobs/$jobId/applications', data: data);
     } catch (e) {
       if (e is DioException) {
+        // Backend returns errors in 'msg' field usually, but sometimes 'error' or 'message'
+        final data = e.response?.data;
         final errorMsg =
-            e.response?.data['msg'] ??
-            e.response?.data['message'] ??
+            data?['msg'] ??
+            data?['message'] ??
+            data?['error'] ??
             'Failed to apply';
         throw Exception(errorMsg);
       }

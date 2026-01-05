@@ -1,6 +1,6 @@
 class JobModel {
   final String id;
-  final String companyId; // Added companyId field
+  final String companyId;
   final String title;
   final Company company;
   final String? location;
@@ -11,6 +11,7 @@ class JobModel {
   final DateTime createdAt;
   final DateTime? deadline;
   final String status;
+  final List<JobQuestion> questions; // Added questions field
 
   JobModel({
     required this.id,
@@ -25,13 +26,13 @@ class JobModel {
     required this.createdAt,
     this.deadline,
     required this.status,
+    this.questions = const [], // Default to empty list
   });
 
   factory JobModel.fromJson(
     Map<String, dynamic> json, {
     Company? companyOverride,
   }) {
-    // Prefer the override (from repo), then try nested JSON, then fallback to ID/Placeholder
     final companyObj =
         companyOverride ??
         (json['company'] != null
@@ -53,6 +54,11 @@ class JobModel {
           ? DateTime.parse(json['deadline'])
           : null,
       status: json['status'] ?? 'OPEN',
+      questions:
+          (json['questions'] as List<dynamic>?)
+              ?.map((e) => JobQuestion.fromJson(e))
+              .toList() ??
+          [],
     );
   }
 }
@@ -65,5 +71,25 @@ class Company {
 
   factory Company.fromJson(Map<String, dynamic> json) {
     return Company(id: json['id'], name: json['name']);
+  }
+}
+
+class JobQuestion {
+  final String id;
+  final String question;
+  final bool required;
+
+  JobQuestion({
+    required this.id,
+    required this.question,
+    required this.required,
+  });
+
+  factory JobQuestion.fromJson(Map<String, dynamic> json) {
+    return JobQuestion(
+      id: json['id'],
+      question: json['question'],
+      required: json['required'] ?? true,
+    );
   }
 }

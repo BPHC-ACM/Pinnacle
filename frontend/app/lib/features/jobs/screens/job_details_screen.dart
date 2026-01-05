@@ -286,7 +286,7 @@ class _JobDetailsScreenState extends ConsumerState<JobDetailsScreen> {
                                   : "Apply Now",
                               onPressed: isApplied
                                   ? null
-                                  : () => _handleApply(context, notifier),
+                                  : () => _handleApply(context, notifier, job),
                               variant: isApplied
                                   ? ButtonVariant.outline
                                   : ButtonVariant.primary,
@@ -339,10 +339,28 @@ class _JobDetailsScreenState extends ConsumerState<JobDetailsScreen> {
     );
   }
 
-  Future<void> _handleApply(BuildContext context, JobsNotifier notifier) async {
+  Future<void> _handleApply(
+    BuildContext context,
+    JobsNotifier notifier,
+    JobModel job,
+  ) async {
+    // Check if there are questions to answer
+    Map<String, dynamic>? answers;
+
+    if (job.questions.isNotEmpty) {
+      answers = await showDialog<Map<String, dynamic>>(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => _QuestionsDialog(questions: job.questions),
+      );
+
+      // If user cancelled dialog, return
+      if (answers == null) return;
+    }
+
     setState(() => _isApplying = true);
     try {
-      await notifier.apply(widget.jobId);
+      await notifier.apply(widget.jobId, answers: answers);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -371,5 +389,115 @@ class _JobDetailsScreenState extends ConsumerState<JobDetailsScreen> {
     } finally {
       if (mounted) setState(() => _isApplying = false);
     }
+  }
+}
+
+// Separate widget for the questions dialog to handle its own state
+class _QuestionsDialog extends StatefulWidget {
+  final List<JobQuestion> questions;
+
+  const _QuestionsDialog({required this.questions});
+
+  @override
+  State<_QuestionsDialog> createState() => _QuestionsDialogState();
+}
+
+class _QuestionsDialogState extends State<_QuestionsDialog> {
+  final Map<String, TextEditingController> _controllers = {};
+
+  @override
+  void initState() {
+    super.initState();
+    for (var q in widget.questions) {
+      _controllers[q.id] = TextEditingController();
+    }
+  }
+
+  @override
+  void dispose() {
+    for (var controller in _controllers.values) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return AlertDialog(
+      title: const Text('Additional Questions'),
+      content: SizedBox(
+        width: double.maxFinite,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: widget.questions.map((q) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${q.question}${q.required ? ' *' : ''}',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: _controllers[q.id],
+                      decoration: InputDecoration(
+                        border: const OutlineInputBorder(),
+                        hintText: 'Your answer',
+                        isDense: true,
+                        contentPadding: const EdgeInsets.all(12),
+                      ),
+                      maxLines: 2,
+                      minLines: 1,
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(onPressed: _submit, child: const Text('Submit')),
+      ],
+    );
+  }
+
+  void _submit() {
+    final answers = <String, String>{};
+    bool hasError = false;
+
+    for (var q in widget.questions) {
+      final text = _controllers[q.id]?.text.trim() ?? '';
+      if (q.required && text.isEmpty) {
+        hasError = true;
+        break;
+      }
+      if (text.isNotEmpty) {
+        answers[q.id] = text;
+      }
+    }
+
+    if (hasError) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please answer all required questions'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
+    Navigator.pop(context, answers);
   }
 }
