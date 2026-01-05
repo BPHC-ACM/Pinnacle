@@ -18,10 +18,11 @@ class JobsScreen extends ConsumerStatefulWidget {
   ConsumerState<JobsScreen> createState() => _JobsScreenState();
 }
 
-class _JobsScreenState extends ConsumerState<JobsScreen> with SingleTickerProviderStateMixin {
+class _JobsScreenState extends ConsumerState<JobsScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
-  
+
   // State
   String _searchQuery = "";
   JobFilterModel _filters = const JobFilterModel();
@@ -55,6 +56,42 @@ class _JobsScreenState extends ConsumerState<JobsScreen> with SingleTickerProvid
     );
   }
 
+  // --- Visual Helper: Gradient Banner (Matches Profile) ---
+  Widget _buildBanner(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      height: 280,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [theme.colorScheme.primary, theme.colorScheme.tertiary],
+        ),
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            top: -50,
+            right: -50,
+            child: CircleAvatar(
+              radius: 100,
+              backgroundColor: Colors.white.withOpacity(0.1),
+            ),
+          ),
+          Positioned(
+            bottom: 50,
+            left: -30,
+            child: CircleAvatar(
+              radius: 60,
+              backgroundColor: Colors.white.withOpacity(0.1),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final jobsState = ref.watch(jobsProvider);
@@ -63,52 +100,82 @@ class _JobsScreenState extends ConsumerState<JobsScreen> with SingleTickerProvid
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
-      body: NestedScrollView(
-        headerSliverBuilder: (context, innerBoxIsScrolled) => [
-          _buildSliverAppBar(theme, innerBoxIsScrolled),
+      body: Stack(
+        children: [
+          // 1. Background Banner
+          _buildBanner(context),
+
+          // 2. Scrollable Content
+          NestedScrollView(
+            headerSliverBuilder: (context, innerBoxIsScrolled) => [
+              _buildSliverAppBar(theme, innerBoxIsScrolled),
+            ],
+            body: Container(
+              color: theme.scaffoldBackgroundColor,
+              child: jobsState.isLoading
+                  ? const JobsSkeletonList()
+                  : jobsState.error != null
+                  ? _buildErrorState(jobsState.error!, theme, notifier)
+                  : TabBarView(
+                      controller: _tabController,
+                      children: [
+                        _buildJobList(jobsState, notifier, showAll: true),
+                        _buildJobList(jobsState, notifier, showAll: false),
+                      ],
+                    ),
+            ),
+          ),
         ],
-        body: jobsState.isLoading
-            ? const JobsSkeletonList()
-            : jobsState.error != null
-                ? _buildErrorState(jobsState.error!, theme, notifier)
-                : TabBarView(
-                    controller: _tabController,
-                    children: [
-                      _buildJobList(jobsState, notifier, showAll: true),
-                      _buildJobList(jobsState, notifier, showAll: false),
-                    ],
-                  ),
       ),
     );
   }
 
   Widget _buildSliverAppBar(ThemeData theme, bool innerBoxIsScrolled) {
     return SliverAppBar(
-      expandedHeight: 180.0,
+      expandedHeight: 220.0, // Increased height for banner visibility
       pinned: true,
       floating: true,
-      backgroundColor: theme.scaffoldBackgroundColor,
+      backgroundColor: Colors.transparent, // Transparent to show banner
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       forceElevated: innerBoxIsScrolled,
       flexibleSpace: FlexibleSpaceBar(
-        background: Container(
-          color: theme.scaffoldBackgroundColor,
-          padding: const EdgeInsets.fromLTRB(20, 60, 20, 0),
-          alignment: Alignment.topLeft,
-          child: Text(
-            "Find your dream job",
-            style: GoogleFonts.inter(fontSize: 22, height: 1.1, fontWeight: FontWeight.bold),
-          ),
+        background: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            const SizedBox(height: 60), // Status bar padding
+            Text(
+              "Find your dream job",
+              style: GoogleFonts.inter(
+                fontSize: 26,
+                height: 1.1,
+                fontWeight: FontWeight.bold,
+                color: Colors.white, // White text on Gradient
+              ),
+            ),
+          ],
         ),
       ),
       bottom: PreferredSize(
-        preferredSize: const Size.fromHeight(110),
+        preferredSize: const Size.fromHeight(130),
         child: Container(
-          color: theme.scaffoldBackgroundColor,
+          decoration: BoxDecoration(
+            color: theme.scaffoldBackgroundColor,
+            // Rounded top corners to create the "Sheet" effect
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, -2),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
           child: Column(
             children: [
               _buildSearchBar(theme),
+              const SizedBox(height: 12),
               _buildTabBar(theme),
             ],
           ),
@@ -118,70 +185,74 @@ class _JobsScreenState extends ConsumerState<JobsScreen> with SingleTickerProvid
   }
 
   Widget _buildSearchBar(ThemeData theme) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      child: Row(
-        children: [
-          Expanded(
-            child: Container(
-              height: 48,
-              decoration: BoxDecoration(
-                color: theme.cardTheme.color,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: theme.colorScheme.outline),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.03),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: TextField(
-                controller: _searchController,
-                style: GoogleFonts.inter(fontSize: 14),
-                decoration: InputDecoration(
-                  hintText: "Search role, company...",
-                  hintStyle: GoogleFonts.inter(color: AppColors.neutral400),
-                  prefixIcon: Icon(LucideIcons.search, size: 20, color: AppColors.neutral400),
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                  suffixIcon: _searchQuery.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(Icons.clear, size: 20),
-                          onPressed: () {
-                            _searchController.clear();
-                            FocusScope.of(context).unfocus();
-                          },
-                        )
-                      : null,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          // Filter Button
-          Container(
+    return Row(
+      children: [
+        Expanded(
+          child: Container(
             height: 48,
-            width: 48,
             decoration: BoxDecoration(
-              color: AppColors.primary500,
+              // Slightly darker than scaffold to stand out in the white sheet
+              color: theme.colorScheme.surface,
               borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary500.withOpacity(0.25),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
+              border: Border.all(
+                color: theme.colorScheme.outline.withOpacity(0.5),
+              ),
             ),
-            child: IconButton(
-              onPressed: _openFilterDialog,
-              icon: const Icon(LucideIcons.slidersHorizontal, color: Colors.white, size: 20),
+            child: TextField(
+              controller: _searchController,
+              style: GoogleFonts.inter(fontSize: 14),
+              decoration: InputDecoration(
+                hintText: "Search role, company...",
+                hintStyle: GoogleFonts.inter(color: AppColors.neutral400),
+                prefixIcon: Icon(
+                  LucideIcons.search,
+                  size: 20,
+                  color: AppColors.neutral400,
+                ),
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear, size: 20),
+                        onPressed: () {
+                          _searchController.clear();
+                          FocusScope.of(context).unfocus();
+                        },
+                      )
+                    : null,
+              ),
             ),
           ),
-        ],
-      ),
+        ),
+        const SizedBox(width: 12),
+        // Filter Button
+        Container(
+          height: 48,
+          width: 48,
+          decoration: BoxDecoration(
+            color: AppColors.primary500,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary500.withOpacity(0.25),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: IconButton(
+            onPressed: _openFilterDialog,
+            icon: const Icon(
+              LucideIcons.slidersHorizontal,
+              color: Colors.white,
+              size: 20,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -195,7 +266,10 @@ class _JobsScreenState extends ConsumerState<JobsScreen> with SingleTickerProvid
       indicatorWeight: 3,
       dividerColor: theme.colorScheme.outline.withOpacity(0.5),
       labelStyle: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14),
-      unselectedLabelStyle: GoogleFonts.inter(fontWeight: FontWeight.w500, fontSize: 14),
+      unselectedLabelStyle: GoogleFonts.inter(
+        fontWeight: FontWeight.w500,
+        fontSize: 14,
+      ),
       tabs: const [
         Tab(text: "All Jobs"),
         Tab(text: "Applied Jobs"),
@@ -203,16 +277,21 @@ class _JobsScreenState extends ConsumerState<JobsScreen> with SingleTickerProvid
     );
   }
 
-  Widget _buildJobList(JobsState state, JobsNotifier notifier, {required bool showAll}) {
+  Widget _buildJobList(
+    JobsState state,
+    JobsNotifier notifier, {
+    required bool showAll,
+  }) {
     // Advanced Filtering Logic
     final filteredJobs = state.jobs.where((job) {
       final appStatus = notifier.getApplicationStatus(job.id);
-      
+
       // 1. Tab Filter
       if (!showAll && appStatus == 'Yet to apply') return false;
 
       // 2. Search Filter
-      final matchesSearch = _searchQuery.isEmpty ||
+      final matchesSearch =
+          _searchQuery.isEmpty ||
           job.title.toLowerCase().contains(_searchQuery) ||
           job.company.name.toLowerCase().contains(_searchQuery) ||
           (job.location ?? '').toLowerCase().contains(_searchQuery);
@@ -220,27 +299,21 @@ class _JobsScreenState extends ConsumerState<JobsScreen> with SingleTickerProvid
       if (!matchesSearch) return false;
 
       // 3. Advanced Filters (from Dialog)
-      
+
       // Position Type
       if (_filters.positionType != 'All') {
-         // Assuming job.type matches the display string, or contains it (case-insensitive)
-         if (job.type != null && !job.type!.toLowerCase().contains(_filters.positionType.toLowerCase())) {
-           return false;
-         }
-         // If job type is null but filter is set, exclude it
-         if (job.type == null) return false;
+        if (job.type != null &&
+            !job.type!.toLowerCase().contains(
+              _filters.positionType.toLowerCase(),
+            )) {
+          return false;
+        }
+        if (job.type == null) return false;
       }
 
       // Application Status
       if (_filters.applicationStatus != 'All') {
         if (appStatus != _filters.applicationStatus) return false;
-      }
-
-      // Sector (Placeholder logic - strictly speaking we don't have sector in JobModel yet,
-      // but we respect the "All Sectors" default to allow passing)
-      if (_filters.sector != 'All Sectors') {
-        // Optional: Implement rudimentary sector matching via description/title if desired
-        // For now, we return true to not break the UI until backend provides `sector`
       }
 
       return true;
@@ -308,8 +381,8 @@ class _JobsScreenState extends ConsumerState<JobsScreen> with SingleTickerProvid
                   ),
                   const SizedBox(height: 24),
                   Text(
-                    _searchQuery.isNotEmpty 
-                        ? "No jobs match your search" 
+                    _searchQuery.isNotEmpty
+                        ? "No jobs match your search"
                         : "No jobs found",
                     textAlign: TextAlign.center,
                     style: GoogleFonts.inter(
@@ -318,14 +391,18 @@ class _JobsScreenState extends ConsumerState<JobsScreen> with SingleTickerProvid
                       color: AppColors.neutral600,
                     ),
                   ),
-                  if (_filters.positionType != 'All' || _filters.applicationStatus != 'All')
-                     Padding(
-                       padding: const EdgeInsets.only(top: 8),
-                       child: Text(
-                         "Try adjusting your filters",
-                         style: GoogleFonts.inter(color: AppColors.neutral400, fontSize: 14),
-                       ),
-                     ),
+                  if (_filters.positionType != 'All' ||
+                      _filters.applicationStatus != 'All')
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Text(
+                        "Try adjusting your filters",
+                        style: GoogleFonts.inter(
+                          color: AppColors.neutral400,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -335,7 +412,11 @@ class _JobsScreenState extends ConsumerState<JobsScreen> with SingleTickerProvid
     );
   }
 
-  Widget _buildErrorState(String error, ThemeData theme, JobsNotifier notifier) {
+  Widget _buildErrorState(
+    String error,
+    ThemeData theme,
+    JobsNotifier notifier,
+  ) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -348,12 +429,26 @@ class _JobsScreenState extends ConsumerState<JobsScreen> with SingleTickerProvid
                 color: AppColors.error.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.warning_amber_rounded, size: 32, color: AppColors.error),
+              child: const Icon(
+                Icons.warning_amber_rounded,
+                size: 32,
+                color: AppColors.error,
+              ),
             ),
             const SizedBox(height: 16),
-            Text("Something went wrong", style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 18)),
+            Text(
+              "Something went wrong",
+              style: GoogleFonts.inter(
+                fontWeight: FontWeight.w600,
+                fontSize: 18,
+              ),
+            ),
             const SizedBox(height: 8),
-            Text(error, textAlign: TextAlign.center, style: GoogleFonts.inter(color: AppColors.neutral500)),
+            Text(
+              error,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(color: AppColors.neutral500),
+            ),
             const SizedBox(height: 24),
             OutlinedButton.icon(
               onPressed: () => notifier.refresh(),

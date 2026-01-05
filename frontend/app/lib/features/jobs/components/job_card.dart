@@ -48,10 +48,10 @@ class JobCard extends StatelessWidget {
     final salary = job.salary; // Might be null
 
     return Container(
-      // REMOVED MARGIN HERE - The ListView handles spacing now
       decoration: BoxDecoration(
         color: theme.cardTheme.color,
-        borderRadius: BorderRadius.circular(16),
+        // MATCH PROFILE: Increased radius from 16 to 20
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(color: theme.colorScheme.outline.withOpacity(0.5)),
         boxShadow: [
           BoxShadow(
@@ -63,10 +63,10 @@ class JobCard extends StatelessWidget {
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Column(

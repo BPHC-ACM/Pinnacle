@@ -1,10 +1,11 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
-class MainNavScaffold extends StatelessWidget {
+class MainNavScaffold extends StatefulWidget {
   final StatefulNavigationShell navigationShell;
   final String currentPath;
 
@@ -14,12 +15,20 @@ class MainNavScaffold extends StatelessWidget {
     required this.currentPath,
   });
 
+  @override
+  State<MainNavScaffold> createState() => _MainNavScaffoldState();
+}
+
+class _MainNavScaffoldState extends State<MainNavScaffold> {
+  // State to track if the nav bar should be visible
+  bool _isNavBarVisible = true;
+
   void _onNavTap(int index) {
-    if (index != navigationShell.currentIndex) {
+    if (index != widget.navigationShell.currentIndex) {
       HapticFeedback.lightImpact();
-      navigationShell.goBranch(
+      widget.navigationShell.goBranch(
         index,
-        initialLocation: index == navigationShell.currentIndex,
+        initialLocation: index == widget.navigationShell.currentIndex,
       );
     }
   }
@@ -27,120 +36,126 @@ class MainNavScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final currentIndex = navigationShell.currentIndex;
+    final currentIndex = widget.navigationShell.currentIndex;
 
-    // Radius logic for perfect concentricity
     const double outerRadius = 100.0;
     const double navHeight = 85.0;
 
-    // Determine if we should show the nav bar
-    // Only show on the main tab roots
     final bool showNavBar = const [
       '/dashboard',
       '/jobs',
       '/profile',
-    ].contains(currentPath);
+    ].contains(widget.currentPath);
 
     return Scaffold(
       extendBody: true,
-      body: navigationShell,
+      // Wrap the body in a NotificationListener to detect scrolling
+      body: NotificationListener<UserScrollNotification>(
+        onNotification: (notification) {
+          if (notification.direction == ScrollDirection.reverse) {
+            if (_isNavBarVisible) setState(() => _isNavBarVisible = false);
+          } else if (notification.direction == ScrollDirection.forward) {
+            if (!_isNavBarVisible) setState(() => _isNavBarVisible = true);
+          }
+          return true;
+        },
+        child: widget.navigationShell,
+      ),
       bottomNavigationBar: showNavBar
-          ? SafeArea(
-              bottom: true,
-              child: Container(
-                // Increased bottom padding slightly to let the deeper shadow breathe
-                padding: const EdgeInsets.fromLTRB(40, 0, 40, 25),
-                color: Colors.transparent,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    // 1. Deep Shadow Layer (Multi-layered for depth)
-                    Container(
-                      height: navHeight,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(outerRadius),
-                        boxShadow: [
-                          // Broader, softer ambient shadow for lift
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
-                            blurRadius: 35,
-                            offset: const Offset(0, 15),
-                            spreadRadius: -5,
-                          ),
-                          // Tighter, darker shadow for definition right underneath
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.15),
-                            blurRadius: 10,
-                            offset: const Offset(0, 5),
-                            spreadRadius: -2,
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // 2. Glass Effect Layer (More translucent)
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(outerRadius),
-                      child: BackdropFilter(
-                        // Increased blur slightly for a stronger frosted look
-                        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                        child: Container(
-                          height: navHeight,
-                          // Key change: Reduced opacity significantly from 0.75 to 0.3
-                          // This lets the background and blur show through much more.
-                          color: colorScheme.surface.withOpacity(0.30),
-                        ),
-                      ),
-                    ),
-
-                    // 3. Border Overlay Layer (Slightly more defined)
-                    IgnorePointer(
-                      child: Container(
+          ? AnimatedSlide(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              // Slide down (Y: 2) when hidden, return to original (Y: 0) when visible
+              offset: _isNavBarVisible ? Offset.zero : const Offset(0, 2),
+              child: SafeArea(
+                bottom: true,
+                child: Container(
+                  padding: const EdgeInsets.fromLTRB(40, 0, 40, 25),
+                  color: Colors.transparent,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      // 1. Deep Shadow Layer
+                      Container(
                         height: navHeight,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(outerRadius),
-                          border: Border.all(
-                            // Increased opacity slightly so the edge isn't lost
-                            // against varied backgrounds now that it's more transparent.
-                            color: colorScheme.onSurface.withOpacity(0.12),
-                            width: 1.5,
-                            strokeAlign: BorderSide.strokeAlignInside,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 35,
+                              offset: const Offset(0, 15),
+                              spreadRadius: -5,
+                            ),
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.15),
+                              blurRadius: 10,
+                              offset: const Offset(0, 5),
+                              spreadRadius: -2,
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // 2. Glass Effect Layer
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(outerRadius),
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                          child: Container(
+                            height: navHeight,
+                            color: colorScheme.surface.withOpacity(0.30),
                           ),
                         ),
                       ),
-                    ),
 
-                    // 4. Content Layer (Unchanged)
-                    SizedBox(
-                      height: navHeight,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          _buildNavItem(
-                            context: context,
-                            icon: LucideIcons.fileText,
-                            label: 'Home',
-                            index: 0,
-                            currentIndex: currentIndex,
+                      // 3. Border Overlay Layer
+                      IgnorePointer(
+                        child: Container(
+                          height: navHeight,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(outerRadius),
+                            border: Border.all(
+                              color: colorScheme.onSurface.withOpacity(0.12),
+                              width: 1.5,
+                              strokeAlign: BorderSide.strokeAlignInside,
+                            ),
                           ),
-                          _buildNavItem(
-                            context: context,
-                            icon: LucideIcons.briefcase,
-                            label: 'Jobs',
-                            index: 1,
-                            currentIndex: currentIndex,
-                          ),
-                          _buildNavItem(
-                            context: context,
-                            icon: LucideIcons.user,
-                            label: 'Profile',
-                            index: 2,
-                            currentIndex: currentIndex,
-                          ),
-                        ],
+                        ),
                       ),
-                    ),
-                  ],
+
+                      // 4. Content Layer
+                      SizedBox(
+                        height: navHeight,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            _buildNavItem(
+                              context: context,
+                              icon: LucideIcons.fileText,
+                              label: 'Home',
+                              index: 0,
+                              currentIndex: currentIndex,
+                            ),
+                            _buildNavItem(
+                              context: context,
+                              icon: LucideIcons.briefcase,
+                              label: 'Jobs',
+                              index: 1,
+                              currentIndex: currentIndex,
+                            ),
+                            _buildNavItem(
+                              context: context,
+                              icon: LucideIcons.user,
+                              label: 'Profile',
+                              index: 2,
+                              currentIndex: currentIndex,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             )
@@ -148,7 +163,6 @@ class MainNavScaffold extends StatelessWidget {
     );
   }
 
-  // _buildNavItem remains exactly the same as your original code
   Widget _buildNavItem({
     required BuildContext context,
     required IconData icon,
@@ -191,8 +205,7 @@ class MainNavScaffold extends StatelessWidget {
               transform: Matrix4.translationValues(0, isSelected ? -1 : 0, 0),
               child: Icon(
                 icon,
-                size:
-                    22, // Lucide icons often look better slightly smaller than Material
+                size: 22,
                 color: isSelected
                     ? colorScheme.onPrimary
                     : colorScheme.onSurfaceVariant.withOpacity(0.6),
