@@ -1,6 +1,12 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart'; // Import Riverpod
 import '../storage/storage_service.dart';
+
+// 1. Define the global provider here
+final apiClientProvider = Provider<ApiClient>((ref) {
+  return ApiClient();
+});
 
 class ApiClient {
   final Dio _dio;
@@ -15,8 +21,9 @@ class ApiClient {
     : _storage = StorageService(),
       _dio = Dio(
         BaseOptions(
-          // REPLACE with your local IP if running locally. Also Using nip.io to bypass Google's Private IP restriction.
+          // REPLACE with your local IP if running locally.
           // Android Emulator uses 10.0.2.2.
+          // or use http://localhost:3000 if rerouting with adb
           baseUrl: 'http://localhost:3000',
           connectTimeout: const Duration(seconds: 10),
           receiveTimeout: const Duration(seconds: 10),
@@ -26,7 +33,43 @@ class ApiClient {
     _setupInterceptors();
   }
 
+  // Expose the raw Dio client if needed, or helper methods (get, post, etc.)
   Dio get client => _dio;
+
+  // Helper method for GET requests (used by Repositories)
+  Future<Response> get(
+    String path, {
+    Map<String, dynamic>? queryParameters,
+  }) async {
+    return _dio.get(path, queryParameters: queryParameters);
+  }
+
+  // Helper method for POST requests
+  Future<Response> post(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+  }) async {
+    return _dio.post(path, data: data, queryParameters: queryParameters);
+  }
+
+  // Helper method for PATCH requests
+  Future<Response> patch(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+  }) async {
+    return _dio.patch(path, data: data, queryParameters: queryParameters);
+  }
+
+  // Helper method for DELETE requests
+  Future<Response> delete(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+  }) async {
+    return _dio.delete(path, data: data, queryParameters: queryParameters);
+  }
 
   void _setupInterceptors() {
     _dio.interceptors.add(
@@ -42,7 +85,6 @@ class ApiClient {
           if (e.response?.statusCode == 401) {
             // Token expired or invalid
             await _storage.clearAll();
-            // TODO: Trigger a global navigation event to login screen
             if (kDebugMode) {
               print("Session expired. User logged out.");
             }
