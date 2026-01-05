@@ -17,7 +17,7 @@ class ApiClient {
         BaseOptions(
           // REPLACE with your local IP if running locally. Also Using nip.io to bypass Google's Private IP restriction.
           // Android Emulator uses 10.0.2.2.
-          baseUrl: 'http://192.168.1.9.nip.io:3000',
+          baseUrl: 'http://localhost:3000',
           connectTimeout: const Duration(seconds: 10),
           receiveTimeout: const Duration(seconds: 10),
           headers: {'Content-Type': 'application/json'},

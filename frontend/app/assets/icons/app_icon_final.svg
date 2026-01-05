@@ -5,7 +5,7 @@
    viewBox="0 0 1600 420"
    version="1.1"
    id="svg6"
-   sodipodi:docname="app_icon_wide_test.svg"
+   sodipodi:docname="app_icon_final.svg"
    inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
    inkscape:export-filename="app_icon_final.png"
    inkscape:export-xdpi="96"
@@ -26,7 +26,7 @@
      inkscape:deskcolor="#d1d1d1"
      showgrid="false"
      inkscape:zoom="0.70952381"
-     inkscape:cx="50.738255"
+     inkscape:cx="52.147651"
      inkscape:cy="176.87919"
      inkscape:window-width="1920"
      inkscape:window-height="1051"
@@ -154,7 +154,7 @@
      font-size="220px"
      text-transform="uppercase"
      id="g5"
-     transform="matrix(6.7197767,0,0,6.7197767,-1035.7507,-1055.425)">
+     transform="matrix(5.6229816,0,0,5.6229816,-715.78805,-864.1511)">
     <text
        x="200"
        y="270"
@@ -187,7 +187,7 @@
      filter="url(#glow)"
      id="text6"
      style="fill:url(#pattern1)"
-     transform="matrix(6.7197767,0,0,6.7197767,-530.59631,2985.81)">P</text>
+     transform="matrix(5.6229816,0,0,5.6229816,-293.08444,2517.4776)">P</text>
   <text
      x="124.82572"
      y="-331.39426"
@@ -200,5 +200,5 @@
      filter="url(#glow)"
      id="text13"
      style="fill:url(#pattern15);fill-opacity:1;filter:url(#filter14)"
-     transform="matrix(6.7197767,0,0,6.7197767,-530.59631,2985.81)">P</text>
+     transform="matrix(5.6229816,0,0,5.6229816,-293.08444,2517.4776)">P</text>
 </svg>
