@@ -6,8 +6,13 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class MainNavScaffold extends StatelessWidget {
   final StatefulNavigationShell navigationShell;
+  final String currentPath;
 
-  const MainNavScaffold({super.key, required this.navigationShell});
+  const MainNavScaffold({
+    super.key,
+    required this.navigationShell,
+    required this.currentPath,
+  });
 
   void _onNavTap(int index) {
     if (index != navigationShell.currentIndex) {
@@ -28,108 +33,118 @@ class MainNavScaffold extends StatelessWidget {
     const double outerRadius = 100.0;
     const double navHeight = 85.0;
 
+    // Determine if we should show the nav bar
+    // Only show on the main tab roots
+    final bool showNavBar = const [
+      '/dashboard',
+      '/jobs',
+      '/profile',
+    ].contains(currentPath);
+
     return Scaffold(
       extendBody: true,
       body: navigationShell,
-      bottomNavigationBar: SafeArea(
-        bottom: true,
-        child: Container(
-          // Increased bottom padding slightly to let the deeper shadow breathe
-          padding: const EdgeInsets.fromLTRB(40, 0, 40, 25),
-          color: Colors.transparent,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              // 1. Deep Shadow Layer (Multi-layered for depth)
-              Container(
-                height: navHeight,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(outerRadius),
-                  boxShadow: [
-                    // Broader, softer ambient shadow for lift
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
-                      blurRadius: 35,
-                      offset: const Offset(0, 15),
-                      spreadRadius: -5,
-                    ),
-                    // Tighter, darker shadow for definition right underneath
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.15),
-                      blurRadius: 10,
-                      offset: const Offset(0, 5),
-                      spreadRadius: -2,
-                    ),
-                  ],
-                ),
-              ),
-
-              // 2. Glass Effect Layer (More translucent)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(outerRadius),
-                child: BackdropFilter(
-                  // Increased blur slightly for a stronger frosted look
-                  filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                  child: Container(
-                    height: navHeight,
-                    // Key change: Reduced opacity significantly from 0.75 to 0.3
-                    // This lets the background and blur show through much more.
-                    color: colorScheme.surface.withOpacity(0.30),
-                  ),
-                ),
-              ),
-
-              // 3. Border Overlay Layer (Slightly more defined)
-              IgnorePointer(
-                child: Container(
-                  height: navHeight,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(outerRadius),
-                    border: Border.all(
-                      // Increased opacity slightly so the edge isn't lost
-                      // against varied backgrounds now that it's more transparent.
-                      color: colorScheme.onSurface.withOpacity(0.12),
-                      width: 1.5,
-                      strokeAlign: BorderSide.strokeAlignInside,
-                    ),
-                  ),
-                ),
-              ),
-
-              // 4. Content Layer (Unchanged)
-              SizedBox(
-                height: navHeight,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      bottomNavigationBar: showNavBar
+          ? SafeArea(
+              bottom: true,
+              child: Container(
+                // Increased bottom padding slightly to let the deeper shadow breathe
+                padding: const EdgeInsets.fromLTRB(40, 0, 40, 25),
+                color: Colors.transparent,
+                child: Stack(
+                  alignment: Alignment.center,
                   children: [
-                    _buildNavItem(
-                      context: context,
-                      icon: LucideIcons.fileText,
-                      label: 'Home',
-                      index: 0,
-                      currentIndex: currentIndex,
+                    // 1. Deep Shadow Layer (Multi-layered for depth)
+                    Container(
+                      height: navHeight,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(outerRadius),
+                        boxShadow: [
+                          // Broader, softer ambient shadow for lift
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            blurRadius: 35,
+                            offset: const Offset(0, 15),
+                            spreadRadius: -5,
+                          ),
+                          // Tighter, darker shadow for definition right underneath
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.15),
+                            blurRadius: 10,
+                            offset: const Offset(0, 5),
+                            spreadRadius: -2,
+                          ),
+                        ],
+                      ),
                     ),
-                    _buildNavItem(
-                      context: context,
-                      icon: LucideIcons.briefcase,
-                      label: 'Jobs',
-                      index: 1,
-                      currentIndex: currentIndex,
+
+                    // 2. Glass Effect Layer (More translucent)
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(outerRadius),
+                      child: BackdropFilter(
+                        // Increased blur slightly for a stronger frosted look
+                        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                        child: Container(
+                          height: navHeight,
+                          // Key change: Reduced opacity significantly from 0.75 to 0.3
+                          // This lets the background and blur show through much more.
+                          color: colorScheme.surface.withOpacity(0.30),
+                        ),
+                      ),
                     ),
-                    _buildNavItem(
-                      context: context,
-                      icon: LucideIcons.user,
-                      label: 'Profile',
-                      index: 2,
-                      currentIndex: currentIndex,
+
+                    // 3. Border Overlay Layer (Slightly more defined)
+                    IgnorePointer(
+                      child: Container(
+                        height: navHeight,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(outerRadius),
+                          border: Border.all(
+                            // Increased opacity slightly so the edge isn't lost
+                            // against varied backgrounds now that it's more transparent.
+                            color: colorScheme.onSurface.withOpacity(0.12),
+                            width: 1.5,
+                            strokeAlign: BorderSide.strokeAlignInside,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // 4. Content Layer (Unchanged)
+                    SizedBox(
+                      height: navHeight,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          _buildNavItem(
+                            context: context,
+                            icon: LucideIcons.fileText,
+                            label: 'Home',
+                            index: 0,
+                            currentIndex: currentIndex,
+                          ),
+                          _buildNavItem(
+                            context: context,
+                            icon: LucideIcons.briefcase,
+                            label: 'Jobs',
+                            index: 1,
+                            currentIndex: currentIndex,
+                          ),
+                          _buildNavItem(
+                            context: context,
+                            icon: LucideIcons.user,
+                            label: 'Profile',
+                            index: 2,
+                            currentIndex: currentIndex,
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
+            )
+          : null,
     );
   }
 

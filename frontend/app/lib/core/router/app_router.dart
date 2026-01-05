@@ -58,7 +58,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Shell Route for Bottom Navigation
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
-          return MainNavScaffold(navigationShell: navigationShell);
+          return MainNavScaffold(
+            navigationShell: navigationShell,
+            currentPath: state.uri.path,
+          );
         },
         branches: [
           // Branch 1: Dashboard
@@ -71,7 +74,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             ],
           ),
 
-          // Branch 2: Jobs (FIXED: Added details route here)
+          // Branch 2: Jobs
           StatefulShellBranch(
             routes: [
               GoRoute(
@@ -92,7 +95,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             ],
           ),
 
-          // Branch 3: Profile (FIXED: Points to ProfileScreen)
+          // Branch 3: Profile
           StatefulShellBranch(
             routes: [
               GoRoute(
