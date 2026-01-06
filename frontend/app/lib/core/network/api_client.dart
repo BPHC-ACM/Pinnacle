@@ -1,7 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart'; // Import Riverpod
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../storage/storage_service.dart';
+import '../utils/logger.dart';
 
 // 1. Define the global provider here
 final apiClientProvider = Provider<ApiClient>((ref) {
@@ -86,7 +87,7 @@ class ApiClient {
             // Token expired or invalid
             await _storage.clearAll();
             if (kDebugMode) {
-              print("Session expired. User logged out.");
+              logger.i("Session expired. User logged out.");
             }
           }
           return handler.next(e);

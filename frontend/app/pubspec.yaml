@@ -25,6 +25,7 @@ dependencies:
   lucide_icons_flutter: ^3.1.9
   intl: ^0.20.2
   google_sign_in: ^7.2.0
+  logger: ^2.6.2
 
 flutter:
   uses-material-design: true

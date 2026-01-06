@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import '../../../../core/network/api_client.dart';
+import '../../../../core/utils/logger.dart'; // Import logger
 import '../models/job_model.dart';
 import '../models/application_model.dart';
 
@@ -14,39 +15,34 @@ class JobsRepository {
       final response = await _apiClient.client.get('/api/jobs');
       final List<dynamic> jobsData = response.data['data'];
 
-      // 1. Extract unique company IDs
       final Set<String> companyIds = jobsData
           .map((j) => j['companyId'] as String?)
           .where((id) => id != null && id.isNotEmpty)
           .cast<String>()
           .toSet();
 
-      // 2. Fetch company details concurrently
       final Map<String, Company> companyMap = {};
 
       await Future.wait(
         companyIds.map((id) async {
           try {
-            // Fetch individual company details
             final companyRes = await _apiClient.client.get(
               '/api/companies/$id',
             );
             companyMap[id] = Company.fromJson(companyRes.data);
           } catch (e) {
-            print('Failed to fetch company details for $id: $e');
+            logger.e('Failed to fetch company details for $id', error: e);
           }
         }),
       );
 
-      // 3. Map jobs with the fetched company data
       return jobsData.map((json) {
         final companyId = json['companyId'];
         final company = companyMap[companyId];
-        // Inject the fetched company into the model
         return JobModel.fromJson(json, companyOverride: company);
       }).toList();
     } catch (e) {
-      print("Error fetching jobs: $e");
+      logger.e("Error fetching jobs", error: e);
       throw Exception('Failed to fetch jobs: $e');
     }
   }
@@ -57,7 +53,6 @@ class JobsRepository {
       final json = response.data;
 
       Company? company;
-      // Fetch company for single job details if not present
       if (json['company'] == null && json['companyId'] != null) {
         try {
           final companyRes = await _apiClient.client.get(
@@ -65,12 +60,13 @@ class JobsRepository {
           );
           company = Company.fromJson(companyRes.data);
         } catch (e) {
-          print('Failed to fetch company for job $id: $e');
+          logger.e('Failed to fetch company for job $id', error: e);
         }
       }
 
       return JobModel.fromJson(json, companyOverride: company);
     } catch (e) {
+      logger.e('Failed to fetch job details: $e');
       throw Exception('Failed to fetch job details: $e');
     }
   }
@@ -79,36 +75,33 @@ class JobsRepository {
     try {
       final response = await _apiClient.client.get('/api/applications');
       
-      // DEBUG PRINT
-      print("Fetched Applications: ${response.data}"); 
+      logger.d("Fetched Applications: ${response.data}"); 
 
-      // FIX: Access ['data'] because the backend returns a paginated response
       final List<dynamic> applicationsJson = response.data['data']; 
       
       return applicationsJson
           .map((e) => ApplicationModel.fromJson(e))
           .toList();
     } catch (e) {
-      print("Error fetching applications: $e"); // Print error to see casting issues
+      logger.e("Error fetching applications", error: e);
       return [];
     }
   }
 
   Future<void> applyToJob(String jobId, {Map<String, dynamic>? answers}) async {
     try {
-      // Send answers in the body if provided, otherwise empty map
       final data = {if (answers != null) 'answers': answers};
-
       await _apiClient.client.post('/api/jobs/$jobId/applications', data: data);
+      logger.i("Successfully applied to job $jobId");
     } catch (e) {
       if (e is DioException) {
-        // Backend returns errors in 'msg' field usually, but sometimes 'error' or 'message'
         final data = e.response?.data;
         final errorMsg =
             data?['msg'] ??
             data?['message'] ??
             data?['error'] ??
             'Failed to apply';
+        logger.e("Failed to apply to job", error: e);
         throw Exception(errorMsg);
       }
       throw Exception('Failed to apply to job');
