@@ -36,6 +36,7 @@ class JobCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final statusColor = _getStatusColor(applicationStatus);
     final isApplied = applicationStatus != 'Yet to apply';
 
@@ -50,12 +51,13 @@ class JobCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: theme.cardTheme.color,
-        // MATCH PROFILE: Increased radius from 16 to 20
+        // Match Profile Card Radius
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: theme.colorScheme.outline.withOpacity(0.5)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            // Softer shadow to match Profile aesthetics (0.02 vs 0.04)
+            color: Colors.black.withOpacity(0.02),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),
@@ -76,14 +78,23 @@ class JobCard extends StatelessWidget {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Company Logo Placeholder
+                    // Company Logo - Updated to match Job Details Screen style
                     Container(
-                      width: 52,
-                      height: 52,
+                      width: 48,
+                      height: 48,
                       decoration: BoxDecoration(
-                        color: AppColors.primary50,
+                        color: colorScheme.surface,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.primary50),
+                        border: Border.all(
+                          color: colorScheme.outline.withOpacity(0.5),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
                       alignment: Alignment.center,
                       child: Text(
@@ -91,9 +102,9 @@ class JobCard extends StatelessWidget {
                             ? companyName[0].toUpperCase()
                             : '?',
                         style: GoogleFonts.inter(
-                          fontSize: 22,
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.primary600,
+                          color: colorScheme.primary,
                         ),
                       ),
                     ),
@@ -106,10 +117,10 @@ class JobCard extends StatelessWidget {
                           Text(
                             job.title,
                             style: GoogleFonts.inter(
-                              fontSize: 18,
+                              fontSize: 16,
                               fontWeight: FontWeight.w600,
                               color: theme.colorScheme.onSurface,
-                              height: 1.2,
+                              height: 1.3,
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -134,7 +145,7 @@ class JobCard extends StatelessWidget {
                         ),
                         decoration: BoxDecoration(
                           color: statusColor.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(100),
                           border: Border.all(
                             color: statusColor.withOpacity(0.2),
                           ),
@@ -153,15 +164,15 @@ class JobCard extends StatelessWidget {
 
                 const SizedBox(height: 20),
 
-                // Metadata Chips
+                // Metadata Chips - Updated to Pill Shape
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
                   children: [
-                    _buildChip(theme, LucideIcons.mapPin, location),
-                    _buildChip(theme, LucideIcons.briefcase, type),
+                    _buildChip(context, LucideIcons.mapPin, location),
+                    _buildChip(context, LucideIcons.briefcase, type),
                     if (salary != null)
-                      _buildChip(theme, LucideIcons.banknote, salary),
+                      _buildChip(context, LucideIcons.banknote, salary),
                   ],
                 ),
 
@@ -209,13 +220,16 @@ class JobCard extends StatelessWidget {
     );
   }
 
-  Widget _buildChip(ThemeData theme, IconData icon, String label) {
+  Widget _buildChip(BuildContext context, IconData icon, String label) {
+    final theme = Theme.of(context);
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         color: theme.scaffoldBackgroundColor,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: theme.colorScheme.outline),
+        // Updated to Pill shape (circular)
+        borderRadius: BorderRadius.circular(100),
+        border: Border.all(color: theme.colorScheme.outline.withOpacity(0.5)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

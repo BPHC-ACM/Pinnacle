@@ -7,11 +7,13 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class MainNavScaffold extends StatefulWidget {
   final StatefulNavigationShell navigationShell;
+  final List<Widget> children; // List of branch Navigators
   final String currentPath;
 
   const MainNavScaffold({
     super.key,
     required this.navigationShell,
+    required this.children,
     required this.currentPath,
   });
 
@@ -21,6 +23,23 @@ class MainNavScaffold extends StatefulWidget {
 
 class _MainNavScaffoldState extends State<MainNavScaffold> {
   bool _isNavBarVisible = true;
+  int _previousIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _previousIndex = widget.navigationShell.currentIndex;
+  }
+
+  @override
+  void didUpdateWidget(MainNavScaffold oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Update previous index only when the index actually changes
+    if (widget.navigationShell.currentIndex !=
+        oldWidget.navigationShell.currentIndex) {
+      _previousIndex = oldWidget.navigationShell.currentIndex;
+    }
+  }
 
   void _onNavTap(int index) {
     if (index != widget.navigationShell.currentIndex) {
@@ -48,7 +67,6 @@ class _MainNavScaffoldState extends State<MainNavScaffold> {
 
     return Scaffold(
       extendBody: true,
-
       body: NotificationListener<UserScrollNotification>(
         onNotification: (notification) {
           if (notification.direction == ScrollDirection.reverse) {
@@ -58,13 +76,75 @@ class _MainNavScaffoldState extends State<MainNavScaffold> {
           }
           return true;
         },
-        child: widget.navigationShell,
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          // Use easeOut for both IN and OUT to create a "Push" feel
+          // where the whole locking mechanism slows down together.
+          switchInCurve: Curves.easeOut,
+          switchOutCurve: Curves.easeOut,
+          transitionBuilder: (Widget child, Animation<double> animation) {
+            // Robustly identify if this child is the "incoming" or "outgoing" one
+            // by checking the ValueKey we assigned below.
+            final int val = (child.key as ValueKey<int>).value;
+            final bool isIncoming = val == currentIndex;
+
+            // Determine direction: Moving Right (0->1) or Left (1->0)
+            final bool isMovingRight = currentIndex > _previousIndex;
+
+            // Define offsets for a standard "Push" transition
+            // Moving Right: Everything slides LEFT.
+            // Moving Left: Everything slides RIGHT.
+
+            Offset begin;
+            Offset end;
+
+            if (isMovingRight) {
+              // SCENARIO: Moving Right (e.g. Home -> Jobs) -> Slide Left
+              if (isIncoming) {
+                // Incoming enters from Right (1.0 -> 0.0)
+                begin = const Offset(1.0, 0.0);
+                end = Offset.zero;
+              } else {
+                // Outgoing leaves to Left (0.0 -> -1.0)
+                // (Driven by reverse animation 1.0 -> 0.0, so we map 1->0 to 0->-1)
+                // Tween: lerp(-1, 0, t). At t=1 (start of reverse), val=0. At t=0 (end of reverse), val=-1.
+                begin = const Offset(-1.0, 0.0);
+                end = Offset.zero;
+              }
+            } else {
+              // SCENARIO: Moving Left (e.g. Jobs -> Home) -> Slide Right
+              if (isIncoming) {
+                // Incoming enters from Left (-1.0 -> 0.0)
+                begin = const Offset(-1.0, 0.0);
+                end = Offset.zero;
+              } else {
+                // Outgoing leaves to Right (0.0 -> 1.0)
+                // (Driven by reverse animation)
+                begin = const Offset(1.0, 0.0);
+                end = Offset.zero;
+              }
+            }
+
+            return SlideTransition(
+              position: Tween<Offset>(
+                begin: begin,
+                end: end,
+              ).animate(animation),
+              child: child,
+            );
+          },
+          // IMPORTANT: Wrap child in KeyedSubtree so AnimatedSwitcher
+          // can track it even if the widget instance changes.
+          child: KeyedSubtree(
+            key: ValueKey<int>(currentIndex),
+            child: widget.children[currentIndex],
+          ),
+        ),
       ),
       bottomNavigationBar: showNavBar
           ? AnimatedSlide(
               duration: const Duration(milliseconds: 300),
               curve: Curves.easeInOut,
-
               offset: _isNavBarVisible ? Offset.zero : const Offset(0, 2),
               child: SafeArea(
                 bottom: true,
@@ -85,16 +165,9 @@ class _MainNavScaffoldState extends State<MainNavScaffold> {
                               offset: const Offset(0, 15),
                               spreadRadius: -5,
                             ),
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.15),
-                              blurRadius: 10,
-                              offset: const Offset(0, 5),
-                              spreadRadius: -2,
-                            ),
                           ],
                         ),
                       ),
-
                       ClipRRect(
                         borderRadius: BorderRadius.circular(outerRadius),
                         child: BackdropFilter(
@@ -105,21 +178,6 @@ class _MainNavScaffoldState extends State<MainNavScaffold> {
                           ),
                         ),
                       ),
-
-                      IgnorePointer(
-                        child: Container(
-                          height: navHeight,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(outerRadius),
-                            border: Border.all(
-                              color: colorScheme.onSurface.withOpacity(0.12),
-                              width: 1.5,
-                              strokeAlign: BorderSide.strokeAlignInside,
-                            ),
-                          ),
-                        ),
-                      ),
-
                       SizedBox(
                         height: navHeight,
                         child: Row(
@@ -181,30 +239,16 @@ class _MainNavScaffoldState extends State<MainNavScaffold> {
         decoration: BoxDecoration(
           color: isSelected ? colorScheme.primary : Colors.transparent,
           borderRadius: BorderRadius.circular(100),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: colorScheme.primary.withOpacity(0.25),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  ),
-                ]
-              : [],
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              curve: Curves.fastOutSlowIn,
-              transform: Matrix4.translationValues(0, isSelected ? -1 : 0, 0),
-              child: Icon(
-                icon,
-                size: 22,
-                color: isSelected
-                    ? colorScheme.onPrimary
-                    : colorScheme.onSurfaceVariant.withOpacity(0.6),
-              ),
+            Icon(
+              icon,
+              size: 22,
+              color: isSelected
+                  ? colorScheme.onPrimary
+                  : colorScheme.onSurfaceVariant.withOpacity(0.6),
             ),
             AnimatedSize(
               duration: const Duration(milliseconds: 150),
@@ -215,12 +259,10 @@ class _MainNavScaffoldState extends State<MainNavScaffold> {
                       child: Text(
                         label,
                         maxLines: 1,
-                        overflow: TextOverflow.clip,
                         style: TextStyle(
                           color: colorScheme.onPrimary,
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          letterSpacing: 0.3,
                         ),
                       ),
                     )
