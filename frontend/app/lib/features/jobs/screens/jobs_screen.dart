@@ -10,6 +10,7 @@ import '../models/job_filter_model.dart';
 import '../widgets/jobs_filter_dialog.dart';
 import '../widgets/jobs_skeleton.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/components/pinnacle_header_banner.dart';
 
 class JobsScreen extends ConsumerStatefulWidget {
   const JobsScreen({super.key});
@@ -23,7 +24,6 @@ class _JobsScreenState extends ConsumerState<JobsScreen>
   late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
 
-  // State
   String _searchQuery = "";
   JobFilterModel _filters = const JobFilterModel();
 
@@ -56,42 +56,6 @@ class _JobsScreenState extends ConsumerState<JobsScreen>
     );
   }
 
-  // --- Visual Helper: Gradient Banner (Matches Profile) ---
-  Widget _buildBanner(BuildContext context) {
-    final theme = Theme.of(context);
-    return Container(
-      height: 280,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [theme.colorScheme.primary, theme.colorScheme.tertiary],
-        ),
-      ),
-      child: Stack(
-        children: [
-          Positioned(
-            top: -50,
-            right: -50,
-            child: CircleAvatar(
-              radius: 100,
-              backgroundColor: Colors.white.withOpacity(0.1),
-            ),
-          ),
-          Positioned(
-            bottom: 50,
-            left: -30,
-            child: CircleAvatar(
-              radius: 60,
-              backgroundColor: Colors.white.withOpacity(0.1),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final jobsState = ref.watch(jobsProvider);
@@ -100,57 +64,61 @@ class _JobsScreenState extends ConsumerState<JobsScreen>
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
-      body: Stack(
-        children: [
-          // 1. Background Banner
-          _buildBanner(context),
-
-          // 2. Scrollable Content
-          NestedScrollView(
-            headerSliverBuilder: (context, innerBoxIsScrolled) => [
-              _buildSliverAppBar(theme, innerBoxIsScrolled),
-            ],
-            body: Container(
-              color: theme.scaffoldBackgroundColor,
-              child: jobsState.isLoading
-                  ? const JobsSkeletonList()
-                  : jobsState.error != null
-                  ? _buildErrorState(jobsState.error!, theme, notifier)
-                  : TabBarView(
-                      controller: _tabController,
-                      children: [
-                        _buildJobList(jobsState, notifier, showAll: true),
-                        _buildJobList(jobsState, notifier, showAll: false),
-                      ],
-                    ),
-            ),
-          ),
+      body: NestedScrollView(
+        headerSliverBuilder: (context, innerBoxIsScrolled) => [
+          _buildSliverAppBar(theme, innerBoxIsScrolled),
         ],
+        body: Container(
+          color: theme.scaffoldBackgroundColor,
+          child: jobsState.isLoading
+              ? const JobsSkeletonList()
+              : jobsState.error != null
+              ? _buildErrorState(jobsState.error!, theme, notifier)
+              : TabBarView(
+                  controller: _tabController,
+                  children: [
+                    _buildJobList(jobsState, notifier, showAll: true),
+                    _buildJobList(jobsState, notifier, showAll: false),
+                  ],
+                ),
+        ),
       ),
     );
   }
 
   Widget _buildSliverAppBar(ThemeData theme, bool innerBoxIsScrolled) {
     return SliverAppBar(
-      expandedHeight: 220.0, // Increased height for banner visibility
+      expandedHeight: 225.0,
       pinned: true,
       floating: true,
-      backgroundColor: Colors.transparent, // Transparent to show banner
+      backgroundColor: theme.scaffoldBackgroundColor,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       forceElevated: innerBoxIsScrolled,
       flexibleSpace: FlexibleSpaceBar(
-        background: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
+        collapseMode: CollapseMode.parallax,
+        background: Stack(
+          fit: StackFit.expand,
           children: [
-            const SizedBox(height: 60), // Status bar padding
-            Text(
-              "Find your dream job",
-              style: GoogleFonts.inter(
-                fontSize: 26,
-                height: 1.1,
-                fontWeight: FontWeight.bold,
-                color: Colors.white, // White text on Gradient
+            const PinnacleHeaderBanner(height: 280),
+
+            Positioned(
+              top: 60,
+              left: 0,
+              right: 0,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Text(
+                    "Find your dream job",
+                    style: GoogleFonts.inter(
+                      fontSize: 26,
+                      height: 1.1,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -161,7 +129,6 @@ class _JobsScreenState extends ConsumerState<JobsScreen>
         child: Container(
           decoration: BoxDecoration(
             color: theme.scaffoldBackgroundColor,
-            // Rounded top corners to create the "Sheet" effect
             borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
             boxShadow: [
               BoxShadow(
@@ -191,7 +158,6 @@ class _JobsScreenState extends ConsumerState<JobsScreen>
           child: Container(
             height: 48,
             decoration: BoxDecoration(
-              // Slightly darker than scaffold to stand out in the white sheet
               color: theme.colorScheme.surface,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
@@ -228,7 +194,6 @@ class _JobsScreenState extends ConsumerState<JobsScreen>
           ),
         ),
         const SizedBox(width: 12),
-        // Filter Button
         Container(
           height: 48,
           width: 48,
@@ -282,14 +247,11 @@ class _JobsScreenState extends ConsumerState<JobsScreen>
     JobsNotifier notifier, {
     required bool showAll,
   }) {
-    // Advanced Filtering Logic
     final filteredJobs = state.jobs.where((job) {
       final appStatus = notifier.getApplicationStatus(job.id);
 
-      // 1. Tab Filter
       if (!showAll && appStatus == 'Yet to apply') return false;
 
-      // 2. Search Filter
       final matchesSearch =
           _searchQuery.isEmpty ||
           job.title.toLowerCase().contains(_searchQuery) ||
@@ -298,9 +260,6 @@ class _JobsScreenState extends ConsumerState<JobsScreen>
 
       if (!matchesSearch) return false;
 
-      // 3. Advanced Filters (from Dialog)
-
-      // Position Type
       if (_filters.positionType != 'All') {
         if (job.type != null &&
             !job.type!.toLowerCase().contains(
@@ -311,7 +270,6 @@ class _JobsScreenState extends ConsumerState<JobsScreen>
         if (job.type == null) return false;
       }
 
-      // Application Status
       if (_filters.applicationStatus != 'All') {
         if (appStatus != _filters.applicationStatus) return false;
       }
@@ -319,7 +277,6 @@ class _JobsScreenState extends ConsumerState<JobsScreen>
       return true;
     }).toList();
 
-    // Sorting Logic
     filteredJobs.sort((a, b) {
       switch (_filters.sortBy) {
         case 'Oldest':

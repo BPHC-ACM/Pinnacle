@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher_string.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/components/pinnacle_button.dart';
+import '../../../../core/components/pinnacle_header_banner.dart';
 import '../models/student_profile_model.dart';
 import '../providers/profile_provider.dart';
 
@@ -31,9 +32,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   late TextEditingController _githubController;
   late TextEditingController _websiteController;
 
+  // Scroll Controller for fading effect
+  late ScrollController _scrollController;
+
   @override
   void initState() {
     super.initState();
+    _scrollController = ScrollController();
+
     _titleController = TextEditingController();
     _bioController = TextEditingController();
     _phoneController = TextEditingController();
@@ -45,6 +51,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   @override
   void dispose() {
+    _scrollController.dispose();
     _titleController.dispose();
     _bioController.dispose();
     _phoneController.dispose();
@@ -120,7 +127,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Widget build(BuildContext context) {
     final profileState = ref.watch(profileProvider);
     final theme = Theme.of(context);
-    // final colorScheme = theme.colorScheme;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -129,24 +135,84 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         error: (err, stack) => Center(child: Text('Error: $err')),
         data: (profile) => Stack(
           children: [
-            // 1. Gradient Banner Background
-            _buildBanner(context),
+            // 1. New Animated Grid Banner with Gradient Overlay
+            AnimatedBuilder(
+              animation: _scrollController,
+              builder: (context, child) {
+                // Calculate opacity: 1.0 at top, 0.0 after scrolling 150px
+                double offset = 0;
+                if (_scrollController.hasClients) {
+                  offset = _scrollController.offset;
+                }
+                final opacity = (1.0 - (offset / 150.0)).clamp(0.0, 1.0);
+
+                return Opacity(
+                  opacity: opacity,
+                  child: child,
+                );
+              },
+              // The static content to fade (passed as 'child' to builder for performance)
+              child: Stack(
+                children: [
+                  const PinnacleHeaderBanner(height: 280),
+                  // Gradient Overlay: Placed ON TOP to blend bottom edge into background
+                  Positioned.fill(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.transparent,
+                            Colors.transparent,
+                            theme.scaffoldBackgroundColor,
+                          ],
+                          stops: const [0, .6, 1],
+                          begin: AlignmentDirectional.topCenter,
+                          end: AlignmentDirectional.bottomCenter,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
 
             // 2. Main Scrollable Content
             CustomScrollView(
+              controller: _scrollController,
               physics: const BouncingScrollPhysics(),
               slivers: [
                 SliverAppBar(
+                  expandedHeight: 80.0,
                   backgroundColor: Colors.transparent,
                   surfaceTintColor: Colors.transparent,
                   pinned: true,
                   elevation: 0,
                   centerTitle: true,
-                  title: Text(
-                    _isEditing ? "Edit Profile" : "",
-                    style: GoogleFonts.inter(
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                  title: _isEditing
+                      ? Text(
+                          "Edit Profile",
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        )
+                      : null,
+                  flexibleSpace: FlexibleSpaceBar(
+                    background: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 60),
+                        if (!_isEditing)
+                          Text(
+                            "My Profile",
+                            style: GoogleFonts.inter(
+                              fontSize: 26,
+                              height: 1.1,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                      ],
                     ),
                   ),
                   actions: [
@@ -171,12 +237,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     const SizedBox(width: 16),
                   ],
                 ),
-
                 SliverPadding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   sliver: SliverList(
                     delegate: SliverChildListDelegate([
-                      const SizedBox(height: 60),
+                      const SizedBox(height: 10),
 
                       // --- Floating Profile Card ---
                       _buildFloatingHeaderCard(context, profile),
@@ -199,9 +264,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             context,
                             "No education details added.",
                           ),
-
                         const SizedBox(height: 32),
-
                         _buildSectionHeader(context, "Experience"),
                         ...profile.experiences.map(
                           (e) => _buildExperienceCard(context, e),
@@ -211,16 +274,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             context,
                             "No experience added yet.",
                           ),
-
                         const SizedBox(height: 32),
-
                         if (profile.skills.isNotEmpty) ...[
                           _buildSectionHeader(context, "Skills"),
                           _buildSkillsCard(context, profile.skills),
                           const SizedBox(height: 32),
                         ],
 
-                        // Projects Section - Always visible now
+                        // Projects Section
                         _buildSectionHeader(context, "Projects"),
                         ...profile.projects.map(
                           (p) => _buildProjectCard(context, p),
@@ -232,7 +293,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           ),
                         const SizedBox(height: 32),
                       ],
-
                       const SizedBox(height: 120),
                     ]),
                   ),
@@ -245,42 +305,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  // --- Visual Components ---
+  // ... (Rest of the file and helper widgets remain unchanged)
 
-  Widget _buildBanner(BuildContext context) {
-    final theme = Theme.of(context);
-    return Container(
-      height: 280,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [theme.colorScheme.primary, theme.colorScheme.tertiary],
-        ),
-      ),
-      child: Stack(
-        children: [
-          Positioned(
-            top: -50,
-            right: -50,
-            child: CircleAvatar(
-              radius: 100,
-              backgroundColor: Colors.white.withOpacity(0.1),
-            ),
-          ),
-          Positioned(
-            bottom: 50,
-            left: -30,
-            child: CircleAvatar(
-              radius: 60,
-              backgroundColor: Colors.white.withOpacity(0.1),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // --- Visual Components ---
 
   Widget _buildFloatingHeaderCard(
     BuildContext context,
@@ -288,9 +315,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   ) {
     final theme = Theme.of(context);
     return Container(
-      padding: const EdgeInsets.all(16), // Compact padding
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        // Uses Theme Card Color
         color: theme.cardTheme.color,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
@@ -334,8 +360,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   )
                 : null,
           ),
-          const SizedBox(height: 8), // Reduced spacing
-
+          const SizedBox(height: 8),
           Text(
             profile.name,
             textAlign: TextAlign.center,
@@ -345,9 +370,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               color: theme.colorScheme.onSurface,
             ),
           ),
-
-          const SizedBox(height: 4), // Reduced spacing
-
+          const SizedBox(height: 4),
           AnimatedSize(
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeOutBack,
@@ -390,9 +413,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           )
         else
           _buildEmptyText(context, "No headline added"),
-
-        const SizedBox(height: 8), // Reduced spacing
-
+        const SizedBox(height: 8),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -400,20 +421,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               _buildIconText(context, LucideIcons.mapPin, location)
             else
               _buildEmptyText(context, "No location"),
-
             const SizedBox(width: 16),
             Container(width: 1, height: 16, color: colorScheme.outline),
             const SizedBox(width: 16),
-
             if (phone != null && phone.isNotEmpty)
               _buildIconText(context, LucideIcons.phone, phone)
             else
               _buildEmptyText(context, "No phone"),
           ],
         ),
-
-        const SizedBox(height: 12), // Reduced spacing
-
+        const SizedBox(height: 12),
         if (bio != null && bio.isNotEmpty)
           Text(
             bio,
@@ -428,7 +445,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           Container(
             padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
             decoration: BoxDecoration(
-              // Uses Theme Background
               color: theme.scaffoldBackgroundColor,
               borderRadius: BorderRadius.circular(8),
             ),
@@ -437,11 +453,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               "No bio added yet. Tap edit to introduce yourself!",
             ),
           ),
-
-        const SizedBox(height: 12), // Reduced spacing
+        const SizedBox(height: 12),
         Divider(color: colorScheme.outline.withOpacity(0.5)),
-        const SizedBox(height: 12), // Reduced spacing
-
+        const SizedBox(height: 12),
         if (hasSocials)
           Wrap(
             spacing: 16,
@@ -515,7 +529,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           "Tell us about yourself...",
           maxLines: 3,
         ),
-
         const SizedBox(height: 24),
         Align(
           alignment: Alignment.centerLeft,
@@ -644,7 +657,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          // Uses Theme scaffold background instead of neutral50
           color: theme.scaffoldBackgroundColor,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: theme.colorScheme.outline.withOpacity(0.5)),
@@ -681,7 +693,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ? Icon(icon, size: 18, color: colorScheme.onSurfaceVariant)
             : null,
         filled: true,
-        // Uses scaffold background for input fill to contrast with the card
         fillColor: theme.scaffoldBackgroundColor,
         contentPadding: const EdgeInsets.all(16),
         border: OutlineInputBorder(
@@ -720,8 +731,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     return _buildContentCard(
       context,
       icon: LucideIcons.graduationCap,
-      color: AppColors
-          .primary500, // Semantic color remains (OK to keep semantic colors)
+      color: AppColors.primary500,
       title: edu.institution,
       subtitle: "${edu.degree} in ${edu.branch}",
       meta: "${_formatDate(edu.startDate)} - ${_formatDate(edu.endDate)}",
