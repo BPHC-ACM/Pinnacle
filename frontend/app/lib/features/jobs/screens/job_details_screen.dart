@@ -7,6 +7,7 @@ import 'dart:ui';
 import '../models/job_model.dart';
 import '../providers/jobs_provider.dart';
 import '../../../core/components/pinnacle_button.dart';
+import '../../../core/components/pinnacle_header_banner.dart';
 import '../../../core/theme/app_colors.dart';
 
 class JobDetailsScreen extends ConsumerStatefulWidget {
@@ -21,6 +22,19 @@ class JobDetailsScreen extends ConsumerStatefulWidget {
 
 class _JobDetailsScreenState extends ConsumerState<JobDetailsScreen> {
   bool _isApplying = false;
+  late ScrollController _scrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   String _getDaysRemaining(DateTime? deadline) {
     if (deadline == null) return 'No deadline';
@@ -31,49 +45,6 @@ class _JobDetailsScreenState extends ConsumerState<JobDetailsScreen> {
     if (diff == 0) return 'Closes today';
     if (diff == 1) return 'Closes tomorrow';
     return '$diff days left';
-  }
-
-  // --- Visual Component: Gradient Banner ---
-  Widget _buildBanner(BuildContext context) {
-    final theme = Theme.of(context);
-    return Container(
-      height: 280,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          // Updated colors to distinguish from Profile Screen
-          // Using a Deep Blue gradient (primary900 -> primary500)
-          colors: [
-            AppColors.primary900,
-            theme.colorScheme.primary,
-          ],
-        ),
-      ),
-      child: Stack(
-        children: [
-          Positioned(
-            top: -50,
-            right: -50,
-            child: CircleAvatar(
-              radius: 100,
-              backgroundColor: Colors.white.withOpacity(
-                0.05,
-              ), // Slightly more subtle
-            ),
-          ),
-          Positioned(
-            bottom: 50,
-            left: -30,
-            child: CircleAvatar(
-              radius: 60,
-              backgroundColor: Colors.white.withOpacity(0.05),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   @override
@@ -117,11 +88,49 @@ class _JobDetailsScreenState extends ConsumerState<JobDetailsScreen> {
       backgroundColor: theme.scaffoldBackgroundColor,
       body: Stack(
         children: [
-          // 1. Background Gradient Banner
-          _buildBanner(context),
+          // 1. Animated Header Banner with Scroll Fade
+          AnimatedBuilder(
+            animation: _scrollController,
+            builder: (context, child) {
+              // Calculate opacity: 1.0 at top, 0.0 after scrolling 150px
+              double offset = 0;
+              if (_scrollController.hasClients) {
+                offset = _scrollController.offset;
+              }
+              final opacity = (1.0 - (offset / 150.0)).clamp(0.0, 1.0);
+
+              return Opacity(
+                opacity: opacity,
+                child: child,
+              );
+            },
+            child: Stack(
+              children: [
+                const PinnacleHeaderBanner(height: 280),
+                // Gradient Overlay: Placed ON TOP to blend bottom edge into background
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.transparent,
+                          Colors.transparent,
+                          theme.scaffoldBackgroundColor,
+                        ],
+                        stops: const [0, .6, 1],
+                        begin: AlignmentDirectional.topCenter,
+                        end: AlignmentDirectional.bottomCenter,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
 
           // 2. Scrollable Content with Slivers
           CustomScrollView(
+            controller: _scrollController,
             physics: const BouncingScrollPhysics(),
             slivers: [
               SliverAppBar(
