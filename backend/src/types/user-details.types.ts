@@ -179,31 +179,34 @@ export interface UpdateSkillRequest {
 export interface Project {
   id: string;
   userId: string;
-  name: string;
-  technologies: string[];
-  url?: string;
-  repoUrl?: string;
-  highlights: string[];
+  title: string;
+  domain: string;
+  tools: string[];
+  description: string;
+  outcomes: string[];
+  referenceUrl?: string;
   order: number;
   createdAt: Date;
   updatedAt: Date;
 }
 
 export interface CreateProjectRequest {
-  name: string;
-  technologies?: string[];
-  url?: string;
-  repoUrl?: string;
-  highlights?: string[];
+  title: string;
+  domain: string;
+  tools?: string[];
+  description: string;
+  outcomes?: string[];
+  referenceUrl?: string;
   order?: number;
 }
 
 export interface UpdateProjectRequest {
-  name?: string;
-  technologies?: string[];
-  url?: string;
-  repoUrl?: string;
-  highlights?: string[];
+  title?: string;
+  domain?: string;
+  tools?: string[];
+  description?: string;
+  outcomes?: string[];
+  referenceUrl?: string;
   order?: number;
 }
 
@@ -302,6 +305,7 @@ export const createExperienceSchema = z.object({
   endDate: z
     .string()
     .regex(/^\d{4}-\d{2}$/)
+    .nullable() // Added nullable
     .optional(),
   current: z.boolean().optional(),
   description: z.string().max(2000).optional(),
@@ -341,6 +345,7 @@ export const updateExperienceSchema = z.object({
   endDate: z
     .string()
     .regex(/^\d{4}-\d{2}$/)
+    .nullable() // Added nullable
     .optional(),
   current: z.boolean().optional(),
   description: z.string().max(2000).optional(),
@@ -359,6 +364,7 @@ export const createEducationSchema = z.object({
   endDate: z
     .string()
     .regex(/^\d{4}-\d{2}$/)
+    .nullable() // Added nullable
     .optional(),
   gpa: z.string().max(20).optional(),
   achievements: z.array(z.string().max(500)).optional(),
@@ -378,6 +384,7 @@ export const updateEducationSchema = z.object({
   endDate: z
     .string()
     .regex(/^\d{4}-\d{2}$/)
+    .nullable() // Added nullable
     .optional(),
   gpa: z.string().max(20).optional(),
   achievements: z.array(z.string().max(500)).optional(),
@@ -401,20 +408,22 @@ export const updateSkillSchema = z.object({
 
 // Project Schemas
 export const createProjectSchema = z.object({
-  name: z.string().min(1).max(255),
-  technologies: z.array(z.string().max(100)).optional(),
-  url: z.string().url().optional().or(z.literal('')),
-  repoUrl: z.string().url().optional().or(z.literal('')),
-  highlights: z.array(z.string().max(500)).optional(),
+  title: z.string().min(1).max(255),
+  domain: z.string().min(1).max(255),
+  tools: z.array(z.string().max(100)).optional(),
+  description: z.string().min(1).max(5000),
+  outcomes: z.array(z.string().max(500)).optional(),
+  referenceUrl: z.string().url().optional().or(z.literal('')),
   order: z.number().int().min(0).optional(),
 });
 
 export const updateProjectSchema = z.object({
-  name: z.string().min(1).max(255).optional(),
-  technologies: z.array(z.string().max(100)).optional(),
-  url: z.string().url().optional().or(z.literal('')),
-  repoUrl: z.string().url().optional().or(z.literal('')),
-  highlights: z.array(z.string().max(500)).optional(),
+  title: z.string().min(1).max(255).optional(),
+  domain: z.string().min(1).max(255).optional(),
+  tools: z.array(z.string().max(100)).optional(),
+  description: z.string().min(1).max(5000).optional(),
+  outcomes: z.array(z.string().max(500)).optional(),
+  referenceUrl: z.string().url().optional().or(z.literal('')),
   order: z.number().int().min(0).optional(),
 });
 
@@ -493,6 +502,7 @@ export const createPositionOfResponsibilitySchema = z.object({
   endDate: z
     .string()
     .regex(/^\d{4}-\d{2}$/)
+    .nullable() // Added nullable
     .optional(),
   current: z.boolean().optional(),
   description: z.string().max(2000).optional(),
@@ -509,6 +519,7 @@ export const updatePositionOfResponsibilitySchema = z.object({
   endDate: z
     .string()
     .regex(/^\d{4}-\d{2}$/)
+    .nullable() // Added nullable
     .optional(),
   current: z.boolean().optional(),
   description: z.string().max(2000).optional(),
@@ -719,6 +730,7 @@ export const createExtracurricularSchema = z.object({
   endDate: z
     .string()
     .regex(/^\d{4}-\d{2}$/)
+    .nullable() // Added nullable
     .optional(),
   current: z.boolean().optional(),
   description: z.string().max(2000).optional(),
@@ -736,6 +748,7 @@ export const updateExtracurricularSchema = z.object({
   endDate: z
     .string()
     .regex(/^\d{4}-\d{2}$/)
+    .nullable() // Added nullable
     .optional(),
   current: z.boolean().optional(),
   description: z.string().max(2000).optional(),

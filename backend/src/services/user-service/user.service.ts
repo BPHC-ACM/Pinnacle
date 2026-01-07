@@ -24,6 +24,14 @@ import type {
   UpdateLanguageRequest,
 } from '../../types/user-details.types';
 
+// Helper to convert YYYY-MM string to Date object (defaults to 1st of month)
+const parseDate = (dateStr: string): Date => new Date(`${dateStr}-01`);
+const parseOptionalDate = (dateStr?: string | null): Date | null | undefined => {
+  if (dateStr === undefined) return undefined;
+  if (dateStr === null) return null;
+  return new Date(`${dateStr}-01`);
+};
+
 export class UserService {
   // Profile
   async getUserProfile(userId: string): Promise<UserProfile | null> {
@@ -44,8 +52,32 @@ export class UserService {
         summary: true,
         createdAt: true,
         updatedAt: true,
+        experiences: {
+          where: { deletedAt: null },
+          orderBy: { order: 'asc' },
+        },
+        education: {
+          where: { deletedAt: null },
+          orderBy: { order: 'asc' },
+        },
+        skills: {
+          where: { deletedAt: null },
+          orderBy: { order: 'asc' },
+        },
+        projects: {
+          where: { deletedAt: null },
+          orderBy: { order: 'asc' },
+        },
+        certifications: {
+          where: { deletedAt: null },
+          orderBy: { order: 'asc' },
+        },
+        languages: {
+          where: { deletedAt: null },
+          orderBy: { order: 'asc' },
+        },
       },
-    })) as UserProfile | null;
+    })) as unknown as UserProfile | null;
   }
 
   async updateUserProfile(userId: string, data: UpdateUserProfileRequest): Promise<UserProfile> {
@@ -84,6 +116,9 @@ export class UserService {
     return (await prisma.experience.create({
       data: {
         ...data,
+        // Date parsing fix
+        startDate: parseDate(data.startDate),
+        endDate: parseOptionalDate(data.endDate),
         userId,
         highlights: data.highlights ?? [],
         current: data.current ?? false,
@@ -106,12 +141,18 @@ export class UserService {
         'Experience not found',
       );
     }
+
+    // date conversion
+    const updateData = {
+      ...data,
+      verificationStatus: 'PENDING' as const,
+      ...(data.startDate && { startDate: parseDate(data.startDate) }),
+      ...(data.endDate !== undefined && { endDate: parseOptionalDate(data.endDate) }),
+    };
+
     return (await prisma.experience.update({
       where: { id },
-      data: {
-        ...data,
-        verificationStatus: 'PENDING',
-      },
+      data: updateData,
     })) as Experience;
   }
 
@@ -155,7 +196,15 @@ export class UserService {
 
   async createEducation(userId: string, data: CreateEducationRequest): Promise<Education> {
     return (await prisma.education.create({
-      data: { ...data, userId, achievements: data.achievements ?? [], order: data.order ?? 0 },
+      data: {
+        ...data,
+        // Date parsing fix
+        startDate: parseDate(data.startDate),
+        endDate: parseOptionalDate(data.endDate),
+        userId,
+        achievements: data.achievements ?? [],
+        order: data.order ?? 0,
+      },
     })) as Education;
   }
 
@@ -173,12 +222,18 @@ export class UserService {
         'Education not found',
       );
     }
+
+    // date conversion
+    const updateData = {
+      ...data,
+      verificationStatus: 'PENDING' as const,
+      ...(data.startDate && { startDate: parseDate(data.startDate) }),
+      ...(data.endDate !== undefined && { endDate: parseOptionalDate(data.endDate) }),
+    };
+
     return (await prisma.education.update({
       where: { id },
-      data: {
-        ...data,
-        verificationStatus: 'PENDING',
-      },
+      data: updateData,
     })) as Education;
   }
 
@@ -281,8 +336,8 @@ export class UserService {
       data: {
         ...data,
         userId,
-        technologies: data.technologies ?? [],
-        highlights: data.highlights ?? [],
+        tools: data.tools ?? [],
+        outcomes: data.outcomes ?? [],
         order: data.order ?? 0,
       },
     })) as Project;
@@ -346,7 +401,13 @@ export class UserService {
     data: CreateCertificationRequest,
   ): Promise<Certification> {
     return (await prisma.certification.create({
-      data: { ...data, userId, order: data.order ?? 0 },
+      data: {
+        ...data,
+        // Date parsing fix
+        date: parseDate(data.date),
+        userId,
+        order: data.order ?? 0,
+      },
     })) as Certification;
   }
 
@@ -364,12 +425,17 @@ export class UserService {
         'Certification not found',
       );
     }
+
+    // date conversion
+    const updateData = {
+      ...data,
+      verificationStatus: 'PENDING' as const,
+      ...(data.date && { date: parseDate(data.date) }),
+    };
+
     return (await prisma.certification.update({
       where: { id },
-      data: {
-        ...data,
-        verificationStatus: 'PENDING',
-      },
+      data: updateData,
     })) as Certification;
   }
 
@@ -427,7 +493,12 @@ export class UserService {
         'Language not found',
       );
     }
-    return (await prisma.language.update({ where: { id }, data })) as Language;
+    return (await prisma.language.update({
+      where: { id },
+      data: {
+        ...data,
+      },
+    })) as Language;
   }
 
   async deleteLanguage(userId: string, id: string): Promise<Language> {
