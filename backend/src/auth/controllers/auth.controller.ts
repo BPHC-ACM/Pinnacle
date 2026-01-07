@@ -11,6 +11,10 @@ interface RefreshTokenRequestBody {
   refreshToken: string;
 }
 
+interface GoogleMobileLoginBody {
+  idToken: string;
+}
+
 const oauth2Client = new OAuth2Client(
   config.googleClientId,
   config.googleClientSecret,
@@ -137,7 +141,10 @@ export const googleCallback = async (req: Request, res: Response): Promise<void>
 };
 
 // For Google SignIn in flutter app
-export const googleMobileLogin = async (req: Request, res: Response): Promise<void> => {
+export const googleMobileLogin = async (
+  req: Request<object, object, GoogleMobileLoginBody>,
+  res: Response,
+): Promise<void> => {
   try {
     const { idToken } = req.body;
 
@@ -154,7 +161,8 @@ export const googleMobileLogin = async (req: Request, res: Response): Promise<vo
 
     const payload = ticket.getPayload();
 
-    if (!payload || !payload.email) {
+    // FIXED: Used optional chaining (?.)
+    if (!payload?.email) {
       res.status(400).json({ error: 'Invalid token payload' });
       return;
     }
@@ -162,7 +170,6 @@ export const googleMobileLogin = async (req: Request, res: Response): Promise<vo
     const name = payload.name ?? payload.email.split('@')[0];
 
     // Reuse your existing logic to Find or Create User
-    // (You can refactor this into a shared service function to avoid duplication with googleCallback)
     let dbUser = await prisma.user.findUnique({
       where: { googleId: payload.sub },
     });
@@ -196,13 +203,15 @@ export const googleMobileLogin = async (req: Request, res: Response): Promise<vo
     const accessToken = generateAccessToken({
       userId: dbUser.id,
       email: dbUser.email,
-      role: dbUser.role as any,
+      // FIXED: Cast to UserRole instead of any
+      role: dbUser.role as UserRole,
     });
 
     const refreshToken = generateRefreshToken({
       userId: dbUser.id,
       email: dbUser.email,
-      role: dbUser.role as any,
+      // FIXED: Cast to UserRole instead of any
+      role: dbUser.role as UserRole,
     });
 
     // Return JSON directly instead of redirecting
