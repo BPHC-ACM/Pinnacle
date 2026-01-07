@@ -1,3 +1,4 @@
+// lib/features/profile/widgets/add_edit_item_sheet.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -28,6 +29,7 @@ class AddEditItemSheet extends ConsumerStatefulWidget {
 class _AddEditItemSheetState extends ConsumerState<AddEditItemSheet> {
   final _formKey = GlobalKey<FormState>();
   final Map<String, dynamic> _formData = {};
+  final Map<String, TextEditingController> _dateControllers = {};
   bool _isLoading = false;
   bool _isCurrent = false; // For Experience/Education
 
@@ -38,6 +40,14 @@ class _AddEditItemSheetState extends ConsumerState<AddEditItemSheet> {
       _formData.addAll(widget.initialData!);
       _isCurrent = _formData['current'] ?? false;
     }
+  }
+
+  @override
+  void dispose() {
+    for (var controller in _dateControllers.values) {
+      controller.dispose();
+    }
+    super.dispose();
   }
 
   Future<void> _submit() async {
@@ -100,7 +110,10 @@ class _AddEditItemSheetState extends ConsumerState<AddEditItemSheet> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.error),
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: AppColors.error,
+          ),
         );
       }
     } finally {
@@ -158,12 +171,18 @@ class _AddEditItemSheetState extends ConsumerState<AddEditItemSheet> {
 
   String _getTypeName() {
     switch (widget.type) {
-      case ItemType.experience: return "Experience";
-      case ItemType.education: return "Education";
-      case ItemType.project: return "Project";
-      case ItemType.skill: return "Skill Set";
-      case ItemType.certification: return "Certification";
-      case ItemType.language: return "Language";
+      case ItemType.experience:
+        return "Experience";
+      case ItemType.education:
+        return "Education";
+      case ItemType.project:
+        return "Project";
+      case ItemType.skill:
+        return "Skill Set";
+      case ItemType.certification:
+        return "Certification";
+      case ItemType.language:
+        return "Language";
     }
   }
 
@@ -173,50 +192,108 @@ class _AddEditItemSheetState extends ConsumerState<AddEditItemSheet> {
         return [
           _buildTextField("Position", "position", required: true),
           _buildTextField("Company", "company", required: true),
-          _buildTextField("Location", "location"),
+          _buildTextField("Location", "location", required: true),
           Row(
             children: [
-              Expanded(child: _buildDateField("Start Date", "startDate", required: true)),
+              Expanded(
+                child: _buildDateField(
+                  "Start Date",
+                  "startDate",
+                  required: true,
+                ),
+              ),
               const SizedBox(width: 12),
-              Expanded(child: _buildDateField("End Date", "endDate", enabled: !_isCurrent)),
+              Expanded(
+                child: _buildDateField(
+                  "End Date",
+                  "endDate",
+                  enabled: !_isCurrent,
+                ),
+              ),
             ],
           ),
           _buildCheckbox("Currently Working here", "current", (val) {
-             setState(() => _isCurrent = val);
-             _formData['current'] = val;
-             if (val) _formData['endDate'] = null;
+            setState(() => _isCurrent = val);
+            _formData['current'] = val;
+            if (val) {
+              _formData['endDate'] = null;
+              // Clear the controller if we switch to 'Current'
+              _dateControllers['endDate']?.clear();
+            }
           }),
           _buildTextField("Description", "description", maxLines: 3),
-          _buildTextField("Highlights (One per line)", "highlights", maxLines: 3, isList: true),
+          _buildTextField(
+            "Highlights (One per line)",
+            "highlights",
+            maxLines: 3,
+            isList: true,
+          ),
         ];
       case ItemType.education:
         return [
           _buildTextField("Institution", "institution", required: true),
           _buildTextField("Degree", "degree", required: true),
           _buildTextField("Branch/Field", "branch", required: true),
+          // FIXED: Added missing Location field required by backend
+          _buildTextField("Location", "location", required: true),
           Row(
             children: [
-              Expanded(child: _buildDateField("Start Date", "startDate", required: true)),
+              Expanded(
+                child: _buildDateField(
+                  "Start Date",
+                  "startDate",
+                  required: true,
+                ),
+              ),
               const SizedBox(width: 12),
               Expanded(child: _buildDateField("End Date", "endDate")),
             ],
           ),
           _buildTextField("GPA/Percentage", "gpa"),
-          _buildTextField("Achievements (One per line)", "achievements", maxLines: 3, isList: true),
+          _buildTextField(
+            "Achievements (One per line)",
+            "achievements",
+            maxLines: 3,
+            isList: true,
+          ),
         ];
       case ItemType.project:
         return [
           _buildTextField("Project Name", "name", required: true),
-          _buildTextField("Technologies (Comma separated)", "technologies", isList: true, separator: ','),
+          _buildTextField(
+            "Technologies (Comma separated)",
+            "technologies",
+            isList: true,
+            separator: ',',
+          ),
           _buildTextField("Project URL", "url"),
           _buildTextField("Repository URL", "repoUrl"),
-          _buildTextField("Highlights (One per line)", "highlights", maxLines: 3, isList: true),
+          _buildTextField(
+            "Highlights (One per line)",
+            "highlights",
+            maxLines: 3,
+            isList: true,
+          ),
         ];
       case ItemType.skill:
         return [
-          _buildTextField("Category (e.g., Frontend, Languages)", "category", required: true),
-          _buildTextField("Skills (Comma separated)", "items", required: true, isList: true, separator: ','),
-          _buildDropdown("Proficiency", "proficiency", ProficiencyLevel.values.map((e) => e.name).toList()),
+          _buildTextField(
+            "Category (e.g., Frontend, Languages)",
+            "category",
+            required: true,
+          ),
+          _buildTextField(
+            "Skills (Comma separated)",
+            "items",
+            required: true,
+            isList: true,
+            separator: ',',
+          ),
+          _buildDropdown(
+            "Proficiency",
+            "proficiency",
+            ProficiencyLevel.values.map((e) => e.name).toList(),
+          ),
         ];
       case ItemType.certification:
         return [
@@ -228,12 +305,19 @@ class _AddEditItemSheetState extends ConsumerState<AddEditItemSheet> {
       case ItemType.language:
         return [
           _buildTextField("Language", "name", required: true),
-          _buildDropdown("Proficiency", "proficiency", ProficiencyLevel.values.map((e) => e.name).toList(), required: true),
+          _buildDropdown(
+            "Proficiency",
+            "proficiency",
+            ProficiencyLevel.values.map((e) => e.name).toList(),
+            required: true,
+          ),
         ];
     }
   }
 
-  Widget _buildTextField(String label, String key, {
+  Widget _buildTextField(
+    String label,
+    String key, {
     bool required = false,
     int maxLines = 1,
     bool isList = false,
@@ -242,7 +326,9 @@ class _AddEditItemSheetState extends ConsumerState<AddEditItemSheet> {
     String? initialValue;
     if (_formData[key] != null) {
       if (isList && _formData[key] is List) {
-        initialValue = (_formData[key] as List).join(separator == '\n' ? '\n' : '$separator ');
+        initialValue = (_formData[key] as List).join(
+          separator == '\n' ? '\n' : '$separator ',
+        );
       } else {
         initialValue = _formData[key].toString();
       }
@@ -258,11 +344,17 @@ class _AddEditItemSheetState extends ConsumerState<AddEditItemSheet> {
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           contentPadding: const EdgeInsets.all(16),
         ),
-        validator: required ? (v) => v?.isEmpty == true ? 'Required' : null : null,
+        validator: required
+            ? (v) => v?.isEmpty == true ? 'Required' : null
+            : null,
         onSaved: (value) {
           if (value == null) return;
           if (isList) {
-            _formData[key] = value.split(separator).map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+            _formData[key] = value
+                .split(separator)
+                .map((e) => e.trim())
+                .where((e) => e.isNotEmpty)
+                .toList();
           } else {
             _formData[key] = value.trim();
           }
@@ -271,22 +363,76 @@ class _AddEditItemSheetState extends ConsumerState<AddEditItemSheet> {
     );
   }
 
-  Widget _buildDateField(String label, String key, {bool required = false, bool enabled = true}) {
-    // Simplified Date Picker for brevity
-    // In production, use showDatePicker
+  Widget _buildDateField(
+    String label,
+    String key, {
+    bool required = false,
+    bool enabled = true,
+  }) {
+    // Lazily initialize controller
+    if (!_dateControllers.containsKey(key)) {
+      _dateControllers[key] = TextEditingController(
+        text: _formData[key]?.toString() ?? '',
+      );
+    }
+    final controller = _dateControllers[key]!;
+
+    // Sync visual state if needed (e.g. if disabled/cleared externally)
+    if (!enabled) {
+      controller.clear();
+    } else if (_formData[key] != null && controller.text.isEmpty) {
+      controller.text = _formData[key].toString();
+    }
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: TextFormField(
+        controller: controller,
         enabled: enabled,
-        initialValue: _formData[key]?.toString(),
+        readOnly: true, // Prevent manual editing, force picker
         decoration: InputDecoration(
           labelText: label,
-          hintText: "YYYY-MM-DD",
+          hintText: "YYYY-MM",
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           contentPadding: const EdgeInsets.all(16),
           suffixIcon: const Icon(LucideIcons.calendar),
         ),
-        validator: required && enabled ? (v) => v?.isEmpty == true ? 'Required' : null : null,
+        validator: required && enabled
+            ? (v) => v?.isEmpty == true ? 'Required' : null
+            : null,
+        onTap: enabled
+            ? () async {
+                DateTime initialDate = DateTime.now();
+                // Try to parse existing date to start picker there
+                if (controller.text.isNotEmpty) {
+                  try {
+                    // FIXED: Handle YYYY-MM by appending a day for parsing
+                    String dateText = controller.text;
+                    if (dateText.length == 7) {
+                      dateText += '-01';
+                    }
+                    initialDate = DateTime.parse(dateText);
+                  } catch (_) {}
+                }
+
+                final picked = await showDatePicker(
+                  context: context,
+                  initialDate: initialDate,
+                  firstDate: DateTime(1900),
+                  lastDate: DateTime(2100), // Future allowed for education end
+                );
+
+                if (picked != null) {
+                  // FIXED: Format as YYYY-MM for backend compatibility
+                  final formatted =
+                      "${picked.year}-${picked.month.toString().padLeft(2, '0')}";
+                  setState(() {
+                    controller.text = formatted;
+                    _formData[key] = formatted;
+                  });
+                }
+              }
+            : null,
         onSaved: (value) {
           if (enabled && value != null) _formData[key] = value;
         },
@@ -294,7 +440,12 @@ class _AddEditItemSheetState extends ConsumerState<AddEditItemSheet> {
     );
   }
 
-  Widget _buildDropdown(String label, String key, List<String> items, {bool required = false}) {
+  Widget _buildDropdown(
+    String label,
+    String key,
+    List<String> items, {
+    bool required = false,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: DropdownButtonFormField<String>(
@@ -304,7 +455,9 @@ class _AddEditItemSheetState extends ConsumerState<AddEditItemSheet> {
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           contentPadding: const EdgeInsets.all(16),
         ),
-        items: items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+        items: items
+            .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+            .toList(),
         onChanged: (val) => setState(() => _formData[key] = val),
         validator: required ? (v) => v == null ? 'Required' : null : null,
         onSaved: (value) => _formData[key] = value,
