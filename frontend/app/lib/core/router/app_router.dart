@@ -1,5 +1,3 @@
-// lib/core/router/app_router.dart
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,6 +11,7 @@ import '../../features/profile/screens/profile_screen.dart';
 import '../../features/splash/splash_screen.dart';
 import '../../features/jobs/screens/jobs_screen.dart';
 import '../components/main_nav_scaffold.dart';
+import '../utils/logger.dart'; // Import logger
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authProvider);
@@ -26,6 +25,13 @@ final routerProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final isLoggingIn = state.uri.path == '/login';
       final isSplash = state.uri.path == '/';
+      
+      // Log the redirect check
+      // logger.t (Trace) is good here to avoid spamming Info logs during navigation
+      logger.t(
+        "Router: Check -> Path: ${state.uri.path}, "
+        "Auth: ${authState.isAuthenticated}, Loading: ${authState.isLoading}"
+      );
 
       if (authState.isLoading) {
         if (isLoggingIn) return null;
@@ -33,10 +39,18 @@ final routerProvider = Provider<GoRouter>((ref) {
       }
 
       if (authState.isAuthenticated) {
-        if (isLoggingIn || isSplash) return '/dashboard';
+        if (isLoggingIn || isSplash) {
+          logger.i("Router: User authenticated. Redirecting to /dashboard");
+          return '/dashboard';
+        }
       } else {
-        if (isSplash) return '/login';
-        if (!isLoggingIn) return '/login';
+        if (isSplash) {
+           return '/login';
+        }
+        if (!isLoggingIn) {
+          logger.i("Router: User unauthenticated. Redirecting to /login");
+          return '/login';
+        }
       }
 
       return null;
@@ -46,7 +60,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/', builder: (context, state) => const SplashScreen()),
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
 
-      // Standard StatefulShellRoute gives us access to the branch Navigators ('children')
       StatefulShellRoute(
         branches: [
           StatefulShellBranch(
@@ -84,15 +97,13 @@ final routerProvider = Provider<GoRouter>((ref) {
             ],
           ),
         ],
-        // navigatorContainerBuilder allows us to pass the list of Navigators to the Scaffold
         navigatorContainerBuilder: (context, navigationShell, children) {
           return MainNavScaffold(
             navigationShell: navigationShell,
-            children: children, // Pass the distinct branch navigators
+            children: children, 
             currentPath: GoRouterState.of(context).uri.path,
           );
         },
-        // Required fallback builder
         builder: (context, state, shell) => shell,
       ),
     ],

@@ -1,8 +1,8 @@
 import 'dart:convert';
-import 'dart:developer';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/api_client.dart';
+import '../../../core/utils/logger.dart'; // Import logger
 import '../models/student_profile_model.dart';
 
 final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
@@ -20,13 +20,11 @@ class ProfileRepository {
 
       dynamic data = response.data;
 
-      // 1. Debugging Logs
-      log("Response Status: ${response.statusCode}");
-      log("Response Type: ${data.runtimeType}");
+      // Debugging Logs
+      logger.d("Response Status: ${response.statusCode}");
+      logger.d("Response Type: ${data.runtimeType}");
 
-      // 2. Handle String response (Manual Decode)
       if (data is String) {
-        // Check if it's actually HTML (common error when API route is wrong)
         if (data.trim().startsWith('<')) {
           throw Exception(
             "Server returned HTML instead of JSON. Check your API URL or Server logs.",
@@ -39,31 +37,29 @@ class ProfileRepository {
         }
       }
 
-      // 3. Handle List response (Unexpected)
       if (data is List) {
         if (data.isEmpty)
           throw Exception("Profile not found (Empty List returned)");
-        data = data.first; // Try to use the first item if it's a list
+        data = data.first;
       }
 
-      // 4. Validate Map
       if (data is! Map<String, dynamic>) {
         throw Exception(
           "Invalid data format. Expected Map, got: ${data.runtimeType}",
         );
       }
 
-      log("Parsed Profile Data: $data");
+      logger.d("Parsed Profile Data: $data");
 
       return StudentProfile.fromJson(data);
     } on DioException catch (e) {
-      log("DioError: ${e.message}");
-      log("DioError Data: ${e.response?.data}");
+      logger.e("DioError: ${e.message}", error: e, stackTrace: e.stackTrace);
+      logger.e("DioError Data: ${e.response?.data}");
       throw Exception(
         e.response?.data['message'] ?? 'Failed to load profile connection',
       );
     } catch (e, stack) {
-      log("Repository Error: $e", stackTrace: stack);
+      logger.e("Repository Error: $e", error: e, stackTrace: stack);
       rethrow;
     }
   }
@@ -78,7 +74,6 @@ class ProfileRepository {
     String? website,
   }) async {
     try {
-      // FIX 1: Add the '/api' prefix to match the getProfile method and backend routes
       await _apiClient.patch(
         '/api/user-details/profile',
         data: {
@@ -91,17 +86,18 @@ class ProfileRepository {
           'website': website,
         },
       );
+      logger.i("Profile updated successfully");
     } on DioException catch (e) {
-      // FIX 2: Safely handle non-Map error responses (like 404 HTML/Text)
       final data = e.response?.data;
       String errorMessage = 'Failed to update profile';
 
       if (data is Map<String, dynamic> && data.containsKey('message')) {
         errorMessage = data['message'];
       } else if (data is String) {
-        errorMessage = data; // Use the raw string if available
+        errorMessage = data;
       }
-
+      
+      logger.e("Update Profile Failed: $errorMessage");
       throw Exception(errorMessage);
     }
   }
