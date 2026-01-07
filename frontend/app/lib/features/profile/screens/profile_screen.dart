@@ -749,23 +749,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       body: proj.description,
       verificationStatus: proj.verificationStatus,
       isLast: isLast,
-      footer: (proj.referenceUrl == null || proj.referenceUrl!.isEmpty)
-          ? null
-          : Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  _buildExternalLinkChip(
-                    context,
-                    "View Project",
-                    proj.referenceUrl!,
-                    icon: LucideIcons.globe,
-                  ),
-                ],
-              ),
-            ),
+      // Removed footer chip
       onEdit: () => _openEditSheet(ItemType.project, proj.id, {
         'title': proj.title,
         'domain': proj.domain,
@@ -778,6 +762,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ref.read(profileProvider.notifier).removeProject,
         proj.id,
       ),
+      // Moved view logic here
+      onView: (proj.referenceUrl != null && proj.referenceUrl!.isNotEmpty)
+          ? () => launchUrlString(proj.referenceUrl!)
+          : null,
+      viewIcon: LucideIcons.globe,
     );
   }
 
@@ -795,17 +784,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       meta: "Issued: ${_formatDate(cert.date)}",
       verificationStatus: cert.verificationStatus,
       isLast: isLast,
-      footer: (cert.url == null || cert.url!.isEmpty)
-          ? null
-          : Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: _buildExternalLinkChip(
-                context,
-                "View Credential",
-                cert.url!,
-                icon: LucideIcons.externalLink,
-              ),
-            ),
+      // Removed footer chip
       onEdit: () => _openEditSheet(ItemType.certification, cert.id, {
         'name': cert.name,
         'issuer': cert.issuer,
@@ -816,6 +795,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ref.read(profileProvider.notifier).removeCertification,
         cert.id,
       ),
+      // Moved view logic here
+      onView: (cert.url != null && cert.url!.isNotEmpty)
+          ? () => launchUrlString(cert.url!)
+          : null,
+      viewIcon: LucideIcons.externalLink,
     );
   }
 
@@ -852,7 +836,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       const SizedBox(width: 8),
                       _buildActionIcon(
                         icon: LucideIcons.trash2,
-                        color: AppColors.error,
+                        color: AppColors.error.withOpacity(0.8),
                         onTap: () => _deleteItem(
                           ref.read(profileProvider.notifier).removeSkill,
                           skill.id,
@@ -903,8 +887,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Widget _buildLanguagesWrap(BuildContext context, List<Language> languages) {
     final theme = Theme.of(context);
     return Wrap(
-      spacing: 12,
-      runSpacing: 12,
+      spacing: 4,
       children: languages.map((lang) {
         return GestureDetector(
           onTap: () => _openEditSheet(ItemType.language, lang.id, {
@@ -948,6 +931,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     Widget? footer,
     VoidCallback? onEdit,
     VoidCallback? onDelete,
+    VoidCallback? onView, // New: Callback for view action
+    IconData? viewIcon, // New: Icon for view action
     required bool isLast,
   }) {
     final theme = Theme.of(context);
@@ -973,11 +958,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     alignment: Alignment.center,
                     child: Icon(icon, color: color, size: 20),
                   ),
-                  // Badge moved here
                   if (verificationStatus != null) ...[
                     const SizedBox(height: 8),
-                    // We constrain the width or scale it if strictly necessary,
-                    // but usually, it sits fine here.
                     VerificationBadge(status: verificationStatus),
                   ],
                 ],
@@ -990,21 +972,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            title,
-                            style: GoogleFonts.inter(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 15,
-                              color: theme.colorScheme.onSurface,
-                            ),
-                          ),
-                        ),
-                        // Badge logic removed from here
-                      ],
+                    Text(
+                      title,
+                      style: GoogleFonts.inter(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                        color: theme.colorScheme.onSurface,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
@@ -1020,7 +994,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         meta,
                         style: GoogleFonts.inter(
                           color: theme.colorScheme.onSurfaceVariant.withOpacity(
-                            0.7,
+                            0.8,
                           ),
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
@@ -1053,11 +1027,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       onTap: onEdit,
                     ),
                   if (onDelete != null) ...[
-                    const SizedBox(height: 12),
                     _buildActionIcon(
                       icon: LucideIcons.trash2,
-                      color: AppColors.error.withOpacity(0.7),
+                      color: AppColors.error.withOpacity(0.8),
                       onTap: onDelete,
+                    ),
+                  ],
+                  // Added View Icon here
+                  if (onView != null) ...[
+                    _buildActionIcon(
+                      icon: viewIcon ?? LucideIcons.externalLink,
+                      color: AppColors.primary500,
+                      onTap: onView,
                     ),
                   ],
                 ],
@@ -1115,44 +1096,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
         ),
         child: Icon(icon, size: 20),
-      ),
-    );
-  }
-
-  Widget _buildExternalLinkChip(
-    BuildContext context,
-    String text,
-    String url, {
-    required IconData icon,
-  }) {
-    final theme = Theme.of(context);
-    return InkWell(
-      onTap: () => launchUrlString(url),
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(
-          color: theme.scaffoldBackgroundColor,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: theme.colorScheme.outline.withOpacity(0.6),
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 14, color: AppColors.primary500),
-            const SizedBox(width: 6),
-            Text(
-              text,
-              style: GoogleFonts.inter(
-                color: AppColors.primary500,
-                fontWeight: FontWeight.w600,
-                fontSize: 12,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
