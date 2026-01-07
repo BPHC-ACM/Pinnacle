@@ -10,6 +10,8 @@ import '../../../../core/components/pinnacle_button.dart';
 import '../../../../core/components/pinnacle_header_banner.dart';
 import '../models/student_profile_model.dart';
 import '../providers/profile_provider.dart';
+import '../widgets/verification_badge.dart';
+import '../widgets/add_edit_item_sheet.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -19,9 +21,9 @@ class ProfileScreen extends ConsumerStatefulWidget {
 }
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
-  // State for Inline Editing
-  bool _isEditing = false;
-  bool _isSaving = false;
+  // State for Inline Editing (Personal Info)
+  bool _isEditingPersonal = false;
+  bool _isSavingPersonal = false;
 
   // Controllers
   late TextEditingController _titleController;
@@ -32,14 +34,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   late TextEditingController _githubController;
   late TextEditingController _websiteController;
 
-  // Scroll Controller for fading effect
   late ScrollController _scrollController;
 
   @override
   void initState() {
     super.initState();
     _scrollController = ScrollController();
-
     _titleController = TextEditingController();
     _bioController = TextEditingController();
     _phoneController = TextEditingController();
@@ -62,7 +62,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     super.dispose();
   }
 
-  void _populateControllers(StudentProfile profile) {
+  void _populatePersonalControllers(StudentProfile profile) {
     _titleController.text = profile.title ?? '';
     _bioController.text = profile.bio ?? '';
     _phoneController.text = profile.phone ?? '';
@@ -72,53 +72,93 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     _websiteController.text = profile.website ?? '';
   }
 
-  void _toggleEditMode(StudentProfile profile) {
-    if (_isEditing) {
-      setState(() => _isEditing = false);
+  void _togglePersonalEdit(StudentProfile profile) {
+    if (_isEditingPersonal) {
+      setState(() => _isEditingPersonal = false);
     } else {
-      _populateControllers(profile);
-      setState(() => _isEditing = true);
+      _populatePersonalControllers(profile);
+      setState(() => _isEditingPersonal = true);
     }
   }
 
-  Future<void> _saveChanges() async {
-    setState(() => _isSaving = true);
+  Future<void> _savePersonalChanges() async {
+    setState(() => _isSavingPersonal = true);
     try {
-      await ref
-          .read(profileProvider.notifier)
-          .updateProfile(
-            title: _titleController.text,
-            bio: _bioController.text,
-            phone: _phoneController.text,
-            location: _locationController.text,
-            linkedin: _linkedinController.text,
-            github: _githubController.text,
-            website: _websiteController.text,
-          );
+      await ref.read(profileProvider.notifier).updateBasicProfile({
+        'title': _titleController.text,
+        'bio': _bioController.text,
+        'phone': _phoneController.text,
+        'location': _locationController.text,
+        'linkedin': _linkedinController.text,
+        'github': _githubController.text,
+        'website': _websiteController.text,
+      });
 
       if (mounted) {
         setState(() {
-          _isEditing = false;
-          _isSaving = false;
+          _isEditingPersonal = false;
+          _isSavingPersonal = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Profile updated successfully'),
             backgroundColor: AppColors.success,
-            behavior: SnackBarBehavior.floating,
           ),
         );
       }
     } catch (e) {
       if (mounted) {
-        setState(() => _isSaving = false);
+        setState(() => _isSavingPersonal = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: $e'),
-            backgroundColor: AppColors.error,
-            behavior: SnackBarBehavior.floating,
-          ),
+          SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.error),
         );
+      }
+    }
+  }
+
+  // --- Sheet Handlers ---
+
+  void _openAddSheet(ItemType type) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => AddEditItemSheet(type: type),
+    );
+  }
+
+  void _openEditSheet(ItemType type, String id, Map<String, dynamic> data) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => AddEditItemSheet(type: type, itemId: id, initialData: data),
+    );
+  }
+
+  void _deleteItem(Future<void> Function(String) deleteMethod, String id) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Delete Item?"),
+        content: const Text("This action cannot be undone."),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text("Cancel")),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text("Delete", style: TextStyle(color: AppColors.error)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      try {
+        await deleteMethod(id);
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+        }
       }
     }
   }
@@ -135,37 +175,24 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         error: (err, stack) => Center(child: Text('Error: $err')),
         data: (profile) => Stack(
           children: [
-            // 1. New Animated Grid Banner with Gradient Overlay
+            // 1. Animated Header
             AnimatedBuilder(
               animation: _scrollController,
               builder: (context, child) {
-                // Calculate opacity: 1.0 at top, 0.0 after scrolling 150px
                 double offset = 0;
-                if (_scrollController.hasClients) {
-                  offset = _scrollController.offset;
-                }
+                if (_scrollController.hasClients) offset = _scrollController.offset;
                 final opacity = (1.0 - (offset / 150.0)).clamp(0.0, 1.0);
-
-                return Opacity(
-                  opacity: opacity,
-                  child: child,
-                );
+                return Opacity(opacity: opacity, child: child);
               },
-              // The static content to fade (passed as 'child' to builder for performance)
               child: Stack(
                 children: [
                   const PinnacleHeaderBanner(height: 280),
-                  // Gradient Overlay: Placed ON TOP to blend bottom edge into background
                   Positioned.fill(
                     child: Container(
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [
-                            Colors.transparent,
-                            Colors.transparent,
-                            theme.scaffoldBackgroundColor,
-                          ],
-                          stops: const [0, .6, 1],
+                          colors: [Colors.transparent, theme.scaffoldBackgroundColor],
+                          stops: const [0, 1],
                           begin: AlignmentDirectional.topCenter,
                           end: AlignmentDirectional.bottomCenter,
                         ),
@@ -176,7 +203,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
             ),
 
-            // 2. Main Scrollable Content
+            // 2. Main Content
             CustomScrollView(
               controller: _scrollController,
               physics: const BouncingScrollPhysics(),
@@ -188,51 +215,28 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   pinned: true,
                   elevation: 0,
                   centerTitle: true,
-                  title: _isEditing
-                      ? Text(
-                          "Edit Profile",
-                          style: GoogleFonts.inter(
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        )
+                  title: _isEditingPersonal
+                      ? Text("Edit Personal Info", style: GoogleFonts.inter(fontWeight: FontWeight.w600, color: Colors.white))
                       : null,
                   flexibleSpace: FlexibleSpaceBar(
                     background: Column(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         const SizedBox(height: 60),
-                        if (!_isEditing)
-                          Text(
-                            "My Profile",
-                            style: GoogleFonts.inter(
-                              fontSize: 26,
-                              height: 1.1,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
+                        if (!_isEditingPersonal)
+                          Text("My Profile", style: GoogleFonts.inter(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white)),
                       ],
                     ),
                   ),
                   actions: [
-                    if (!_isEditing)
+                    if (!_isEditingPersonal)
                       IconButton(
-                        onPressed: () =>
-                            ref.read(authProvider.notifier).logout(),
+                        onPressed: () => ref.read(authProvider.notifier).logout(),
                         icon: Container(
                           padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.2),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            LucideIcons.logOut,
-                            color: Colors.white,
-                            size: 18,
-                          ),
+                          decoration: BoxDecoration(color: Colors.black.withOpacity(0.2), shape: BoxShape.circle),
+                          child: const Icon(LucideIcons.logOut, color: Colors.white, size: 18),
                         ),
-                        tooltip: 'Logout',
                       ),
                     const SizedBox(width: 16),
                   ],
@@ -242,57 +246,50 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   sliver: SliverList(
                     delegate: SliverChildListDelegate([
                       const SizedBox(height: 10),
-
-                      // --- Floating Profile Card ---
                       _buildFloatingHeaderCard(context, profile),
-
                       const SizedBox(height: 32),
-
-                      // --- Edit/Save Actions ---
-                      _buildActionButtons(profile),
-
+                      _buildPersonalActionButtons(profile),
                       const SizedBox(height: 40),
 
-                      // --- Content Sections ---
-                      if (!_isEditing) ...[
-                        _buildSectionHeader(context, "Education"),
-                        ...profile.education.map(
-                          (e) => _buildEducationCard(context, e),
-                        ),
-                        if (profile.education.isEmpty)
-                          _buildEmptySectionText(
-                            context,
-                            "No education details added.",
-                          ),
-                        const SizedBox(height: 32),
-                        _buildSectionHeader(context, "Experience"),
-                        ...profile.experiences.map(
-                          (e) => _buildExperienceCard(context, e),
-                        ),
-                        if (profile.experiences.isEmpty)
-                          _buildEmptySectionText(
-                            context,
-                            "No experience added yet.",
-                          ),
-                        const SizedBox(height: 32),
-                        if (profile.skills.isNotEmpty) ...[
-                          _buildSectionHeader(context, "Skills"),
-                          _buildSkillsCard(context, profile.skills),
-                          const SizedBox(height: 32),
-                        ],
+                      // --- Sections ---
 
-                        // Projects Section
-                        _buildSectionHeader(context, "Projects"),
-                        ...profile.projects.map(
-                          (p) => _buildProjectCard(context, p),
-                        ),
-                        if (profile.projects.isEmpty)
-                          _buildEmptySectionText(
-                            context,
-                            "No projects added yet.",
-                          ),
-                        const SizedBox(height: 32),
-                      ],
+                      // Education
+                      _buildSectionHeader(context, "Education", () => _openAddSheet(ItemType.education)),
+                      ...profile.education.map((e) => _buildEducationCard(context, e)),
+                      if (profile.education.isEmpty) _buildEmptySectionText(context),
+                      const SizedBox(height: 32),
+
+                      // Experience
+                      _buildSectionHeader(context, "Experience", () => _openAddSheet(ItemType.experience)),
+                      ...profile.experiences.map((e) => _buildExperienceCard(context, e)),
+                      if (profile.experiences.isEmpty) _buildEmptySectionText(context),
+                      const SizedBox(height: 32),
+
+                      // Skills
+                      _buildSectionHeader(context, "Skills", () => _openAddSheet(ItemType.skill)),
+                      if (profile.skills.isNotEmpty) ...[
+                        ...profile.skills.map((s) => _buildSkillGroupCard(context, s)),
+                      ] else _buildEmptySectionText(context),
+                      const SizedBox(height: 32),
+
+                      // Projects
+                      _buildSectionHeader(context, "Projects", () => _openAddSheet(ItemType.project)),
+                      ...profile.projects.map((p) => _buildProjectCard(context, p)),
+                      if (profile.projects.isEmpty) _buildEmptySectionText(context),
+                      const SizedBox(height: 32),
+
+                      // Languages
+                      _buildSectionHeader(context, "Languages", () => _openAddSheet(ItemType.language)),
+                      if (profile.languages.isNotEmpty)
+                         _buildLanguagesCard(context, profile.languages),
+                      if (profile.languages.isEmpty) _buildEmptySectionText(context),
+                      const SizedBox(height: 32),
+
+                      // Certifications
+                      _buildSectionHeader(context, "Certifications", () => _openAddSheet(ItemType.certification)),
+                      ...profile.certifications.map((c) => _buildCertificationCard(context, c)),
+                      if (profile.certifications.isEmpty) _buildEmptySectionText(context),
+
                       const SizedBox(height: 120),
                     ]),
                   ),
@@ -305,79 +302,46 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  // ... (Rest of the file and helper widgets remain unchanged)
-
   // --- Visual Components ---
 
-  Widget _buildFloatingHeaderCard(
-    BuildContext context,
-    StudentProfile profile,
-  ) {
+  Widget _buildFloatingHeaderCard(BuildContext context, StudentProfile profile) {
     final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: theme.cardTheme.color,
         borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 24,
-            offset: const Offset(0, 12),
-          ),
-        ],
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 24, offset: const Offset(0, 12))],
       ),
       child: Column(
         children: [
+          // Avatar
           Container(
-            width: 100,
-            height: 100,
+            width: 100, height: 100,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: theme.scaffoldBackgroundColor,
-              border: Border.all(
-                color: theme.scaffoldBackgroundColor,
-                width: 4,
-              ),
+              border: Border.all(color: theme.scaffoldBackgroundColor, width: 4),
               image: profile.picture != null
-                  ? DecorationImage(
-                      image: NetworkImage(profile.picture!),
-                      fit: BoxFit.cover,
-                    )
+                  ? DecorationImage(image: NetworkImage(profile.picture!), fit: BoxFit.cover)
                   : null,
             ),
             alignment: Alignment.center,
             child: profile.picture == null
-                ? Text(
-                    profile.name.isNotEmpty
-                        ? profile.name[0].toUpperCase()
-                        : '?',
-                    style: GoogleFonts.inter(
-                      fontSize: 36,
-                      fontWeight: FontWeight.bold,
-                      color: theme.colorScheme.primary,
-                    ),
-                  )
+                ? Text(profile.name.isNotEmpty ? profile.name[0].toUpperCase() : '?',
+                    style: GoogleFonts.inter(fontSize: 36, fontWeight: FontWeight.bold, color: theme.colorScheme.primary))
                 : null,
           ),
           const SizedBox(height: 8),
-          Text(
-            profile.name,
-            textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: theme.colorScheme.onSurface,
-            ),
-          ),
+          Text(profile.name,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(fontSize: 22, fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface)),
           const SizedBox(height: 4),
           AnimatedSize(
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeOutBack,
             alignment: Alignment.topCenter,
-            child: _isEditing
-                ? _buildEditFields(context)
-                : _buildViewFields(context, profile),
+            child: _isEditingPersonal ? _buildEditFields(context) : _buildViewFields(context, profile),
           ),
         ],
       ),
@@ -386,397 +350,226 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   Widget _buildViewFields(BuildContext context, StudentProfile profile) {
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    final title = profile.title;
-    final location = profile.location;
-    final bio = profile.bio;
-    final phone = profile.phone;
-
-    final hasSocials =
-        (profile.linkedin?.isNotEmpty ?? false) ||
-        (profile.github?.isNotEmpty ?? false) ||
-        (profile.website?.isNotEmpty ?? false) ||
-        profile.email.isNotEmpty;
-
     return Column(
       children: [
-        if (title != null && title.isNotEmpty)
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
-              fontSize: 16,
-              color: colorScheme.primary,
-              fontWeight: FontWeight.w500,
-            ),
-          )
-        else
-          _buildEmptyText(context, "No headline added"),
+        if (profile.title != null)
+          Text(profile.title!,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(fontSize: 16, color: theme.colorScheme.primary, fontWeight: FontWeight.w500)),
         const SizedBox(height: 8),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            if (location != null && location.isNotEmpty)
-              _buildIconText(context, LucideIcons.mapPin, location)
-            else
-              _buildEmptyText(context, "No location"),
-            const SizedBox(width: 16),
-            Container(width: 1, height: 16, color: colorScheme.outline),
-            const SizedBox(width: 16),
-            if (phone != null && phone.isNotEmpty)
-              _buildIconText(context, LucideIcons.phone, phone)
-            else
-              _buildEmptyText(context, "No phone"),
+            if (profile.location != null) _buildIconText(context, LucideIcons.mapPin, profile.location!),
+            if (profile.location != null && profile.phone != null) ...[const SizedBox(width: 16), Container(width: 1, height: 16, color: theme.colorScheme.outline)],
+            if (profile.phone != null) ...[const SizedBox(width: 16), _buildIconText(context, LucideIcons.phone, profile.phone!)],
           ],
         ),
         const SizedBox(height: 12),
-        if (bio != null && bio.isNotEmpty)
-          Text(
-            bio,
-            textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
-              fontSize: 15,
-              height: 1.6,
-              color: colorScheme.onSurfaceVariant,
-            ),
-          )
-        else
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-            decoration: BoxDecoration(
-              color: theme.scaffoldBackgroundColor,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: _buildEmptyText(
-              context,
-              "No bio added yet. Tap edit to introduce yourself!",
-            ),
-          ),
+        if (profile.bio != null)
+          Text(profile.bio!, textAlign: TextAlign.center, style: GoogleFonts.inter(fontSize: 15, height: 1.6, color: theme.colorScheme.onSurfaceVariant)),
         const SizedBox(height: 12),
-        Divider(color: colorScheme.outline.withOpacity(0.5)),
+        Divider(color: theme.colorScheme.outline.withOpacity(0.5)),
         const SizedBox(height: 12),
-        if (hasSocials)
-          Wrap(
-            spacing: 16,
-            runSpacing: 16,
-            alignment: WrapAlignment.center,
-            children: [
-              if (profile.email.isNotEmpty)
-                _buildSocialBtn(
-                  context,
-                  LucideIcons.mail,
-                  'mailto:${profile.email}',
-                ),
-              if (profile.linkedin?.isNotEmpty == true)
-                _buildSocialBtn(
-                  context,
-                  LucideIcons.linkedin,
-                  profile.linkedin!,
-                ),
-              if (profile.github?.isNotEmpty == true)
-                _buildSocialBtn(context, LucideIcons.github, profile.github!),
-              if (profile.website?.isNotEmpty == true)
-                _buildSocialBtn(context, LucideIcons.globe, profile.website!),
-            ],
-          )
-        else
-          _buildEmptyText(context, "No social links added"),
+        Wrap(
+          spacing: 16, runSpacing: 16, alignment: WrapAlignment.center,
+          children: [
+            if (profile.email.isNotEmpty) _buildSocialBtn(context, LucideIcons.mail, 'mailto:${profile.email}'),
+            if (profile.linkedin?.isNotEmpty == true) _buildSocialBtn(context, LucideIcons.linkedin, profile.linkedin!),
+            if (profile.github?.isNotEmpty == true) _buildSocialBtn(context, LucideIcons.github, profile.github!),
+            if (profile.website?.isNotEmpty == true) _buildSocialBtn(context, LucideIcons.globe, profile.website!),
+          ],
+        ),
       ],
     );
   }
 
   Widget _buildEditFields(BuildContext context) {
-    final theme = Theme.of(context);
     return Column(
       children: [
         const SizedBox(height: 16),
-        _buildTextField(
-          context,
-          _titleController,
-          "Headline",
-          "Ex: Student at XYZ Univ",
-        ),
+        _buildTextField(context, _titleController, "Headline", "Ex: Student at XYZ Univ"),
         const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: _buildTextField(
-                context,
-                _locationController,
-                "Location",
-                "City, Country",
-                icon: LucideIcons.mapPin,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildTextField(
-                context,
-                _phoneController,
-                "Phone",
-                "+1 234...",
-                icon: LucideIcons.phone,
-              ),
-            ),
-          ],
-        ),
+        Row(children: [
+          Expanded(child: _buildTextField(context, _locationController, "Location", "City, Country", icon: LucideIcons.mapPin)),
+          const SizedBox(width: 12),
+          Expanded(child: _buildTextField(context, _phoneController, "Phone", "+1 234...", icon: LucideIcons.phone)),
+        ]),
         const SizedBox(height: 16),
-        _buildTextField(
-          context,
-          _bioController,
-          "Bio",
-          "Tell us about yourself...",
-          maxLines: 3,
-        ),
+        _buildTextField(context, _bioController, "Bio", "Tell us about yourself...", maxLines: 3),
         const SizedBox(height: 24),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Text(
-            "Social Links",
-            style: GoogleFonts.inter(
-              fontWeight: FontWeight.w600,
-              fontSize: 14,
-              color: theme.colorScheme.onSurface,
-            ),
-          ),
-        ),
+        _buildTextField(context, _linkedinController, "LinkedIn", "https://linkedin.com/in/...", icon: LucideIcons.linkedin),
         const SizedBox(height: 12),
-        _buildTextField(
-          context,
-          _linkedinController,
-          "LinkedIn",
-          "https://linkedin.com/in/...",
-          icon: LucideIcons.linkedin,
-        ),
+        _buildTextField(context, _githubController, "GitHub", "https://github.com/...", icon: LucideIcons.github),
         const SizedBox(height: 12),
-        _buildTextField(
-          context,
-          _githubController,
-          "GitHub",
-          "https://github.com/...",
-          icon: LucideIcons.github,
-        ),
-        const SizedBox(height: 12),
-        _buildTextField(
-          context,
-          _websiteController,
-          "Website",
-          "https://portfolio.com",
-          icon: LucideIcons.globe,
-        ),
+        _buildTextField(context, _websiteController, "Website", "https://portfolio.com", icon: LucideIcons.globe),
       ],
     );
   }
 
-  Widget _buildActionButtons(StudentProfile profile) {
-    if (_isEditing) {
-      return Row(
-        children: [
-          Expanded(
-            child: PinnacleButton(
-              label: "Cancel",
-              variant: ButtonVariant.ghost,
-              onPressed: () => setState(() => _isEditing = false),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: PinnacleButton(
-              label: "Save Details",
-              variant: ButtonVariant.primary,
-              isLoading: _isSaving,
-              onPressed: _saveChanges,
-            ),
-          ),
-        ],
-      );
-    } else {
-      return SizedBox(
-        width: double.infinity,
-        child: PinnacleButton(
-          label: "Edit Profile Details",
-          variant: ButtonVariant.outline,
-          icon: const Icon(LucideIcons.pencil, size: 16),
-          onPressed: () => _toggleEditMode(profile),
-        ),
-      );
+  Widget _buildPersonalActionButtons(StudentProfile profile) {
+    if (_isEditingPersonal) {
+      return Row(children: [
+        Expanded(child: PinnacleButton(label: "Cancel", variant: ButtonVariant.ghost, onPressed: () => setState(() => _isEditingPersonal = false))),
+        const SizedBox(width: 16),
+        Expanded(child: PinnacleButton(label: "Save Details", variant: ButtonVariant.primary, isLoading: _isSavingPersonal, onPressed: _savePersonalChanges)),
+      ]);
     }
-  }
-
-  // --- Helpers ---
-
-  Widget _buildEmptyText(BuildContext context, String text) {
-    return Text(
-      text,
-      style: GoogleFonts.inter(
-        fontSize: 14,
-        fontStyle: FontStyle.italic,
-        color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.7),
-      ),
-      textAlign: TextAlign.center,
+    return SizedBox(
+      width: double.infinity,
+      child: PinnacleButton(label: "Edit Personal Details", variant: ButtonVariant.outline, icon: const Icon(LucideIcons.pencil, size: 16), onPressed: () => _togglePersonalEdit(profile)),
     );
   }
 
-  Widget _buildEmptySectionText(BuildContext context, String text) {
+  Widget _buildSectionHeader(BuildContext context, String title, VoidCallback onAdd) {
     return Padding(
-      padding: const EdgeInsets.only(left: 4, bottom: 20),
-      child: Text(
-        text,
-        style: GoogleFonts.inter(
-          color: Theme.of(
-            context,
-          ).colorScheme.onSurfaceVariant.withOpacity(0.7),
-          fontSize: 14,
-          fontStyle: FontStyle.italic,
-        ),
+      padding: const EdgeInsets.only(bottom: 16, left: 4, right: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(title, style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w700, color: Theme.of(context).colorScheme.onSurface)),
+          IconButton(
+            onPressed: onAdd,
+            icon: const Icon(LucideIcons.plus, size: 20),
+            style: IconButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.1)),
+          )
+        ],
       ),
     );
   }
 
-  Widget _buildIconText(BuildContext context, IconData icon, String text) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 14, color: colorScheme.onSurfaceVariant),
-        const SizedBox(width: 6),
-        Text(
-          text,
-          style: GoogleFonts.inter(fontSize: 14, color: colorScheme.onSurface),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSocialBtn(BuildContext context, IconData icon, String url) {
-    final theme = Theme.of(context);
-    return InkWell(
-      onTap: () => launchUrlString(url),
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: theme.scaffoldBackgroundColor,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: theme.colorScheme.outline.withOpacity(0.5)),
-        ),
-        child: Icon(icon, size: 20, color: theme.colorScheme.onSurface),
-      ),
-    );
-  }
-
-  Widget _buildTextField(
-    BuildContext context,
-    TextEditingController controller,
-    String label,
-    String hint, {
-    IconData? icon,
-    int maxLines = 1,
-  }) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return TextField(
-      controller: controller,
-      maxLines: maxLines,
-      style: GoogleFonts.inter(fontSize: 14, color: colorScheme.onSurface),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: GoogleFonts.inter(color: colorScheme.onSurfaceVariant),
-        hintText: hint,
-        hintStyle: GoogleFonts.inter(
-          color: colorScheme.onSurfaceVariant.withOpacity(0.5),
-        ),
-        floatingLabelBehavior: FloatingLabelBehavior.always,
-        prefixIcon: icon != null
-            ? Icon(icon, size: 18, color: colorScheme.onSurfaceVariant)
-            : null,
-        filled: true,
-        fillColor: theme.scaffoldBackgroundColor,
-        contentPadding: const EdgeInsets.all(16),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: colorScheme.outline.withOpacity(0.3)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: colorScheme.primary),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSectionHeader(BuildContext context, String title) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16, left: 4),
-      child: Text(
-        title,
-        style: GoogleFonts.inter(
-          fontSize: 18,
-          fontWeight: FontWeight.w700,
-          color: Theme.of(context).colorScheme.onSurface,
-        ),
-      ),
-    );
-  }
-
-  // --- Section Cards (Read-only) ---
+  // --- Item Cards ---
 
   Widget _buildEducationCard(BuildContext context, Education edu) {
     return _buildContentCard(
       context,
-      icon: LucideIcons.graduationCap,
-      color: AppColors.primary500,
+      icon: LucideIcons.graduationCap, color: AppColors.primary500,
       title: edu.institution,
       subtitle: "${edu.degree} in ${edu.branch}",
       meta: "${_formatDate(edu.startDate)} - ${_formatDate(edu.endDate)}",
+      verificationStatus: edu.verificationStatus,
+      onEdit: () => _openEditSheet(ItemType.education, edu.id, {
+        'institution': edu.institution, 'degree': edu.degree, 'branch': edu.branch,
+        'startDate': edu.startDate, 'endDate': edu.endDate, 'gpa': edu.gpa,
+        'achievements': edu.achievements
+      }),
+      onDelete: () => _deleteItem(ref.read(profileProvider.notifier).removeEducation, edu.id),
     );
   }
 
   Widget _buildExperienceCard(BuildContext context, Experience exp) {
     return _buildContentCard(
       context,
-      icon: LucideIcons.briefcase,
-      color: AppColors.accentTeal500,
+      icon: LucideIcons.briefcase, color: AppColors.accentTeal500,
       title: exp.position,
       subtitle: exp.company,
-      meta:
-          "${_formatDate(exp.startDate)} - ${exp.current ? 'Present' : _formatDate(exp.endDate)}",
+      meta: "${_formatDate(exp.startDate)} - ${exp.current ? 'Present' : _formatDate(exp.endDate)}",
       body: exp.description,
+      verificationStatus: exp.verificationStatus,
+      onEdit: () => _openEditSheet(ItemType.experience, exp.id, {
+        'position': exp.position, 'company': exp.company, 'location': exp.location,
+        'startDate': exp.startDate, 'endDate': exp.endDate, 'current': exp.current,
+        'description': exp.description, 'highlights': exp.highlights
+      }),
+      onDelete: () => _deleteItem(ref.read(profileProvider.notifier).removeExperience, exp.id),
     );
   }
 
   Widget _buildProjectCard(BuildContext context, Project proj) {
     return _buildContentCard(
       context,
-      icon: LucideIcons.folderGit2,
-      color: AppColors.accentPurple500,
+      icon: LucideIcons.folderGit2, color: AppColors.accentPurple500,
       title: proj.name,
       subtitle: proj.technologies.join(" • "),
+      verificationStatus: proj.verificationStatus,
       footer: (proj.url != null || proj.repoUrl != null)
-          ? Row(
-              children: [
-                if (proj.repoUrl != null)
-                  _buildLink(context, "Code", proj.repoUrl!),
-                if (proj.repoUrl != null && proj.url != null)
-                  const SizedBox(width: 16),
-                if (proj.url != null)
-                  _buildLink(context, "Live Demo", proj.url!),
-              ],
-            )
+          ? Row(children: [
+              if (proj.repoUrl != null) _buildLink(context, "Code", proj.repoUrl!),
+              if (proj.repoUrl != null && proj.url != null) const SizedBox(width: 16),
+              if (proj.url != null) _buildLink(context, "Live Demo", proj.url!),
+            ])
           : null,
+      onEdit: () => _openEditSheet(ItemType.project, proj.id, {
+        'name': proj.name, 'technologies': proj.technologies,
+        'url': proj.url, 'repoUrl': proj.repoUrl, 'highlights': proj.highlights
+      }),
+      onDelete: () => _deleteItem(ref.read(profileProvider.notifier).removeProject, proj.id),
     );
   }
 
-  Widget _buildSkillsCard(BuildContext context, List<Skill> skills) {
-    final theme = Theme.of(context);
-    final allSkills = skills.expand((s) => s.items).toList();
+  Widget _buildCertificationCard(BuildContext context, Certification cert) {
+     return _buildContentCard(
+      context,
+      icon: LucideIcons.award, color: Colors.orange,
+      title: cert.name,
+      subtitle: cert.issuer,
+      meta: "Issued: ${_formatDate(cert.date)}",
+      verificationStatus: cert.verificationStatus,
+      onEdit: () => _openEditSheet(ItemType.certification, cert.id, {
+        'name': cert.name, 'issuer': cert.issuer, 'date': cert.date, 'url': cert.url
+      }),
+      onDelete: () => _deleteItem(ref.read(profileProvider.notifier).removeCertification, cert.id),
+    );
+  }
 
+  Widget _buildSkillGroupCard(BuildContext context, Skill skill) {
+    final theme = Theme.of(context);
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: theme.cardTheme.color,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: theme.colorScheme.outline.withOpacity(0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(skill.category, style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 15)),
+              Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(LucideIcons.pencil, size: 16),
+                    onPressed: () => _openEditSheet(ItemType.skill, skill.id, {
+                      'category': skill.category, 'items': skill.items, 'proficiency': skill.proficiency?.name
+                    }),
+                    constraints: const BoxConstraints(),
+                    padding: EdgeInsets.zero,
+                  ),
+                  const SizedBox(width: 12),
+                  IconButton(
+                    icon: const Icon(LucideIcons.trash2, size: 16, color: AppColors.error),
+                    onPressed: () => _deleteItem(ref.read(profileProvider.notifier).removeSkill, skill.id),
+                    constraints: const BoxConstraints(),
+                    padding: EdgeInsets.zero,
+                  ),
+                ],
+              )
+            ],
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8, runSpacing: 8,
+            children: skill.items.map((item) => Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: theme.scaffoldBackgroundColor,
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: theme.colorScheme.outline.withOpacity(0.2)),
+              ),
+              child: Text(item, style: GoogleFonts.inter(fontSize: 13)),
+            )).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLanguagesCard(BuildContext context, List<Language> languages) {
+    final theme = Theme.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
@@ -786,48 +579,33 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         border: Border.all(color: theme.colorScheme.outline.withOpacity(0.5)),
       ),
       child: Wrap(
-        spacing: 8,
-        runSpacing: 10,
-        children: allSkills
-            .map(
-              (skill) => Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: theme.scaffoldBackgroundColor,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: theme.colorScheme.outline.withOpacity(0.3),
-                  ),
-                ),
-                child: Text(
-                  skill,
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    color: theme.colorScheme.onSurface,
-                  ),
-                ),
-              ),
-            )
-            .toList(),
+        spacing: 12, runSpacing: 12,
+        children: languages.map((lang) {
+          return GestureDetector(
+            onTap: () => _openEditSheet(ItemType.language, lang.id, {
+              'name': lang.name, 'proficiency': lang.proficiency.name
+            }),
+            child: Chip(
+              label: Text("${lang.name} • ${_formatProficiency(lang.proficiency)}"),
+              deleteIcon: const Icon(LucideIcons.x, size: 14),
+              onDeleted: () => _deleteItem(ref.read(profileProvider.notifier).removeLanguage, lang.id),
+              backgroundColor: theme.scaffoldBackgroundColor,
+              side: BorderSide(color: theme.colorScheme.outline.withOpacity(0.3)),
+            ),
+          );
+        }).toList(),
       ),
     );
   }
 
-  // --- Shared Card Logic ---
+  // --- Helper Widgets ---
 
-  Widget _buildContentCard(
-    BuildContext context, {
-    required IconData icon,
-    required Color color,
-    required String title,
-    required String subtitle,
-    String? meta,
-    String? body,
-    Widget? footer,
+  Widget _buildContentCard(BuildContext context, {
+    required IconData icon, required Color color,
+    required String title, required String subtitle,
+    VerificationStatus? verificationStatus,
+    String? meta, String? body, Widget? footer,
+    VoidCallback? onEdit, VoidCallback? onDelete,
   }) {
     final theme = Theme.of(context);
 
@@ -838,13 +616,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         color: theme.cardTheme.color,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: theme.colorScheme.outline.withOpacity(0.5)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 16, offset: const Offset(0, 4))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -854,10 +626,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             children: [
               Container(
                 padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
                 child: Icon(icon, color: color, size: 22),
               ),
               const SizedBox(width: 16),
@@ -865,67 +634,95 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      title,
-                      style: GoogleFonts.inter(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
-                        color: theme.colorScheme.onSurface,
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(child: Text(title, style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 16))),
+                        if (verificationStatus != null) ...[const SizedBox(width: 8), VerificationBadge(status: verificationStatus)],
+                      ],
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      subtitle,
-                      style: GoogleFonts.inter(
-                        color: theme.colorScheme.onSurfaceVariant,
-                        fontSize: 14,
-                      ),
-                    ),
-                    if (meta != null) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        meta,
-                        style: GoogleFonts.inter(
-                          color: theme.colorScheme.onSurfaceVariant.withOpacity(
-                            0.8,
-                          ),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
+                    Text(subtitle, style: GoogleFonts.inter(color: theme.colorScheme.onSurfaceVariant, fontSize: 14)),
+                    if (meta != null) Text(meta, style: GoogleFonts.inter(color: theme.colorScheme.onSurfaceVariant.withOpacity(0.8), fontSize: 12, fontWeight: FontWeight.w500)),
                   ],
                 ),
               ),
             ],
           ),
-          if (body != null && body.isNotEmpty) ...[
-            const SizedBox(height: 16),
-            Text(
-              body,
-              style: GoogleFonts.inter(
-                color: theme.colorScheme.onSurfaceVariant,
-                height: 1.5,
-              ),
-            ),
-          ],
+          if (body != null) ...[const SizedBox(height: 16), Text(body, style: GoogleFonts.inter(color: theme.colorScheme.onSurfaceVariant, height: 1.5))],
           if (footer != null) ...[const SizedBox(height: 16), footer],
+          const SizedBox(height: 16),
+          Divider(color: theme.colorScheme.outline.withOpacity(0.3)),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              if (onEdit != null)
+                TextButton.icon(
+                  onPressed: onEdit,
+                  icon: const Icon(LucideIcons.pencil, size: 14),
+                  label: const Text("Edit"),
+                  style: TextButton.styleFrom(foregroundColor: theme.colorScheme.onSurfaceVariant),
+                ),
+              if (onDelete != null)
+                TextButton.icon(
+                  onPressed: onDelete,
+                  icon: const Icon(LucideIcons.trash2, size: 14),
+                  label: const Text("Delete"),
+                  style: TextButton.styleFrom(foregroundColor: AppColors.error),
+                ),
+            ],
+          )
         ],
+      ),
+    );
+  }
+  
+  // --- Simple Utilities ---
+
+  Widget _buildEmptySectionText(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4, bottom: 20),
+      child: Text("Nothing added here yet.", style: GoogleFonts.inter(color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.7), fontSize: 14, fontStyle: FontStyle.italic)),
+    );
+  }
+
+  Widget _buildIconText(BuildContext context, IconData icon, String text) {
+     return Row(children: [
+       Icon(icon, size: 14, color: Theme.of(context).colorScheme.onSurfaceVariant),
+       const SizedBox(width: 6),
+       Text(text, style: GoogleFonts.inter(fontSize: 14)),
+     ]);
+  }
+
+  Widget _buildSocialBtn(BuildContext context, IconData icon, String url) {
+    return InkWell(
+      onTap: () => launchUrlString(url),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+        ),
+        child: Icon(icon, size: 20),
       ),
     );
   }
 
   Widget _buildLink(BuildContext context, String text, String url) {
-    return InkWell(
-      onTap: () => launchUrlString(url),
-      child: Text(
-        text,
-        style: GoogleFonts.inter(
-          color: AppColors.primary500,
-          fontWeight: FontWeight.w600,
-          fontSize: 13,
-          decoration: TextDecoration.underline,
-        ),
+    return InkWell(onTap: () => launchUrlString(url), child: Text(text, style: GoogleFonts.inter(color: AppColors.primary500, fontWeight: FontWeight.w600, fontSize: 13, decoration: TextDecoration.underline)));
+  }
+  
+  Widget _buildTextField(BuildContext context, TextEditingController c, String l, String h, {IconData? icon, int maxLines = 1}) {
+    final theme = Theme.of(context);
+    return TextField(
+      controller: c, maxLines: maxLines,
+      decoration: InputDecoration(
+        labelText: l, hintText: h,
+        prefixIcon: icon != null ? Icon(icon, size: 18) : null,
+        filled: true, fillColor: theme.scaffoldBackgroundColor,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: theme.colorScheme.outline.withOpacity(0.3))),
       ),
     );
   }
@@ -934,23 +731,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     if (isoString == null) return "Present";
     try {
       final date = DateTime.parse(isoString);
-      const months = [
-        "Jan",
-        "Feb",
-        "Mar",
-        "Apr",
-        "May",
-        "Jun",
-        "Jul",
-        "Aug",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec",
-      ];
+      const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
       return "${months[date.month - 1]} ${date.year}";
-    } catch (_) {
-      return isoString;
-    }
+    } catch (_) { return isoString; }
+  }
+  
+  String _formatProficiency(ProficiencyLevel level) {
+     return level.name[0] + level.name.substring(1).toLowerCase();
   }
 }
