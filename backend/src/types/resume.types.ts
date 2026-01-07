@@ -109,11 +109,12 @@ export interface ResumePreviewData {
   }[];
   projects: {
     id: string;
-    name: string;
-    technologies: string[];
-    url: string | null;
-    repoUrl: string | null;
-    highlights: string[];
+    title: string;
+    domain: string;
+    tools: string[];
+    description: string;
+    outcomes: string[];
+    referenceUrl: string | null;
     order: number;
   }[];
   certifications: {

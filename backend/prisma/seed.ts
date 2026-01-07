@@ -224,16 +224,17 @@ async function main(): Promise<void> {
       await prisma.project.create({
         data: {
           userId: user.id,
-          name: faker.commerce.productName() + ' Platform',
-          technologies: faker.helpers.arrayElements(
+          title: faker.commerce.productName() + ' Platform',
+          domain: faker.commerce.department(),
+          tools: faker.helpers.arrayElements(
             ['React', 'Node.js', 'TypeScript', 'PostgreSQL', 'Docker', 'AWS'],
             { min: 3, max: 5 },
           ),
-          url: faker.helpers.maybe(() => faker.internet.url(), { probability: 0.5 }),
-          repoUrl: `https://github.com/${user.name.toLowerCase().replace(' ', '-')}/${faker.lorem.word()}`,
-          highlights: faker.helpers.multiple(() => faker.lorem.sentence(), {
+          description: faker.lorem.paragraph(),
+          outcomes: faker.helpers.multiple(() => faker.lorem.sentence(), {
             count: { min: 2, max: 4 },
           }),
+          referenceUrl: faker.helpers.maybe(() => faker.internet.url(), { probability: 0.5 }),
           order: i,
         },
       });
