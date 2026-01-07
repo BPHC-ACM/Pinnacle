@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../models/student_profile_model.dart';
@@ -41,29 +40,15 @@ class VerificationBadge extends StatelessWidget {
     return Tooltip(
       message: tooltip,
       triggerMode: TooltipTriggerMode.tap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(4),
-          border: Border.all(color: color.withOpacity(0.2)),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: size, color: color),
-            const SizedBox(width: 4),
-            Text(
-              status.name.substring(0, 1) +
-                  status.name.substring(1).toLowerCase(),
-              style: GoogleFonts.inter(
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-                color: color,
-              ),
-            ),
-          ],
-        ),
+      child: Column(
+        children: [
+          SizedBox(height: 4),
+          Icon(
+            icon,
+            size: size,
+            color: color,
+          ),
+        ],
       ),
     );
   }

@@ -239,35 +239,35 @@ class Skill {
 
 class Project {
   final String id;
-  final String name;
-  final List<String> technologies;
-  final String? url;
-  final String? repoUrl;
-  final List<String> highlights;
+  final String title;
+  final String domain;
+  final List<String> tools;
+  final String description;
+  final List<String> outcomes;
+  final String? referenceUrl;
   final VerificationStatus verificationStatus;
 
   Project({
     required this.id,
-    required this.name,
-    this.technologies = const [],
-    this.url,
-    this.repoUrl,
-    this.highlights = const [],
+    required this.title,
+    required this.domain,
+    required this.description,
+    this.tools = const [],
+    this.outcomes = const [],
+    this.referenceUrl,
     this.verificationStatus = VerificationStatus.PENDING,
   });
 
   factory Project.fromJson(Map<String, dynamic> json) {
     return Project(
       id: json['id'] ?? '',
-      name: json['name'] ?? '',
-      technologies:
-          (json['technologies'] as List?)?.map((e) => e.toString()).toList() ??
-          [],
-      url: json['url'],
-      repoUrl: json['repoUrl'],
-      highlights:
-          (json['highlights'] as List?)?.map((e) => e.toString()).toList() ??
-          [],
+      title: json['title'] ?? '',
+      domain: json['domain'] ?? '',
+      description: json['description'] ?? '',
+      tools: (json['tools'] as List?)?.map((e) => e.toString()).toList() ?? [],
+      outcomes:
+          (json['outcomes'] as List?)?.map((e) => e.toString()).toList() ?? [],
+      referenceUrl: json['referenceUrl'],
       verificationStatus: _parseStatus(json['verificationStatus']),
     );
   }

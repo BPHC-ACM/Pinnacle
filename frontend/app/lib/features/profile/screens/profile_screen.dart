@@ -12,6 +12,7 @@ import '../models/student_profile_model.dart';
 import '../providers/profile_provider.dart';
 import '../widgets/verification_badge.dart';
 import '../widgets/add_edit_item_sheet.dart';
+import '../widgets/profile_section_card.dart'; // Ensure this is imported
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -125,6 +126,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useRootNavigator: true, // Hides bottom nav by pushing to root navigator
       backgroundColor: Colors.transparent,
       builder: (_) => AddEditItemSheet(type: type),
     );
@@ -134,6 +136,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useRootNavigator: true, // Hides bottom nav by pushing to root navigator
       backgroundColor: Colors.transparent,
       builder: (_) =>
           AddEditItemSheet(type: type, itemId: id, initialData: data),
@@ -291,84 +294,116 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       _buildPersonalActionButtons(profile),
                       const SizedBox(height: 40),
 
-                      // --- Sections ---
-
-                      // Education
-                      _buildSectionHeader(
-                        context,
-                        "Education",
-                        () => _openAddSheet(ItemType.education),
-                      ),
-                      ...profile.education.map(
-                        (e) => _buildEducationCard(context, e),
-                      ),
-                      if (profile.education.isEmpty)
-                        _buildEmptySectionText(context),
-                      const SizedBox(height: 32),
+                      // --- Grouped Sections ---
 
                       // Experience
-                      _buildSectionHeader(
-                        context,
-                        "Experience",
-                        () => _openAddSheet(ItemType.experience),
+                      ProfileSectionCard(
+                        key: const PageStorageKey('experience_section'),
+                        title: "Experience",
+                        action: _buildAddButton(
+                          () => _openAddSheet(ItemType.experience),
+                        ),
+                        children: profile.experiences
+                            .map(
+                              (e) => _buildExperienceItem(
+                                context,
+                                e,
+                                profile.experiences.last == e,
+                              ),
+                            )
+                            .toList(),
                       ),
-                      ...profile.experiences.map(
-                        (e) => _buildExperienceCard(context, e),
+
+                      // Education
+                      ProfileSectionCard(
+                        key: const PageStorageKey('education_section'),
+                        title: "Education",
+                        action: _buildAddButton(
+                          () => _openAddSheet(ItemType.education),
+                        ),
+                        children: profile.education
+                            .map(
+                              (e) => _buildEducationItem(
+                                context,
+                                e,
+                                profile.education.last == e,
+                              ),
+                            )
+                            .toList(),
                       ),
-                      if (profile.experiences.isEmpty)
-                        _buildEmptySectionText(context),
-                      const SizedBox(height: 32),
 
                       // Skills
-                      _buildSectionHeader(
-                        context,
-                        "Skills",
-                        () => _openAddSheet(ItemType.skill),
-                      ),
-                      if (profile.skills.isNotEmpty) ...[
-                        ...profile.skills.map(
-                          (s) => _buildSkillGroupCard(context, s),
+                      ProfileSectionCard(
+                        key: const PageStorageKey('skills_section'),
+                        title: "Skills",
+                        action: _buildAddButton(
+                          () => _openAddSheet(ItemType.skill),
                         ),
-                      ] else
-                        _buildEmptySectionText(context),
-                      const SizedBox(height: 32),
+                        children: profile.skills
+                            .map(
+                              (s) => _buildSkillItem(
+                                context,
+                                s,
+                                profile.skills.last == s,
+                              ),
+                            )
+                            .toList(),
+                      ),
 
                       // Projects
-                      _buildSectionHeader(
-                        context,
-                        "Projects",
-                        () => _openAddSheet(ItemType.project),
+                      ProfileSectionCard(
+                        key: const PageStorageKey('projects_section'),
+                        title: "Projects",
+                        action: _buildAddButton(
+                          () => _openAddSheet(ItemType.project),
+                        ),
+                        children: profile.projects
+                            .map(
+                              (p) => _buildProjectItem(
+                                context,
+                                p,
+                                profile.projects.last == p,
+                              ),
+                            )
+                            .toList(),
                       ),
-                      ...profile.projects.map(
-                        (p) => _buildProjectCard(context, p),
-                      ),
-                      if (profile.projects.isEmpty)
-                        _buildEmptySectionText(context),
-                      const SizedBox(height: 32),
-
-                      // Languages
-                      _buildSectionHeader(
-                        context,
-                        "Languages",
-                        () => _openAddSheet(ItemType.language),
-                      ),
-                      if (profile.languages.isNotEmpty)
-                        _buildLanguagesCard(context, profile.languages),
-                      if (profile.languages.isEmpty)
-                        _buildEmptySectionText(context),
-                      const SizedBox(height: 32),
 
                       // Certifications
-                      _buildSectionHeader(
-                        context,
-                        "Certifications",
-                        () => _openAddSheet(ItemType.certification),
+                      ProfileSectionCard(
+                        key: const PageStorageKey('certifications_section'),
+                        title: "Certifications",
+                        action: _buildAddButton(
+                          () => _openAddSheet(ItemType.certification),
+                        ),
+                        children: profile.certifications
+                            .map(
+                              (c) => _buildCertificationItem(
+                                context,
+                                c,
+                                profile.certifications.last == c,
+                              ),
+                            )
+                            .toList(),
                       ),
-                      ...profile.certifications.map(
-                        (c) => _buildCertificationCard(context, c),
+
+                      // Languages
+                      ProfileSectionCard(
+                        key: const PageStorageKey('languages_section'),
+                        title: "Languages",
+                        action: _buildAddButton(
+                          () => _openAddSheet(ItemType.language),
+                        ),
+                        children: [
+                          if (profile.languages.isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.all(20),
+                              child: _buildLanguagesWrap(
+                                context,
+                                profile.languages,
+                              ),
+                            ),
+                        ],
                       ),
-                      if (profile.certifications.isEmpty)
-                        _buildEmptySectionText(context),
 
                       const SizedBox(height: 120),
                     ]),
@@ -378,6 +413,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildAddButton(VoidCallback onTap) {
+    return IconButton(
+      onPressed: onTap,
+      icon: const Icon(LucideIcons.plus, size: 20),
+      style: IconButton.styleFrom(
+        foregroundColor: AppColors.primary500,
+        backgroundColor: AppColors.neutral800,
       ),
     );
   }
@@ -631,42 +677,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  Widget _buildSectionHeader(
-    BuildContext context,
-    String title,
-    VoidCallback onAdd,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16, left: 4, right: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            title,
-            style: GoogleFonts.inter(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
-          ),
-          IconButton(
-            onPressed: onAdd,
-            icon: const Icon(LucideIcons.plus, size: 20),
-            style: IconButton.styleFrom(
-              backgroundColor: Theme.of(
-                context,
-              ).colorScheme.primary.withOpacity(0.1),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // --- Item Renderers (Rows inside ProfileSectionCard) ---
 
-  // --- Item Cards ---
-
-  Widget _buildEducationCard(BuildContext context, Education edu) {
-    return _buildContentCard(
+  Widget _buildEducationItem(BuildContext context, Education edu, bool isLast) {
+    return _buildRowItem(
       context,
       icon: LucideIcons.graduationCap,
       color: AppColors.primary500,
@@ -674,10 +688,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       subtitle: "${edu.degree} in ${edu.branch}",
       meta: "${_formatDate(edu.startDate)} - ${_formatDate(edu.endDate)}",
       verificationStatus: edu.verificationStatus,
+      isLast: isLast,
       onEdit: () => _openEditSheet(ItemType.education, edu.id, {
         'institution': edu.institution,
         'degree': edu.degree,
         'branch': edu.branch,
+        'location': edu.location,
         'startDate': edu.startDate,
         'endDate': edu.endDate,
         'gpa': edu.gpa,
@@ -690,8 +706,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  Widget _buildExperienceCard(BuildContext context, Experience exp) {
-    return _buildContentCard(
+  Widget _buildExperienceItem(
+    BuildContext context,
+    Experience exp,
+    bool isLast,
+  ) {
+    return _buildRowItem(
       context,
       icon: LucideIcons.briefcase,
       color: AppColors.accentTeal500,
@@ -701,6 +721,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           "${_formatDate(exp.startDate)} - ${exp.current ? 'Present' : _formatDate(exp.endDate)}",
       body: exp.description,
       verificationStatus: exp.verificationStatus,
+      isLast: isLast,
       onEdit: () => _openEditSheet(ItemType.experience, exp.id, {
         'position': exp.position,
         'company': exp.company,
@@ -718,32 +739,40 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  Widget _buildProjectCard(BuildContext context, Project proj) {
-    return _buildContentCard(
+  Widget _buildProjectItem(BuildContext context, Project proj, bool isLast) {
+    return _buildRowItem(
       context,
       icon: LucideIcons.folderGit2,
       color: AppColors.accentPurple500,
-      title: proj.name,
-      subtitle: proj.technologies.join(" • "),
+      title: proj.title,
+      subtitle: "${proj.domain} • ${proj.tools.join(", ")}",
+      body: proj.description,
       verificationStatus: proj.verificationStatus,
-      footer: (proj.url != null || proj.repoUrl != null)
-          ? Row(
-              children: [
-                if (proj.repoUrl != null)
-                  _buildLink(context, "Code", proj.repoUrl!),
-                if (proj.repoUrl != null && proj.url != null)
-                  const SizedBox(width: 16),
-                if (proj.url != null)
-                  _buildLink(context, "Live Demo", proj.url!),
-              ],
-            )
-          : null,
+      isLast: isLast,
+      footer: (proj.referenceUrl == null || proj.referenceUrl!.isEmpty)
+          ? null
+          : Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  _buildExternalLinkChip(
+                    context,
+                    "View Project",
+                    proj.referenceUrl!,
+                    icon: LucideIcons.globe,
+                  ),
+                ],
+              ),
+            ),
       onEdit: () => _openEditSheet(ItemType.project, proj.id, {
-        'name': proj.name,
-        'technologies': proj.technologies,
-        'url': proj.url,
-        'repoUrl': proj.repoUrl,
-        'highlights': proj.highlights,
+        'title': proj.title,
+        'domain': proj.domain,
+        'tools': proj.tools,
+        'description': proj.description,
+        'outcomes': proj.outcomes,
+        'referenceUrl': proj.referenceUrl,
       }),
       onDelete: () => _deleteItem(
         ref.read(profileProvider.notifier).removeProject,
@@ -752,8 +781,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  Widget _buildCertificationCard(BuildContext context, Certification cert) {
-    return _buildContentCard(
+  Widget _buildCertificationItem(
+    BuildContext context,
+    Certification cert,
+    bool isLast,
+  ) {
+    return _buildRowItem(
       context,
       icon: LucideIcons.award,
       color: Colors.orange,
@@ -761,6 +794,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       subtitle: cert.issuer,
       meta: "Issued: ${_formatDate(cert.date)}",
       verificationStatus: cert.verificationStatus,
+      isLast: isLast,
+      footer: (cert.url == null || cert.url!.isEmpty)
+          ? null
+          : Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: _buildExternalLinkChip(
+                context,
+                "View Credential",
+                cert.url!,
+                icon: LucideIcons.externalLink,
+              ),
+            ),
       onEdit: () => _openEditSheet(ItemType.certification, cert.id, {
         'name': cert.name,
         'issuer': cert.issuer,
@@ -774,129 +819,124 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  Widget _buildSkillGroupCard(BuildContext context, Skill skill) {
+  Widget _buildSkillItem(BuildContext context, Skill skill, bool isLast) {
     final theme = Theme.of(context);
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: theme.cardTheme.color,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: theme.colorScheme.outline.withOpacity(0.3)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                skill.category,
-                style: GoogleFonts.inter(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 15,
-                ),
-              ),
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  IconButton(
-                    icon: const Icon(LucideIcons.pencil, size: 16),
-                    onPressed: () => _openEditSheet(ItemType.skill, skill.id, {
-                      'category': skill.category,
-                      'items': skill.items,
-                      'proficiency': skill.proficiency?.name,
-                    }),
-                    constraints: const BoxConstraints(),
-                    padding: EdgeInsets.zero,
+                  Text(
+                    skill.category,
+                    style: GoogleFonts.inter(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                      color: theme.colorScheme.onSurface,
+                    ),
                   ),
-                  const SizedBox(width: 12),
-                  IconButton(
-                    icon: const Icon(
-                      LucideIcons.trash2,
-                      size: 16,
-                      color: AppColors.error,
-                    ),
-                    onPressed: () => _deleteItem(
-                      ref.read(profileProvider.notifier).removeSkill,
-                      skill.id,
-                    ),
-                    constraints: const BoxConstraints(),
-                    padding: EdgeInsets.zero,
+                  Row(
+                    children: [
+                      _buildActionIcon(
+                        icon: LucideIcons.pencil,
+                        onTap: () => _openEditSheet(ItemType.skill, skill.id, {
+                          'category': skill.category,
+                          'items': skill.items,
+                          'proficiency': skill.proficiency?.name,
+                        }),
+                      ),
+                      const SizedBox(width: 8),
+                      _buildActionIcon(
+                        icon: LucideIcons.trash2,
+                        color: AppColors.error,
+                        onTap: () => _deleteItem(
+                          ref.read(profileProvider.notifier).removeSkill,
+                          skill.id,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: skill.items
+                    .map(
+                      (item) => Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: theme.scaffoldBackgroundColor,
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(
+                            color: theme.colorScheme.outline.withOpacity(0.5),
+                          ),
+                        ),
+                        child: Text(
+                          item,
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ),
+                    )
+                    .toList(),
+              ),
             ],
           ),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: skill.items
-                .map(
-                  (item) => Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: theme.scaffoldBackgroundColor,
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(
-                        color: theme.colorScheme.outline.withOpacity(0.2),
-                      ),
-                    ),
-                    child: Text(item, style: GoogleFonts.inter(fontSize: 13)),
-                  ),
-                )
-                .toList(),
-          ),
-        ],
-      ),
+        ),
+        if (!isLast)
+          Divider(height: 1, color: theme.colorScheme.outline.withOpacity(0.5)),
+      ],
     );
   }
 
-  Widget _buildLanguagesCard(BuildContext context, List<Language> languages) {
+  Widget _buildLanguagesWrap(BuildContext context, List<Language> languages) {
     final theme = Theme.of(context);
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: theme.cardTheme.color,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: theme.colorScheme.outline.withOpacity(0.5)),
-      ),
-      child: Wrap(
-        spacing: 12,
-        runSpacing: 12,
-        children: languages.map((lang) {
-          return GestureDetector(
-            onTap: () => _openEditSheet(ItemType.language, lang.id, {
-              'name': lang.name,
-              'proficiency': lang.proficiency.name,
-            }),
-            child: Chip(
-              label: Text(
-                "${lang.name} • ${_formatProficiency(lang.proficiency)}",
-              ),
-              deleteIcon: const Icon(LucideIcons.x, size: 14),
-              onDeleted: () => _deleteItem(
-                ref.read(profileProvider.notifier).removeLanguage,
-                lang.id,
-              ),
-              backgroundColor: theme.scaffoldBackgroundColor,
-              side: BorderSide(
-                color: theme.colorScheme.outline.withOpacity(0.3),
-              ),
+    return Wrap(
+      spacing: 12,
+      runSpacing: 12,
+      children: languages.map((lang) {
+        return GestureDetector(
+          onTap: () => _openEditSheet(ItemType.language, lang.id, {
+            'name': lang.name,
+            'proficiency': lang.proficiency.name,
+          }),
+          child: Chip(
+            label: Text(
+              "${lang.name} • ${_formatProficiency(lang.proficiency)}",
+              style: GoogleFonts.inter(fontSize: 13),
             ),
-          );
-        }).toList(),
-      ),
+            deleteIcon: const Icon(LucideIcons.x, size: 14),
+            onDeleted: () => _deleteItem(
+              ref.read(profileProvider.notifier).removeLanguage,
+              lang.id,
+            ),
+            backgroundColor: theme.scaffoldBackgroundColor,
+            side: BorderSide(
+              color: theme.colorScheme.outline.withOpacity(0.5),
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(50),
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
 
   // --- Helper Widgets ---
 
-  Widget _buildContentCard(
+  Widget _buildRowItem(
     BuildContext context, {
     required IconData icon,
     required Color color,
@@ -908,39 +948,44 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     Widget? footer,
     VoidCallback? onEdit,
     VoidCallback? onDelete,
+    required bool isLast,
   }) {
     final theme = Theme.of(context);
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 20),
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: theme.cardTheme.color,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: theme.colorScheme.outline.withOpacity(0.5)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(20),
+          child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(icon, color: color, size: 22),
+              // --- 1. Icon Box & Verification Badge Column ---
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: color.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    alignment: Alignment.center,
+                    child: Icon(icon, color: color, size: 20),
+                  ),
+                  // Badge moved here
+                  if (verificationStatus != null) ...[
+                    const SizedBox(height: 8),
+                    // We constrain the width or scale it if strictly necessary,
+                    // but usually, it sits fine here.
+                    VerificationBadge(status: verificationStatus),
+                  ],
+                ],
               ),
+
               const SizedBox(width: 16),
+
+              // --- 2. Content ---
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -953,16 +998,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             title,
                             style: GoogleFonts.inter(
                               fontWeight: FontWeight.w600,
-                              fontSize: 16,
+                              fontSize: 15,
+                              color: theme.colorScheme.onSurface,
                             ),
                           ),
                         ),
-                        if (verificationStatus != null) ...[
-                          const SizedBox(width: 8),
-                          VerificationBadge(status: verificationStatus),
-                        ],
+                        // Badge logic removed from here
                       ],
                     ),
+                    const SizedBox(height: 2),
                     Text(
                       subtitle,
                       style: GoogleFonts.inter(
@@ -970,79 +1014,79 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         fontSize: 14,
                       ),
                     ),
-                    if (meta != null)
+                    if (meta != null) ...[
+                      const SizedBox(height: 4),
                       Text(
                         meta,
                         style: GoogleFonts.inter(
                           color: theme.colorScheme.onSurfaceVariant.withOpacity(
-                            0.8,
+                            0.7,
                           ),
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
+                    ],
+                    if (body != null) ...[
+                      const SizedBox(height: 12),
+                      Text(
+                        body,
+                        style: GoogleFonts.inter(
+                          color: theme.colorScheme.onSurfaceVariant,
+                          height: 1.5,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                    if (footer != null) footer,
                   ],
                 ),
               ),
-            ],
-          ),
-          if (body != null) ...[
-            const SizedBox(height: 16),
-            Text(
-              body,
-              style: GoogleFonts.inter(
-                color: theme.colorScheme.onSurfaceVariant,
-                height: 1.5,
+
+              // --- 3. Actions ---
+              const SizedBox(width: 8),
+              Column(
+                children: [
+                  if (onEdit != null)
+                    _buildActionIcon(
+                      icon: LucideIcons.pencil,
+                      onTap: onEdit,
+                    ),
+                  if (onDelete != null) ...[
+                    const SizedBox(height: 12),
+                    _buildActionIcon(
+                      icon: LucideIcons.trash2,
+                      color: AppColors.error.withOpacity(0.7),
+                      onTap: onDelete,
+                    ),
+                  ],
+                ],
               ),
-            ),
-          ],
-          if (footer != null) ...[const SizedBox(height: 16), footer],
-          const SizedBox(height: 16),
-          Divider(color: theme.colorScheme.outline.withOpacity(0.3)),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              if (onEdit != null)
-                TextButton.icon(
-                  onPressed: onEdit,
-                  icon: const Icon(LucideIcons.pencil, size: 14),
-                  label: const Text("Edit"),
-                  style: TextButton.styleFrom(
-                    foregroundColor: theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              if (onDelete != null)
-                TextButton.icon(
-                  onPressed: onDelete,
-                  icon: const Icon(LucideIcons.trash2, size: 14),
-                  label: const Text("Delete"),
-                  style: TextButton.styleFrom(foregroundColor: AppColors.error),
-                ),
             ],
           ),
-        ],
+        ),
+        if (!isLast)
+          Divider(height: 1, color: theme.colorScheme.outline.withOpacity(0.5)),
+      ],
+    );
+  }
+
+  Widget _buildActionIcon({
+    required IconData icon,
+    required VoidCallback onTap,
+    Color? color,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.all(6),
+        child: Icon(icon, size: 16, color: color ?? Colors.grey),
       ),
     );
   }
 
   // --- Simple Utilities ---
-
-  Widget _buildEmptySectionText(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 4, bottom: 20),
-      child: Text(
-        "Nothing added here yet.",
-        style: GoogleFonts.inter(
-          color: Theme.of(
-            context,
-          ).colorScheme.onSurfaceVariant.withOpacity(0.7),
-          fontSize: 14,
-          fontStyle: FontStyle.italic,
-        ),
-      ),
-    );
-  }
 
   Widget _buildIconText(BuildContext context, IconData icon, String text) {
     return Row(
@@ -1075,16 +1119,39 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  Widget _buildLink(BuildContext context, String text, String url) {
+  Widget _buildExternalLinkChip(
+    BuildContext context,
+    String text,
+    String url, {
+    required IconData icon,
+  }) {
+    final theme = Theme.of(context);
     return InkWell(
       onTap: () => launchUrlString(url),
-      child: Text(
-        text,
-        style: GoogleFonts.inter(
-          color: AppColors.primary500,
-          fontWeight: FontWeight.w600,
-          fontSize: 13,
-          decoration: TextDecoration.underline,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: theme.scaffoldBackgroundColor,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: theme.colorScheme.outline.withOpacity(0.6),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 14, color: AppColors.primary500),
+            const SizedBox(width: 6),
+            Text(
+              text,
+              style: GoogleFonts.inter(
+                color: AppColors.primary500,
+                fontWeight: FontWeight.w600,
+                fontSize: 12,
+              ),
+            ),
+          ],
         ),
       ),
     );

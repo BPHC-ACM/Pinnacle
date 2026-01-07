@@ -1,4 +1,3 @@
-// lib/features/profile/widgets/add_edit_item_sheet.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -31,7 +30,7 @@ class _AddEditItemSheetState extends ConsumerState<AddEditItemSheet> {
   final Map<String, dynamic> _formData = {};
   final Map<String, TextEditingController> _dateControllers = {};
   bool _isLoading = false;
-  bool _isCurrent = false; // For Experience/Education
+  bool _isCurrent = false;
 
   @override
   void initState() {
@@ -71,8 +70,6 @@ class _AddEditItemSheetState extends ConsumerState<AddEditItemSheet> {
             await notifier.addProject(_formData);
             break;
           case ItemType.skill:
-            // Skills usually expect { "category": "...", "items": ["..."] }
-            // Handling splits in onSave
             await notifier.addSkill(_formData);
             break;
           case ItemType.certification:
@@ -128,9 +125,10 @@ class _AddEditItemSheetState extends ConsumerState<AddEditItemSheet> {
     final title = "${isEdit ? 'Edit' : 'Add'} ${_getTypeName()}";
 
     return Container(
+      width: double.infinity,
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-        top: 24,
+        top: 12,
         left: 24,
         right: 24,
       ),
@@ -145,22 +143,40 @@ class _AddEditItemSheetState extends ConsumerState<AddEditItemSheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // Drag Handle
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 5,
+                  margin: const EdgeInsets.only(bottom: 24),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.outline.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+
               Text(
                 title,
                 style: GoogleFonts.inter(
-                  fontSize: 20,
+                  fontSize: 22,
                   fontWeight: FontWeight.bold,
                   color: theme.colorScheme.onSurface,
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 24),
-              ..._buildFields(context),
               const SizedBox(height: 32),
-              PinnacleButton(
-                label: isEdit ? "Save Changes" : "Add Item",
-                onPressed: _submit,
-                isLoading: _isLoading,
+
+              ..._buildFields(context),
+
+              const SizedBox(height: 32),
+              SizedBox(
+                height: 48,
+                child: PinnacleButton(
+                  label: isEdit ? "Save Changes" : "Add Item",
+                  onPressed: _submit,
+                  isLoading: _isLoading,
+                ),
               ),
             ],
           ),
@@ -178,7 +194,7 @@ class _AddEditItemSheetState extends ConsumerState<AddEditItemSheet> {
       case ItemType.project:
         return "Project";
       case ItemType.skill:
-        return "Skill Set";
+        return "Skill";
       case ItemType.certification:
         return "Certification";
       case ItemType.language:
@@ -212,12 +228,11 @@ class _AddEditItemSheetState extends ConsumerState<AddEditItemSheet> {
               ),
             ],
           ),
-          _buildCheckbox("Currently Working here", "current", (val) {
+          _buildCheckbox("Currently working here", "current", (val) {
             setState(() => _isCurrent = val);
             _formData['current'] = val;
             if (val) {
               _formData['endDate'] = null;
-              // Clear the controller if we switch to 'Current'
               _dateControllers['endDate']?.clear();
             }
           }),
@@ -234,7 +249,6 @@ class _AddEditItemSheetState extends ConsumerState<AddEditItemSheet> {
           _buildTextField("Institution", "institution", required: true),
           _buildTextField("Degree", "degree", required: true),
           _buildTextField("Branch/Field", "branch", required: true),
-          // FIXED: Added missing Location field required by backend
           _buildTextField("Location", "location", required: true),
           Row(
             children: [
@@ -259,26 +273,32 @@ class _AddEditItemSheetState extends ConsumerState<AddEditItemSheet> {
         ];
       case ItemType.project:
         return [
-          _buildTextField("Project Name", "name", required: true),
+          _buildTextField("Project Title", "title", required: true),
+          _buildTextField("Domain", "domain", required: true),
           _buildTextField(
-            "Technologies (Comma separated)",
-            "technologies",
+            "Tools (Comma separated)",
+            "tools",
             isList: true,
             separator: ',',
           ),
-          _buildTextField("Project URL", "url"),
-          _buildTextField("Repository URL", "repoUrl"),
           _buildTextField(
-            "Highlights (One per line)",
-            "highlights",
+            "Description",
+            "description",
+            required: true,
+            maxLines: 3,
+          ),
+          _buildTextField(
+            "Outcomes (One per line)",
+            "outcomes",
             maxLines: 3,
             isList: true,
           ),
+          _buildTextField("Reference/Project URL", "referenceUrl"),
         ];
       case ItemType.skill:
         return [
           _buildTextField(
-            "Category (e.g., Frontend, Languages)",
+            "Category (e.g., Frontend)",
             "category",
             required: true,
           ),
@@ -334,31 +354,61 @@ class _AddEditItemSheetState extends ConsumerState<AddEditItemSheet> {
       }
     }
 
+    final theme = Theme.of(context);
+
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: TextFormField(
-        initialValue: initialValue,
-        maxLines: maxLines,
-        decoration: InputDecoration(
-          labelText: label,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-          contentPadding: const EdgeInsets.all(16),
-        ),
-        validator: required
-            ? (v) => v?.isEmpty == true ? 'Required' : null
-            : null,
-        onSaved: (value) {
-          if (value == null) return;
-          if (isList) {
-            _formData[key] = value
-                .split(separator)
-                .map((e) => e.trim())
-                .where((e) => e.isNotEmpty)
-                .toList();
-          } else {
-            _formData[key] = value.trim();
-          }
-        },
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 8),
+          TextFormField(
+            textCapitalization: TextCapitalization.sentences,
+            initialValue: initialValue,
+            maxLines: maxLines,
+            style: GoogleFonts.inter(fontSize: 14),
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: theme.colorScheme.surface,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: theme.colorScheme.outline.withOpacity(0.5),
+                ),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: theme.colorScheme.outline.withOpacity(0.5),
+                ),
+              ),
+              contentPadding: const EdgeInsets.all(16),
+            ),
+            validator: required
+                ? (v) => v?.isEmpty == true ? 'This field is required' : null
+                : null,
+            onSaved: (value) {
+              if (value == null) return;
+              if (isList) {
+                _formData[key] = value
+                    .split(separator)
+                    .map((e) => e.trim())
+                    .where((e) => e.isNotEmpty)
+                    .toList();
+              } else {
+                _formData[key] = value.trim();
+              }
+            },
+          ),
+        ],
       ),
     );
   }
@@ -376,8 +426,9 @@ class _AddEditItemSheetState extends ConsumerState<AddEditItemSheet> {
       );
     }
     final controller = _dateControllers[key]!;
+    final theme = Theme.of(context);
 
-    // Sync visual state if needed (e.g. if disabled/cleared externally)
+    // Sync visual state
     if (!enabled) {
       controller.clear();
     } else if (_formData[key] != null && controller.text.isEmpty) {
@@ -385,57 +436,86 @@ class _AddEditItemSheetState extends ConsumerState<AddEditItemSheet> {
     }
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: TextFormField(
-        controller: controller,
-        enabled: enabled,
-        readOnly: true, // Prevent manual editing, force picker
-        decoration: InputDecoration(
-          labelText: label,
-          hintText: "YYYY-MM",
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-          contentPadding: const EdgeInsets.all(16),
-          suffixIcon: const Icon(LucideIcons.calendar),
-        ),
-        validator: required && enabled
-            ? (v) => v?.isEmpty == true ? 'Required' : null
-            : null,
-        onTap: enabled
-            ? () async {
-                DateTime initialDate = DateTime.now();
-                // Try to parse existing date to start picker there
-                if (controller.text.isNotEmpty) {
-                  try {
-                    // FIXED: Handle YYYY-MM by appending a day for parsing
-                    String dateText = controller.text;
-                    if (dateText.length == 7) {
-                      dateText += '-01';
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 8),
+          TextFormField(
+            textCapitalization: TextCapitalization.sentences,
+            controller: controller,
+            enabled: enabled,
+            readOnly: true,
+            style: GoogleFonts.inter(fontSize: 14),
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: theme.colorScheme.surface,
+              hintText: "YYYY-MM",
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: theme.colorScheme.outline.withOpacity(0.5),
+                ),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: theme.colorScheme.outline.withOpacity(0.5),
+                ),
+              ),
+              contentPadding: const EdgeInsets.all(16),
+              suffixIcon: Icon(
+                LucideIcons.calendar,
+                size: 18,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+            validator: required && enabled
+                ? (v) => v?.isEmpty == true ? 'Required' : null
+                : null,
+            onTap: enabled
+                ? () async {
+                    DateTime initialDate = DateTime.now();
+                    if (controller.text.isNotEmpty) {
+                      try {
+                        String dateText = controller.text;
+                        if (dateText.length == 7) {
+                          dateText += '-01';
+                        }
+                        initialDate = DateTime.parse(dateText);
+                      } catch (_) {}
                     }
-                    initialDate = DateTime.parse(dateText);
-                  } catch (_) {}
-                }
 
-                final picked = await showDatePicker(
-                  context: context,
-                  initialDate: initialDate,
-                  firstDate: DateTime(1900),
-                  lastDate: DateTime(2100), // Future allowed for education end
-                );
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: initialDate,
+                      firstDate: DateTime(1900),
+                      lastDate: DateTime(2100),
+                    );
 
-                if (picked != null) {
-                  // FIXED: Format as YYYY-MM for backend compatibility
-                  final formatted =
-                      "${picked.year}-${picked.month.toString().padLeft(2, '0')}";
-                  setState(() {
-                    controller.text = formatted;
-                    _formData[key] = formatted;
-                  });
-                }
-              }
-            : null,
-        onSaved: (value) {
-          if (enabled && value != null) _formData[key] = value;
-        },
+                    if (picked != null) {
+                      final formatted =
+                          "${picked.year}-${picked.month.toString().padLeft(2, '0')}";
+                      setState(() {
+                        controller.text = formatted;
+                        _formData[key] = formatted;
+                      });
+                    }
+                  }
+                : null,
+            onSaved: (value) {
+              if (enabled && value != null) _formData[key] = value;
+            },
+          ),
+        ],
       ),
     );
   }
@@ -446,34 +526,66 @@ class _AddEditItemSheetState extends ConsumerState<AddEditItemSheet> {
     List<String> items, {
     bool required = false,
   }) {
+    final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: DropdownButtonFormField<String>(
-        value: _formData[key]?.toString(),
-        decoration: InputDecoration(
-          labelText: label,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-          contentPadding: const EdgeInsets.all(16),
-        ),
-        items: items
-            .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-            .toList(),
-        onChanged: (val) => setState(() => _formData[key] = val),
-        validator: required ? (v) => v == null ? 'Required' : null : null,
-        onSaved: (value) => _formData[key] = value,
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 8),
+          DropdownButtonFormField<String>(
+            value: _formData[key]?.toString(),
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              color: theme.colorScheme.onSurface,
+            ),
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: theme.colorScheme.surface,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: theme.colorScheme.outline.withOpacity(0.5),
+                ),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: theme.colorScheme.outline.withOpacity(0.5),
+                ),
+              ),
+              contentPadding: const EdgeInsets.all(16),
+            ),
+            items: items
+                .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                .toList(),
+            onChanged: (val) => setState(() => _formData[key] = val),
+            validator: required ? (v) => v == null ? 'Required' : null : null,
+            onSaved: (value) => _formData[key] = value,
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildCheckbox(String label, String key, Function(bool) onChanged) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.only(bottom: 20),
       child: CheckboxListTile(
-        title: Text(label),
+        title: Text(label, style: GoogleFonts.inter(fontSize: 14)),
         value: _isCurrent,
         onChanged: (v) => onChanged(v ?? false),
         contentPadding: EdgeInsets.zero,
         controlAffinity: ListTileControlAffinity.leading,
+        activeColor: Theme.of(context).primaryColor,
       ),
     );
   }
