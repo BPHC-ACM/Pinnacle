@@ -4,7 +4,7 @@ import '../../../core/storage/storage_service.dart';
 import '../models/user_model.dart';
 import '../repositories/auth_repository.dart';
 
-// State Class
+// State Class (Unchanged, just kept for context)
 class AuthState {
   final bool isLoading;
   final bool isAuthenticated;
@@ -33,28 +33,32 @@ class AuthState {
   }
 }
 
-// Notifier
 class AuthNotifier extends StateNotifier<AuthState> {
   final AuthRepository _repository;
   final StorageService _storage;
 
-  AuthNotifier(this._repository, this._storage) : super(AuthState(isLoading: true)) {
+  AuthNotifier(this._repository, this._storage)
+    : super(AuthState(isLoading: true)) {
+    print("AuthNotifier: Initialized");
     checkAuthStatus();
   }
 
-  // Check if user is already logged in on app start
   Future<void> checkAuthStatus() async {
+    print("AuthNotifier: Checking auth status...");
     final token = await _storage.getToken();
+    print("AuthNotifier: Token present in storage? ${token != null}");
+
     if (token != null) {
       try {
         final user = await _repository.getMe();
+        print("AuthNotifier: User profile fetched: ${user.email}");
         state = state.copyWith(
           isLoading: false,
           isAuthenticated: true,
           user: user,
         );
       } catch (e) {
-        // Token invalid or network error
+        print("AuthNotifier: Token invalid or user fetch failed: $e");
         await _storage.clearAll();
         state = state.copyWith(isLoading: false, isAuthenticated: false);
       }
@@ -63,35 +67,36 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  // Called when Deep Link returns with a token
-  Future<void> handleLoginSuccess(String token) async {
-    state = state.copyWith(isLoading: true);
-    await _storage.saveToken(token);
-    await checkAuthStatus();
-  }
-
   Future<void> login() async {
+    print("AuthNotifier: Login requested.");
     try {
+      state = state.copyWith(isLoading: true);
+
       await _repository.loginWithGoogle();
-      // Logic pauses here; app goes to background while Browser opens.
-      // The Deep Link (Phase 3) will trigger handleLoginSuccess later.
+
+      print("AuthNotifier: Login flow completed at Repo. Refreshing status...");
+      await checkAuthStatus();
     } catch (e) {
-      state = state.copyWith(error: "Failed to initiate login");
+      print("AuthNotifier: Login Failed Exception: $e");
+      state = state.copyWith(
+        isLoading: false,
+        error: "Login Failed",
+      );
     }
   }
 
   Future<void> logout() async {
+    print("AuthNotifier: Logout requested.");
     state = state.copyWith(isLoading: true);
     await _repository.logout();
     state = state.copyWith(
-      isLoading: false, 
-      isAuthenticated: false, 
-      user: null
+      isLoading: false,
+      isAuthenticated: false,
+      user: null,
     );
   }
 }
 
-// Global Providers
 final authRepositoryProvider = Provider((ref) => AuthRepository());
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   return AuthNotifier(

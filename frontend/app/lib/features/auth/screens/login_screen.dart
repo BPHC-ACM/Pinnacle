@@ -38,6 +38,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final authState = ref.watch(authProvider);
 
     return Scaffold(
       body: Stack(
@@ -126,6 +127,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                     child: PinnacleButton(
                       label: "Sign in with Google",
                       variant: ButtonVariant.primary,
+                      // Pass the loading state to the button
+                      isLoading: authState.isLoading,
                       icon: SvgPicture.string(
                         AppIcons.googleSvg,
                         width: 20,

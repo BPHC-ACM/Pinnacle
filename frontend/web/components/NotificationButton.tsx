@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { Bell, CheckCheck } from 'lucide-react';
+import { Bell, ListChecks } from 'lucide-react';
 import { notificationService } from '@/services/notification-service';
 import { Button } from '@/components/ui/button';
 import type { Notification } from '@/types/notification.types';
@@ -112,7 +112,7 @@ export default function NotificationButton() {
               className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground"
               title="Mark all as read"
             >
-              <CheckCheck className="h-4 w-4 mr-1" />
+              <ListChecks className="h-4 w-4 mr-1" />
               Read All
             </Button>
           </div>
