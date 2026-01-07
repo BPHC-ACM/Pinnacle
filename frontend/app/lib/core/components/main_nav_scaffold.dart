@@ -185,7 +185,7 @@ class _MainNavScaffoldState extends State<MainNavScaffold> {
                           children: [
                             _buildNavItem(
                               context: context,
-                              icon: LucideIcons.fileText,
+                              icon: LucideIcons.house,
                               label: 'Home',
                               index: 0,
                               currentIndex: currentIndex,
