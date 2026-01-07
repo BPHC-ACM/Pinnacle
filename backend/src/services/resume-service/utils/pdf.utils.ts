@@ -141,7 +141,7 @@ export const generateResumePDF = (resumeData: ResumeData): Promise<Buffer> => {
 
       projects.forEach((project) => {
         doc.fontSize(12).font('Helvetica-Bold').text(project.title);
-        
+
         doc.fontSize(10).font('Helvetica-Oblique').text(project.domain);
 
         if (project.tools && project.tools.length > 0) {
@@ -157,7 +157,7 @@ export const generateResumePDF = (resumeData: ResumeData): Promise<Buffer> => {
         }
 
         if (project.description) {
-           doc.font('Helvetica').text(project.description);
+          doc.font('Helvetica').text(project.description);
         }
 
         if (project.outcomes && project.outcomes.length > 0) {
