@@ -37,6 +37,9 @@ export default function NotificationButton() {
       setUnreadCount(calculateUnreadCount(data.notifications, storedTime));
     } catch (error) {
       console.error('Failed to fetch notifications:', error);
+      // Set empty state on error
+      setNotifications([]);
+      setUnreadCount(0);
     } finally {
       setIsLoading(false);
     }
@@ -50,6 +53,8 @@ export default function NotificationButton() {
       setUnreadCount(calculateUnreadCount(data.notifications, storedTime));
     } catch (error) {
       console.error('Failed to fetch unread count:', error);
+      // Silently fail for unread count
+      setUnreadCount(0);
     }
   }, [calculateUnreadCount]);
 

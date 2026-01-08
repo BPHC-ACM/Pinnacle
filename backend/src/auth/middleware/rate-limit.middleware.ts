@@ -35,7 +35,7 @@ export const sensitiveEndpointRateLimiter = rateLimit({
 // General-purpose rate limiter for most API endpoints.
 export const generalApiRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: 1000, // Increased for development
   message: {
     error: 'Too many requests. Please try again after 15 minutes.',
   },

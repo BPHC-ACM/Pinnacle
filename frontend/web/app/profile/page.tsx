@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api-client';
 import Image from 'next/image';
+import { generateAndDownloadResume } from '@/services/resume.service';
 
 // Icon components
 const UserIcon = ({ className }: { className?: string }) => (
@@ -88,6 +89,24 @@ const XIcon = ({ className }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <line x1="18" y1="6" x2="6" y2="18" />
     <line x1="6" y1="6" x2="18" y2="18" />
+  </svg>
+);
+
+const DownloadIcon = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+    <polyline points="7 10 12 15 17 10" />
+    <line x1="12" y1="15" x2="12" y2="3" />
+  </svg>
+);
+
+const DocumentIcon = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+    <polyline points="14 2 14 8 20 8" />
+    <line x1="16" y1="13" x2="8" y2="13" />
+    <line x1="16" y1="17" x2="8" y2="17" />
+    <polyline points="10 9 9 9 8 9" />
   </svg>
 );
 
@@ -179,6 +198,7 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<TabType>('personal');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [generatingResume, setGeneratingResume] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // Profile data
@@ -966,7 +986,62 @@ export default function ProfilePage() {
       )}
 
       <main className="flex-1 max-w-7xl mx-auto w-full px-6 py-8">
-        <h1 className="text-3xl font-bold text-foreground mb-6">My Profile</h1>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-3xl font-bold text-foreground">My Profile</h1>
+          <div className="flex gap-3">
+            <Button
+              onClick={() => router.push('/resume')}
+              variant="outline"
+              size="sm"
+            >
+              <DocumentIcon className="h-4 w-4 mr-2" />
+              My Resumes
+            </Button>
+            <Button
+              onClick={async () => {
+                try {
+                  setGeneratingResume(true);
+                  
+                  // First, save the resume configuration
+                  const { createSavedResume } = await import('@/services/resume.service');
+                  await createSavedResume({
+                    title: `Resume - ${new Date().toLocaleDateString()}`,
+                    template: 'modern',
+                    data: {
+                      sections: [
+                        { id: 'profile', type: 'profile', enabled: true, order: 0 },
+                        { id: 'experience', type: 'experience', enabled: true, order: 1 },
+                        { id: 'education', type: 'education', enabled: true, order: 2 },
+                        { id: 'skills', type: 'skills', enabled: true, order: 3 },
+                        { id: 'projects', type: 'projects', enabled: true, order: 4 },
+                        { id: 'certifications', type: 'certifications', enabled: true, order: 5 },
+                        { id: 'languages', type: 'languages', enabled: true, order: 6 },
+                      ],
+                    },
+                  });
+                  
+                  // Then generate and download the PDF
+                  await generateAndDownloadResume();
+                  
+                  setMessage({ text: 'Resume generated and saved successfully!', type: 'success' });
+                  setTimeout(() => setMessage(null), 3000);
+                } catch (error) {
+                  console.error('Failed to generate resume:', error);
+                  setMessage({ text: 'Failed to generate resume', type: 'error' });
+                  setTimeout(() => setMessage(null), 3000);
+                } finally {
+                  setGeneratingResume(false);
+                }
+              }}
+              disabled={generatingResume}
+              size="sm"
+              className="bg-primary-500 hover:bg-primary-600"
+            >
+              <DownloadIcon className="h-4 w-4 mr-2" />
+              {generatingResume ? 'Generating...' : 'Generate & Save Resume'}
+            </Button>
+          </div>
+        </div>
 
         {loading ? (
           <div className="flex items-center justify-center py-20">
