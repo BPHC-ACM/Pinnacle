@@ -21,7 +21,7 @@ export function Header() {
 
   return (
     <header className="w-full border-b border-border bg-background/90 backdrop-blur-md sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto py-4 flex items-center justify-between">
         <div className="cursor-pointer" onClick={handleLogoClick}>
           <Logo size="md" />
         </div>

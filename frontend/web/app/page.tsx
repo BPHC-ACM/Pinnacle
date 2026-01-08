@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 
 // Feature icon components
@@ -47,8 +49,17 @@ const UsersIcon = ({ className }: { className?: string }) => (
 
 export default function Home() {
   const { isLoading: authLoading, isAuthenticated } = useAuth();
+  const router = useRouter();
 
   console.log('Landing page - authLoading:', authLoading, 'isAuthenticated:', isAuthenticated);
+
+  useEffect(() => {
+    // If authenticated, redirect to dashboard
+    if (!authLoading && isAuthenticated) {
+      console.log('Landing page - user is authenticated, redirecting to dashboard');
+      router.push('/dashboard');
+    }
+  }, [authLoading, isAuthenticated, router]);
 
   // Show loading while checking auth
   if (authLoading) {
@@ -62,10 +73,16 @@ export default function Home() {
     );
   }
 
-  // If already logged in, the context handles the redirect
+  // If already logged in, show loading while redirecting
   if (isAuthenticated) {
-    console.log('Landing page - user is authenticated, returning null');
-    return null;
+    console.log('Landing page - user is authenticated, redirecting...');
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold">Redirecting...</h2>
+        </div>
+      </div>
+    );
   }
 
   console.log('Landing page - rendering main content');
@@ -85,7 +102,7 @@ export default function Home() {
 
       {/* Main Content */}
       <main className="flex-1 flex items-center justify-center px-6 py-20">
-        <div className="max-w-6xl w-full space-y-16">
+        <div className="max-w-7xl w-full space-y-16">
           {/* Hero Section */}
           <div className="text-center space-y-6">
             <h1 className="text-6xl md:text-7xl font-bold tracking-tight text-foreground">
