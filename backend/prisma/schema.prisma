@@ -196,18 +196,19 @@ model Project {
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  name               String
-  technologies       String[]           @default([])
-  url                String?
-  repoUrl            String? // Repository or source code URL
-  highlights         String[]           @default([])
+  title              String
+  domain             String
+  tools              String[]           @default([])
+  description        String
+  outcomes           String[]           @default([])
+  referenceUrl       String?
+  
   order              Int                @default(0)
   verificationStatus VerificationStatus @default(PENDING)
   verificationDoc    String?
-
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime? // Soft delete
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  deletedAt          DateTime?
 
   @@index([userId])
   @@index([deletedAt])

@@ -11,6 +11,10 @@ interface RefreshTokenRequestBody {
   refreshToken: string;
 }
 
+interface GoogleMobileLoginBody {
+  idToken: string;
+}
+
 const oauth2Client = new OAuth2Client(
   config.googleClientId,
   config.googleClientSecret,
@@ -133,6 +137,88 @@ export const googleCallback = async (req: Request, res: Response): Promise<void>
       error: 'Authentication failed',
       details: error instanceof Error ? error.message : String(error),
     });
+  }
+};
+
+// For Google SignIn in flutter app
+export const googleMobileLogin = async (
+  req: Request<object, object, GoogleMobileLoginBody>,
+  res: Response,
+): Promise<void> => {
+  try {
+    const { idToken } = req.body;
+
+    if (!idToken) {
+      res.status(400).json({ error: 'ID Token is required' });
+      return;
+    }
+
+    // Verify the ID Token from the mobile app
+    const ticket = await oauth2Client.verifyIdToken({
+      idToken: idToken,
+      audience: config.googleClientId, // Ensure this matches the client ID used in the Flutter app
+    });
+
+    const payload = ticket.getPayload();
+
+    // FIXED: Used optional chaining (?.)
+    if (!payload?.email) {
+      res.status(400).json({ error: 'Invalid token payload' });
+      return;
+    }
+
+    const name = payload.name ?? payload.email.split('@')[0];
+
+    // Reuse your existing logic to Find or Create User
+    let dbUser = await prisma.user.findUnique({
+      where: { googleId: payload.sub },
+    });
+
+    if (dbUser) {
+      dbUser = await prisma.user.update({
+        where: { id: dbUser.id },
+        data: { email: payload.email, name: name, picture: payload.picture },
+      });
+    } else {
+      const existingUser = await prisma.user.findUnique({ where: { email: payload.email } });
+      if (existingUser) {
+        dbUser = await prisma.user.update({
+          where: { id: existingUser.id },
+          data: { googleId: payload.sub, name: name, picture: payload.picture },
+        });
+      } else {
+        dbUser = await prisma.user.create({
+          data: {
+            googleId: payload.sub,
+            email: payload.email,
+            name: name ?? '',
+            picture: payload.picture,
+            role: 'USER',
+          },
+        });
+      }
+    }
+
+    // Generate Tokens
+    const accessToken = generateAccessToken({
+      userId: dbUser.id,
+      email: dbUser.email,
+      // FIXED: Cast to UserRole instead of any
+      role: dbUser.role as UserRole,
+    });
+
+    const refreshToken = generateRefreshToken({
+      userId: dbUser.id,
+      email: dbUser.email,
+      // FIXED: Cast to UserRole instead of any
+      role: dbUser.role as UserRole,
+    });
+
+    // Return JSON directly instead of redirecting
+    res.json({ accessToken, refreshToken, user: dbUser });
+  } catch (error) {
+    logger.error({ err: error }, 'Mobile Google Login failed');
+    res.status(500).json({ error: 'Authentication failed' });
   }
 };
 
