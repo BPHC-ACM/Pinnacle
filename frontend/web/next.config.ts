@@ -1,3 +1,4 @@
+import path from 'path';
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
@@ -8,6 +9,9 @@ const nextConfig: NextConfig = {
         hostname: 'lh3.googleusercontent.com',
       },
     ],
+  },
+  turbopack: {
+    root: path.resolve(__dirname, '../..'),
   },
 };
 

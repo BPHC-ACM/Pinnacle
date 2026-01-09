@@ -199,7 +199,7 @@ model Project {
   title              String
   domain             String
   tools              String[]           @default([])
-  description        String
+  description        String             @default("")
   outcomes           String[]           @default([])
   referenceUrl       String?
   
