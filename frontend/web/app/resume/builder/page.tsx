@@ -3,7 +3,7 @@
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import {
   getResumePreviewData,
   getSavedResume,
@@ -11,11 +11,11 @@ import {
   updateSavedResume,
   generateAndDownloadResume,
 } from '@/services/resume.service';
-import type { ResumePreviewData, ResumeData, ResumeSection } from '@/types/resume.types';
+import type { ResumePreviewData, ResumeData } from '@/types/resume.types';
 import { ResumePreview } from '@/components/ResumePreview';
 
-export default function ResumeBuilder() {
-  const { user, loading: authLoading } = useAuth();
+function ResumeBuilderContent() {
+  const { user, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const resumeId = searchParams.get('id');
@@ -129,7 +129,7 @@ export default function ResumeBuilder() {
     setResumeData((prev) => ({
       ...prev,
       sections: prev.sections.map((section) =>
-        section.id === sectionId ? { ...section, enabled: !section.enabled } : section,
+        section.id === sectionId ? { ...section, enabled: !section.enabled } : section
       ),
     }));
   };
@@ -342,9 +342,7 @@ export default function ResumeBuilder() {
                             onChange={() => toggleItem('skills', skill.id)}
                             className="mt-1"
                           />
-                          <span className="text-gray-600 dark:text-gray-400">
-                            {skill.category}
-                          </span>
+                          <span className="text-gray-600 dark:text-gray-400">{skill.category}</span>
                         </label>
                       ))}
                     </div>
@@ -391,5 +389,14 @@ export default function ResumeBuilder() {
         </div>
       </div>
     </div>
+  );
+}
+export default function ResumeBuilder() {
+  return (
+    <Suspense
+      fallback={<div className="flex h-screen items-center justify-center">Loading...</div>}
+    >
+      <ResumeBuilderContent />
+    </Suspense>
   );
 }
