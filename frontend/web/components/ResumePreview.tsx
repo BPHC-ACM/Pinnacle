@@ -322,7 +322,8 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
       style={{
         backgroundColor: 'white',
         width: '210mm',
-        minHeight: '297mm',
+        height: '297mm',
+        maxHeight: '297mm',
         margin: '20px auto',
         padding: '12mm 15mm',
         boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
@@ -331,6 +332,8 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
         lineHeight: 1.4,
         color: '#1f2937',
         position: 'relative',
+        overflow: 'hidden',
+        boxSizing: 'border-box',
       }}
       className="professional-resume"
     >
@@ -430,6 +433,11 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
       </div>
 
       <style jsx global>{`
+        .professional-resume {
+          page-break-after: avoid;
+          page-break-inside: avoid;
+        }
+        
         @media print {
           .professional-resume {
             width: 100% !important;
@@ -437,6 +445,21 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
             padding: 10mm 12mm !important;
             box-shadow: none !important;
             min-height: auto !important;
+            max-height: 277mm !important;
+            height: 277mm !important;
+            overflow: hidden !important;
+            page-break-after: avoid !important;
+            page-break-inside: avoid !important;
+          }
+          
+          @page {
+            size: A4;
+            margin: 0;
+          }
+          
+          body {
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
           }
         }
       `}</style>
