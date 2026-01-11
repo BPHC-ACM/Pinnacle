@@ -2,17 +2,20 @@
 
 import React from 'react';
 import type { ResumePreviewData, ResumeData } from '@/types/resume.types';
+import Image from 'next/image';
 
 interface ResumePreviewProps {
   data: ResumePreviewData;
   resumeData?: ResumeData;
-  template?: string;
 }
 
-export const ResumePreview: React.FC<ResumePreviewProps> = ({ data, resumeData }) => {
+export const ResumePreview: React.FC<ResumePreviewProps> = ({
+  data,
+  resumeData,
+}) => {
   const { profile, experiences, education, skills, projects, certifications, languages } = data;
 
-  // Filter items based on selected IDs in resumeData
+  // Filter items based on selected IDs
   const filteredExperiences = resumeData?.selectedExperiences
     ? experiences.filter((exp) => resumeData.selectedExperiences?.includes(exp.id))
     : experiences;
@@ -37,7 +40,6 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({ data, resumeData }
     ? languages.filter((lang) => resumeData.selectedLanguages?.includes(lang.id))
     : languages;
 
-  // Get enabled sections in order
   const sections = resumeData?.sections || [];
   const sortedSections = [...sections].sort((a, b) => a.order - b.order);
 
@@ -46,80 +48,54 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({ data, resumeData }
     return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
   };
 
+  const formatDuration = (startDate: string, endDate: string | null, current: boolean) => {
+    const start = formatDate(startDate);
+    const end = current ? 'Present' : endDate ? formatDate(endDate) : '';
+    return `${start} – ${end}`;
+  };
+
+  const primaryColor = resumeData?.styling?.primaryColor || '#111827';
+
   const renderSection = (section: { type: string; enabled: boolean }) => {
     if (!section.enabled) return null;
 
     switch (section.type) {
-      case 'profile':
-        return (
-          <div key="profile" className="mb-6">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-              {profile.name}
-            </h1>
-            {profile.title && (
-              <h2 className="text-xl text-gray-700 dark:text-gray-300 mb-3">{profile.title}</h2>
-            )}
-            <div className="flex flex-wrap gap-3 text-sm text-gray-600 dark:text-gray-400 mb-3">
-              <span>{profile.email}</span>
-              {profile.phone && <span>• {profile.phone}</span>}
-              {profile.location && <span>• {profile.location}</span>}
-            </div>
-            <div className="flex flex-wrap gap-3 text-sm text-blue-600 dark:text-blue-400">
-              {profile.linkedin && (
-                <a href={profile.linkedin} target="_blank" rel="noopener noreferrer">
-                  LinkedIn
-                </a>
-              )}
-              {profile.github && (
-                <a href={profile.github} target="_blank" rel="noopener noreferrer">
-                  GitHub
-                </a>
-              )}
-              {profile.website && (
-                <a href={profile.website} target="_blank" rel="noopener noreferrer">
-                  Website
-                </a>
-              )}
-            </div>
-            {profile.summary && (
-              <div className="mt-4">
-                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">
-                  Summary
-                </h3>
-                <p className="text-gray-700 dark:text-gray-300">{profile.summary}</p>
-              </div>
-            )}
-          </div>
-        );
-
       case 'experience':
         if (filteredExperiences.length === 0) return null;
         return (
-          <div key="experience" className="mb-6">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white border-b-2 border-gray-300 dark:border-gray-600 pb-2 mb-4">
+          <div key="experience" style={{ marginBottom: '12px' }}>
+            <h3
+              style={{
+                fontSize: '10pt',
+                fontWeight: 700,
+                color: primaryColor,
+                borderBottom: `1px solid #d1d5db`,
+                paddingBottom: '2px',
+                marginBottom: '8px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+              }}
+            >
               EXPERIENCE
             </h3>
             {filteredExperiences.map((exp) => (
-              <div key={exp.id} className="mb-4">
-                <div className="flex justify-between items-start mb-1">
-                  <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-                    {exp.position}
-                  </h4>
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
-                    {formatDate(exp.startDate)} -{' '}
-                    {exp.current ? 'Present' : exp.endDate ? formatDate(exp.endDate) : ''}
-                  </span>
+              <div key={exp.id} style={{ marginBottom: '8px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                  <div style={{ fontWeight: 700, fontSize: '10.5pt', color: '#000' }}>{exp.position}</div>
+                  <div style={{ fontSize: '9pt', fontWeight: 600, color: '#1f2937', whiteSpace: 'nowrap' }}>
+                    {formatDuration(exp.startDate, exp.endDate, exp.current)}
+                  </div>
                 </div>
-                <p className="text-gray-700 dark:text-gray-300 italic mb-2">
-                  {exp.company} • {exp.location}
-                </p>
-                {exp.description && (
-                  <p className="text-gray-700 dark:text-gray-300 mb-2">{exp.description}</p>
-                )}
-                {exp.highlights.length > 0 && (
-                  <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-1">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '2px' }}>
+                  <div style={{ fontWeight: 500, fontStyle: 'italic', color: '#4b5563' }}>{exp.company}</div>
+                  <div style={{ fontSize: '9pt', color: '#4b5563', fontStyle: 'italic' }}>{exp.location}</div>
+                </div>
+                {exp.highlights && exp.highlights.length > 0 && (
+                  <ul style={{ marginTop: '2px', paddingLeft: '15px', listStyleType: 'disc' }}>
                     {exp.highlights.map((highlight, idx) => (
-                      <li key={idx}>{highlight}</li>
+                      <li key={idx} style={{ marginBottom: '1px', fontSize: '9.5pt', color: '#1f2937' }}>
+                        {highlight}
+                      </li>
                     ))}
                   </ul>
                 )}
@@ -131,31 +107,108 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({ data, resumeData }
       case 'education':
         if (filteredEducation.length === 0) return null;
         return (
-          <div key="education" className="mb-6">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white border-b-2 border-gray-300 dark:border-gray-600 pb-2 mb-4">
+          <div key="education" style={{ marginBottom: '12px' }}>
+            <h3
+              style={{
+                fontSize: '10pt',
+                fontWeight: 700,
+                color: primaryColor,
+                borderBottom: `1px solid #d1d5db`,
+                paddingBottom: '2px',
+                marginBottom: '8px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+              }}
+            >
               EDUCATION
             </h3>
             {filteredEducation.map((edu) => (
-              <div key={edu.id} className="mb-4">
-                <div className="flex justify-between items-start mb-1">
-                  <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-                    {edu.institution}
-                  </h4>
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
-                    {formatDate(edu.startDate)} -{' '}
-                    {edu.endDate ? formatDate(edu.endDate) : 'Present'}
-                  </span>
+              <div key={edu.id} style={{ marginBottom: '8px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                  <div style={{ fontWeight: 700, fontSize: '10.5pt', color: '#000' }}>{edu.institution}</div>
+                  <div style={{ fontSize: '9pt', fontWeight: 600, color: '#1f2937' }}>
+                    {formatDuration(edu.startDate, edu.endDate, false)}
+                  </div>
                 </div>
-                <p className="text-gray-700 dark:text-gray-300">
-                  {edu.degree} in {edu.branch}
-                </p>
-                {edu.gpa && (
-                  <p className="text-gray-600 dark:text-gray-400 text-sm">GPA: {edu.gpa}</p>
-                )}
-                {edu.achievements.length > 0 && (
-                  <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-1 mt-2">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '2px' }}>
+                  <div style={{ fontWeight: 500, fontStyle: 'italic', color: '#4b5563' }}>
+                    {edu.degree} in {edu.branch}
+                  </div>
+                  <div style={{ fontSize: '9pt', color: '#4b5563', fontStyle: 'italic' }}>
+                    {edu.gpa ? `GPA: ${edu.gpa}` : edu.location}
+                  </div>
+                </div>
+                {edu.achievements && edu.achievements.length > 0 && (
+                  <ul style={{ marginTop: '2px', paddingLeft: '15px', listStyleType: 'disc' }}>
                     {edu.achievements.map((achievement, idx) => (
-                      <li key={idx}>{achievement}</li>
+                      <li key={idx} style={{ marginBottom: '1px', fontSize: '9.5pt', color: '#1f2937' }}>
+                        {achievement}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            ))}
+          </div>
+        );
+
+      case 'projects':
+        if (filteredProjects.length === 0) return null;
+        return (
+          <div key="projects" style={{ marginBottom: '12px' }}>
+            <h3
+              style={{
+                fontSize: '10pt',
+                fontWeight: 700,
+                color: primaryColor,
+                borderBottom: `1px solid #d1d5db`,
+                paddingBottom: '2px',
+                marginBottom: '8px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+              }}
+            >
+              PROJECTS
+            </h3>
+            {filteredProjects.map((project) => (
+              <div key={project.id} style={{ marginBottom: '8px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                  <div style={{ fontWeight: 700, fontSize: '10.5pt', color: '#000' }}>
+                    {project.title}
+                    {project.referenceUrl && (
+                      <a
+                        href={project.referenceUrl}
+                        style={{
+                          fontWeight: 'normal',
+                          fontSize: '0.8em',
+                          marginLeft: '5px',
+                          color: '#4b5563',
+                          textDecoration: 'none',
+                        }}
+                      >
+                        [Link]
+                      </a>
+                    )}
+                  </div>
+                  {project.startDate && (
+                    <div style={{ fontSize: '9pt', fontWeight: 600, color: '#1f2937' }}>
+                      {formatDuration(project.startDate, project.endDate, false)}
+                    </div>
+                  )}
+                </div>
+                {project.tools && project.tools.length > 0 && (
+                  <div style={{ marginBottom: '2px' }}>
+                    <span style={{ fontSize: '9pt', fontWeight: 500, fontStyle: 'italic', color: '#4b5563' }}>
+                      Stack: {project.tools.join(', ')}
+                    </span>
+                  </div>
+                )}
+                {project.outcomes && project.outcomes.length > 0 && (
+                  <ul style={{ marginTop: '2px', paddingLeft: '15px', listStyleType: 'disc' }}>
+                    {project.outcomes.map((outcome, idx) => (
+                      <li key={idx} style={{ marginBottom: '1px', fontSize: '9.5pt', color: '#1f2937' }}>
+                        {outcome}
+                      </li>
                     ))}
                   </ul>
                 )}
@@ -167,93 +220,58 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({ data, resumeData }
       case 'skills':
         if (filteredSkills.length === 0) return null;
         return (
-          <div key="skills" className="mb-6">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white border-b-2 border-gray-300 dark:border-gray-600 pb-2 mb-4">
+          <div key="skills" style={{ marginBottom: '12px' }}>
+            <h3
+              style={{
+                fontSize: '10pt',
+                fontWeight: 700,
+                color: primaryColor,
+                borderBottom: `1px solid #d1d5db`,
+                paddingBottom: '2px',
+                marginBottom: '8px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+              }}
+            >
               SKILLS
             </h3>
-            {filteredSkills.map((skill) => (
-              <div key={skill.id} className="mb-3">
-                <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-1">
-                  {skill.category}
-                </h4>
-                <p className="text-gray-700 dark:text-gray-300">{skill.items.join(' • ')}</p>
-              </div>
-            ))}
-          </div>
-        );
-
-      case 'projects':
-        if (filteredProjects.length === 0) return null;
-        return (
-          <div key="projects" className="mb-6">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white border-b-2 border-gray-300 dark:border-gray-600 pb-2 mb-4">
-              PROJECTS
-            </h3>
-            {filteredProjects.map((project) => (
-              <div key={project.id} className="mb-4">
-                <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-                  {project.title}
-                </h4>
-                <p className="text-gray-600 dark:text-gray-400 italic text-sm mb-1">
-                  {project.domain}
-                </p>
-                {project.tools.length > 0 && (
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                    <span className="font-semibold">Tools:</span> {project.tools.join(', ')}
-                  </p>
-                )}
-                {project.description && (
-                  <p className="text-gray-700 dark:text-gray-300 mb-2">{project.description}</p>
-                )}
-                {project.outcomes.length > 0 && (
-                  <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-1">
-                    {project.outcomes.map((outcome, idx) => (
-                      <li key={idx}>{outcome}</li>
-                    ))}
-                  </ul>
-                )}
-                {project.referenceUrl && (
-                  <a
-                    href={project.referenceUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 dark:text-blue-400 text-sm hover:underline"
-                  >
-                    View Project →
-                  </a>
-                )}
-              </div>
-            ))}
+            <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', columnGap: '12px', rowGap: '4px' }}>
+              {filteredSkills.map((skill) => (
+                <React.Fragment key={skill.id}>
+                  <div style={{ fontWeight: 700, fontSize: '9.5pt', color: '#1f2937' }}>{skill.category}:</div>
+                  <div style={{ fontSize: '9.5pt', color: '#1f2937' }}>{skill.items.join(', ')}</div>
+                </React.Fragment>
+              ))}
+            </div>
           </div>
         );
 
       case 'certifications':
         if (filteredCertifications.length === 0) return null;
         return (
-          <div key="certifications" className="mb-6">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white border-b-2 border-gray-300 dark:border-gray-600 pb-2 mb-4">
+          <div key="certifications" style={{ marginBottom: '12px' }}>
+            <h3
+              style={{
+                fontSize: '10pt',
+                fontWeight: 700,
+                color: primaryColor,
+                borderBottom: `1px solid #d1d5db`,
+                paddingBottom: '2px',
+                marginBottom: '8px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+              }}
+            >
               CERTIFICATIONS
             </h3>
             {filteredCertifications.map((cert) => (
-              <div key={cert.id} className="mb-3">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h4 className="font-semibold text-gray-800 dark:text-gray-200">{cert.title}</h4>
-                    <p className="text-gray-700 dark:text-gray-300">{cert.organization}</p>
-                    {cert.credentialUrl && (
-                      <a
-                        href={cert.credentialUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 dark:text-blue-400 text-sm hover:underline"
-                      >
-                        View Credential
-                      </a>
-                    )}
-                  </div>
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
-                    {formatDate(cert.issueDate)}
-                  </span>
+              <div key={cert.id} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
+                <div style={{ fontSize: '9.5pt' }}>
+                  <span style={{ fontWeight: 600 }}>{cert.title}</span>
+                  <span style={{ fontWeight: 400, color: '#4b5563' }}> — {cert.organization}</span>
+                </div>
+                <div style={{ fontSize: '9pt', fontWeight: 'normal', color: '#1f2937' }}>
+                  {formatDate(cert.issueDate)}
                 </div>
               </div>
             ))}
@@ -263,19 +281,23 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({ data, resumeData }
       case 'languages':
         if (filteredLanguages.length === 0) return null;
         return (
-          <div key="languages" className="mb-6">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white border-b-2 border-gray-300 dark:border-gray-600 pb-2 mb-4">
+          <div key="languages" style={{ marginBottom: '12px' }}>
+            <h3
+              style={{
+                fontSize: '10pt',
+                fontWeight: 700,
+                color: primaryColor,
+                borderBottom: `1px solid #d1d5db`,
+                paddingBottom: '2px',
+                marginBottom: '8px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+              }}
+            >
               LANGUAGES
             </h3>
-            <div className="flex flex-wrap gap-4">
-              {filteredLanguages.map((lang) => (
-                <div key={lang.id} className="text-gray-700 dark:text-gray-300">
-                  <span className="font-semibold">{lang.name}</span>
-                  <span className="text-gray-600 dark:text-gray-400 text-sm ml-2">
-                    ({lang.proficiency})
-                  </span>
-                </div>
-              ))}
+            <div style={{ fontSize: '9.5pt', color: '#1f2937' }}>
+              {filteredLanguages.map((lang) => `${lang.name} (${lang.proficiency})`).join(', ')}
             </div>
           </div>
         );
@@ -285,23 +307,139 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({ data, resumeData }
     }
   };
 
+  // Build contact items array
+  const contactItems = [
+    profile.email,
+    profile.phone,
+    profile.location,
+    profile.linkedin?.replace('https://', '').replace('http://', ''),
+    profile.github?.replace('https://', '').replace('http://', ''),
+    profile.website?.replace('https://', '').replace('http://', ''),
+  ].filter(Boolean);
+
   return (
-    <div className="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-8 max-w-4xl mx-auto">
-      <div className="resume-content">
-        {sortedSections.length > 0 ? (
-          sortedSections.map(renderSection)
-        ) : (
-          <>
-            {renderSection({ type: 'profile', enabled: true })}
-            {renderSection({ type: 'experience', enabled: true })}
-            {renderSection({ type: 'education', enabled: true })}
-            {renderSection({ type: 'skills', enabled: true })}
-            {renderSection({ type: 'projects', enabled: true })}
-            {renderSection({ type: 'certifications', enabled: true })}
-            {renderSection({ type: 'languages', enabled: true })}
-          </>
-        )}
+    <div
+      style={{
+        backgroundColor: 'white',
+        width: '210mm',
+        minHeight: '297mm',
+        margin: '20px auto',
+        padding: '12mm 15mm',
+        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+        fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+        fontSize: '10pt',
+        lineHeight: 1.4,
+        color: '#1f2937',
+        position: 'relative',
+      }}
+      className="professional-resume"
+    >
+      {/* Header */}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          borderBottom: `2px solid ${primaryColor}`,
+          paddingBottom: '10px',
+          marginBottom: '15px',
+        }}
+      >
+        <div style={{ flex: 1, paddingRight: '20px' }}>
+          <h1
+            style={{
+              fontSize: '24pt',
+              fontWeight: 700,
+              color: primaryColor,
+              lineHeight: 1,
+              textTransform: 'uppercase',
+              letterSpacing: '-0.5px',
+              marginBottom: '2px',
+            }}
+          >
+            {profile.name}
+          </h1>
+          {profile.title && (
+            <h2
+              style={{
+                fontSize: '11pt',
+                fontWeight: 500,
+                color: '#1f2937',
+                marginBottom: '6px',
+                textTransform: 'uppercase',
+                letterSpacing: '1px',
+              }}
+            >
+              {profile.title}
+            </h2>
+          )}
+          <div style={{ fontSize: '9pt', color: '#4b5563', display: 'flex', flexWrap: 'wrap', gap: 0, lineHeight: 1.4 }}>
+            {contactItems.map((item, idx) => (
+              <React.Fragment key={idx}>
+                <span>{item}</span>
+                {idx < contactItems.length - 1 && <span style={{ margin: '0 6px', color: '#9ca3af' }}>•</span>}
+              </React.Fragment>
+            ))}
+          </div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+          {profile.picture && (
+            <Image
+              src={profile.picture}
+              alt={profile.name}
+              width={80}
+              height={80}
+              style={{ objectFit: 'cover', borderRadius: '4px', border: '1px solid #e5e7eb' }}
+            />
+          )}
+          <Image
+            src="https://upload.wikimedia.org/wikipedia/en/thumb/d/d3/BITS_Pilani-Logo.svg/250px-BITS_Pilani-Logo.svg.png"
+            alt="BITS Logo"
+            width={80}
+            height={50}
+            style={{ height: '50px', width: 'auto', opacity: 0.9 }}
+          />
+        </div>
       </div>
+
+      {/* Sections */}
+      {sortedSections.length > 0
+        ? sortedSections.map(renderSection)
+        : [
+            { type: 'experience', enabled: true },
+            { type: 'education', enabled: true },
+            { type: 'projects', enabled: true },
+            { type: 'skills', enabled: true },
+            { type: 'certifications', enabled: true },
+            { type: 'languages', enabled: true },
+          ].map(renderSection)}
+
+      {/* Footer */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: '10mm',
+          right: '15mm',
+          fontSize: '7pt',
+          color: '#9ca3af',
+          textTransform: 'uppercase',
+          letterSpacing: '1px',
+        }}
+      >
+        Generated by Pinnacle
+      </div>
+
+      <style jsx global>{`
+        @media print {
+          .professional-resume {
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 10mm 12mm !important;
+            box-shadow: none !important;
+            min-height: auto !important;
+          }
+        }
+      `}</style>
     </div>
   );
 };

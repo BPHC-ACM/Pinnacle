@@ -213,6 +213,8 @@ export default function ProfilePage() {
   // Edit states
   const [editingProfile, setEditingProfile] = useState(false);
   const [profileForm, setProfileForm] = useState<Partial<UserProfile>>({});
+  const [uploadingPicture, setUploadingPicture] = useState(false);
+  const [picturePreview, setPicturePreview] = useState<string | null>(null);
 
   useEffect(() => {
     if (authLoading) return;
@@ -264,6 +266,7 @@ export default function ProfilePage() {
       const response = await api.patch('/user-details/profile', profileForm);
       setProfile(response.data);
       setEditingProfile(false);
+      setPicturePreview(null);
       showMessage('success', 'Profile updated successfully');
       refreshUser();
     } catch (error) {
@@ -271,6 +274,68 @@ export default function ProfilePage() {
       showMessage('error', 'Failed to update profile');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handlePictureUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      showMessage('error', 'Please upload an image file');
+      return;
+    }
+
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      showMessage('error', 'Image size must be less than 5MB');
+      return;
+    }
+
+    // Show preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPicturePreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+
+    // Upload to server
+    setUploadingPicture(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await api.post('/upload/profile-picture', formData, {
+        headers: {
+          'Content-Type': undefined, // Let browser set it with boundary
+        },
+      });
+
+      setProfileForm({ ...profileForm, picture: response.data.url });
+      showMessage('success', 'Profile picture uploaded successfully');
+      await fetchAllData();
+    } catch (error) {
+      console.error('Failed to upload picture:', error);
+      showMessage('error', 'Failed to upload profile picture');
+      setPicturePreview(null);
+    } finally {
+      setUploadingPicture(false);
+    }
+  };
+
+  const handleDeletePicture = async () => {
+    if (!confirm('Are you sure you want to delete your profile picture?')) return;
+
+    try {
+      await api.delete('/upload/profile-picture');
+      setProfileForm({ ...profileForm, picture: null });
+      setPicturePreview(null);
+      showMessage('success', 'Profile picture deleted successfully');
+      await fetchAllData();
+    } catch (error) {
+      console.error('Failed to delete picture:', error);
+      showMessage('error', 'Failed to delete profile picture');
     }
   };
 
@@ -338,99 +403,157 @@ export default function ProfilePage() {
       </div>
 
       {editingProfile ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-muted-foreground mb-1">
-              Full Name
-            </label>
-            <input
-              type="text"
-              value={profileForm.name || ''}
-              onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
-              className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500"
-            />
+        <div className="space-y-6">
+          {/* Profile Picture Upload */}
+          <div className="flex items-center gap-6">
+            <div className="relative">
+              <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-700 border-2 border-border flex items-center justify-center">
+                {picturePreview || profileForm.picture ? (
+                  <Image
+                    src={picturePreview || profileForm.picture || ''}
+                    alt="Profile"
+                    width={96}
+                    height={96}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <UserIcon className="h-12 w-12 text-muted-foreground" />
+                )}
+              </div>
+              {uploadingPicture && (
+                <div className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-2 border-white border-t-transparent" />
+                </div>
+              )}
+            </div>
+            <div className="flex flex-col gap-2">
+              <label className="cursor-pointer">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handlePictureUpload}
+                  disabled={uploadingPicture}
+                  className="hidden"
+                />
+                <span className="inline-flex items-center px-4 py-2 rounded-lg border border-border bg-background text-foreground hover:bg-accent transition-colors text-sm font-medium">
+                  {uploadingPicture ? 'Uploading...' : 'Upload Photo'}
+                </span>
+              </label>
+              {(profileForm.picture || picturePreview) && (
+                <button
+                  onClick={handleDeletePicture}
+                  disabled={uploadingPicture}
+                  className="text-sm text-red-500 hover:text-red-700 text-left"
+                >
+                  Remove Photo
+                </button>
+              )}
+              <p className="text-xs text-muted-foreground">Max size: 5MB</p>
+            </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-muted-foreground mb-1">
-              Job Title
-            </label>
-            <input
-              type="text"
-              value={profileForm.title || ''}
-              onChange={(e) => setProfileForm({ ...profileForm, title: e.target.value })}
-              placeholder="e.g., Software Engineer"
-              className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-muted-foreground mb-1">Phone</label>
-            <input
-              type="tel"
-              value={profileForm.phone || ''}
-              onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
-              placeholder="+91 1234567890"
-              className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-muted-foreground mb-1">Location</label>
-            <input
-              type="text"
-              value={profileForm.location || ''}
-              onChange={(e) => setProfileForm({ ...profileForm, location: e.target.value })}
-              placeholder="e.g., Hyderabad, India"
-              className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-muted-foreground mb-1">LinkedIn</label>
-            <input
-              type="url"
-              value={profileForm.linkedin || ''}
-              onChange={(e) => setProfileForm({ ...profileForm, linkedin: e.target.value })}
-              placeholder="https://linkedin.com/in/username"
-              className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-muted-foreground mb-1">GitHub</label>
-            <input
-              type="url"
-              value={profileForm.github || ''}
-              onChange={(e) => setProfileForm({ ...profileForm, github: e.target.value })}
-              placeholder="https://github.com/username"
-              className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-muted-foreground mb-1">Website</label>
-            <input
-              type="url"
-              value={profileForm.website || ''}
-              onChange={(e) => setProfileForm({ ...profileForm, website: e.target.value })}
-              placeholder="https://yourportfolio.com"
-              className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500"
-            />
-          </div>
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-muted-foreground mb-1">Bio</label>
-            <textarea
-              value={profileForm.bio || ''}
-              onChange={(e) => setProfileForm({ ...profileForm, bio: e.target.value })}
-              placeholder="Write a short bio about yourself..."
-              rows={3}
-              className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
-            />
-          </div>
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-muted-foreground mb-1">About Me</label>
-            <textarea
-              value={profileForm.summary || ''}
-              onChange={(e) => setProfileForm({ ...profileForm, summary: e.target.value })}
-              placeholder="Write a brief summary about yourself, your interests, and career goals..."
-              rows={4}
-              className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
-            />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
+                Full Name
+              </label>
+              <input
+                type="text"
+                value={profileForm.name || ''}
+                onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
+                className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
+                Job Title
+              </label>
+              <input
+                type="text"
+                value={profileForm.title || ''}
+                onChange={(e) => setProfileForm({ ...profileForm, title: e.target.value })}
+                placeholder="e.g., Software Engineer"
+                className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">Phone</label>
+              <input
+                type="tel"
+                value={profileForm.phone || ''}
+                onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
+                placeholder="+91 1234567890"
+                className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
+                Location
+              </label>
+              <input
+                type="text"
+                value={profileForm.location || ''}
+                onChange={(e) => setProfileForm({ ...profileForm, location: e.target.value })}
+                placeholder="e.g., Hyderabad, India"
+                className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
+                LinkedIn
+              </label>
+              <input
+                type="url"
+                value={profileForm.linkedin || ''}
+                onChange={(e) => setProfileForm({ ...profileForm, linkedin: e.target.value })}
+                placeholder="https://linkedin.com/in/username"
+                className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">GitHub</label>
+              <input
+                type="url"
+                value={profileForm.github || ''}
+                onChange={(e) => setProfileForm({ ...profileForm, github: e.target.value })}
+                placeholder="https://github.com/username"
+                className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
+                Website
+              </label>
+              <input
+                type="url"
+                value={profileForm.website || ''}
+                onChange={(e) => setProfileForm({ ...profileForm, website: e.target.value })}
+                placeholder="https://yourportfolio.com"
+                className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500"
+              />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">Bio</label>
+              <textarea
+                value={profileForm.bio || ''}
+                onChange={(e) => setProfileForm({ ...profileForm, bio: e.target.value })}
+                placeholder="Write a short bio about yourself..."
+                rows={3}
+                className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
+              />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
+                About Me
+              </label>
+              <textarea
+                value={profileForm.summary || ''}
+                onChange={(e) => setProfileForm({ ...profileForm, summary: e.target.value })}
+                placeholder="Write a brief summary about yourself, your interests, and career goals..."
+                rows={4}
+                className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
+              />
+            </div>
           </div>
         </div>
       ) : (
