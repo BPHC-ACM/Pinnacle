@@ -4,12 +4,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import {
-  getSavedResumes,
-  deleteSavedResume,
-  downloadResumePdf,
-  generateAndDownloadResume,
-} from '@/services/resume.service';
+import { getSavedResumes, deleteSavedResume, downloadResumePdf } from '@/services/resume.service';
 import type { SavedResume } from '@/types/resume.types';
 
 const DocumentIcon = ({ className }: { className?: string }) => (
@@ -56,7 +51,6 @@ export default function ResumePage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [resumes, setResumes] = useState<SavedResume[]>([]);
-  const [generating, setGenerating] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -103,18 +97,6 @@ export default function ResumePage() {
     }
   };
 
-  const handleGenerateNew = async () => {
-    try {
-      setGenerating(true);
-      await generateAndDownloadResume();
-    } catch (error) {
-      console.error('Failed to generate PDF:', error);
-      alert('Failed to generate PDF. Please try again.');
-    } finally {
-      setGenerating(false);
-    }
-  };
-
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString('en-US', {
@@ -144,16 +126,10 @@ export default function ResumePage() {
                 Manage and customize your professional resumes
               </p>
             </div>
-            <div className="flex gap-3">
-              <Button onClick={handleGenerateNew} disabled={generating} variant="outline">
-                <DownloadIcon className="w-4 h-4 mr-2" />
-                {generating ? 'Generating...' : 'Generate Quick PDF'}
-              </Button>
-              <Button onClick={() => router.push('/resume/builder')}>
-                <PlusIcon className="w-4 h-4 mr-2" />
-                Create New Resume
-              </Button>
-            </div>
+            <Button onClick={() => router.push('/resume/builder')}>
+              <PlusIcon className="w-4 h-4 mr-2" />
+              Create New Resume
+            </Button>
           </div>
         </div>
       </div>

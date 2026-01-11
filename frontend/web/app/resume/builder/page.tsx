@@ -21,7 +21,6 @@ function ResumeBuilderContent() {
   const resumeId = searchParams.get('id');
 
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [previewData, setPreviewData] = useState<ResumePreviewData | null>(null);
   const [resumeTitle, setResumeTitle] = useState('My Resume');
@@ -87,10 +86,11 @@ function ResumeBuilderContent() {
     }
   }, [user, resumeId]);
 
-  const handleSave = async () => {
+  const handleGeneratePDF = async () => {
     try {
-      setSaving(true);
+      setGenerating(true);
 
+      // Save first
       if (resumeId) {
         await updateSavedResume(resumeId, {
           title: resumeTitle,
@@ -101,22 +101,13 @@ function ResumeBuilderContent() {
           title: resumeTitle,
           data: resumeData,
         });
-        router.push(`/resume/builder?id=${saved.id}`);
+        // Update URL with new resume ID without page reload
+        window.history.replaceState(null, '', `/resume/builder?id=${saved.id}`);
       }
 
-      alert('Resume saved successfully!');
-    } catch (error) {
-      console.error('Failed to save resume:', error);
-      alert('Failed to save resume. Please try again.');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleGeneratePDF = async () => {
-    try {
-      setGenerating(true);
+      // Then generate PDF
       await generateAndDownloadResume();
+      alert('Resume saved and PDF generated successfully!');
     } catch (error) {
       console.error('Failed to generate PDF:', error);
       alert('Failed to generate PDF. Please try again.');
@@ -217,11 +208,8 @@ function ResumeBuilderContent() {
               <Button variant="outline" onClick={() => router.push('/resume')}>
                 Cancel
               </Button>
-              <Button onClick={handleSave} disabled={saving}>
-                {saving ? 'Saving...' : 'Save'}
-              </Button>
               <Button onClick={handleGeneratePDF} disabled={generating}>
-                {generating ? 'Generating...' : 'Download PDF'}
+                {generating ? 'Generating...' : 'Generate and Save'}
               </Button>
             </div>
           </div>
