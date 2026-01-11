@@ -242,9 +242,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
               <div key={cert.id} className="mb-3">
                 <div className="flex justify-between items-start">
                   <div>
-                    <h4 className="font-semibold text-gray-800 dark:text-gray-200">
-                      {cert.title}
-                    </h4>
+                    <h4 className="font-semibold text-gray-800 dark:text-gray-200">{cert.title}</h4>
                     <p className="text-gray-700 dark:text-gray-300">{cert.organization}</p>
                     {cert.credentialUrl && (
                       <a

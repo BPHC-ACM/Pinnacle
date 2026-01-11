@@ -53,7 +53,7 @@ export async function createSavedResume(data: CreateResumeRequest): Promise<Save
  */
 export async function updateSavedResume(
   id: string,
-  data: UpdateResumeRequest,
+  data: UpdateResumeRequest
 ): Promise<SavedResume> {
   const response = await api.patch<SavedResume>(`/resume/saved/${id}`, data);
   return response.data;
@@ -72,7 +72,7 @@ export async function deleteSavedResume(id: string): Promise<void> {
  */
 export async function generateAndDownloadResume(): Promise<void> {
   const response = await api.post('/resume/generate', {}, { responseType: 'blob' });
-  
+
   // Create a blob URL and trigger download
   const blob = new Blob([response.data], { type: 'application/pdf' });
   const url = window.URL.createObjectURL(blob);

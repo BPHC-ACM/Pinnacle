@@ -989,11 +989,7 @@ export default function ProfilePage() {
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold text-foreground">My Profile</h1>
           <div className="flex gap-3">
-            <Button
-              onClick={() => router.push('/resume')}
-              variant="outline"
-              size="sm"
-            >
+            <Button onClick={() => router.push('/resume')} variant="outline" size="sm">
               <DocumentIcon className="h-4 w-4 mr-2" />
               My Resumes
             </Button>
@@ -1001,7 +997,7 @@ export default function ProfilePage() {
               onClick={async () => {
                 try {
                   setGeneratingResume(true);
-                  
+
                   // First, save the resume configuration
                   const { createSavedResume } = await import('@/services/resume.service');
                   await createSavedResume({
@@ -1019,10 +1015,10 @@ export default function ProfilePage() {
                       ],
                     },
                   });
-                  
+
                   // Then generate and download the PDF
                   await generateAndDownloadResume();
-                  
+
                   setMessage({ text: 'Resume generated and saved successfully!', type: 'success' });
                   setTimeout(() => setMessage(null), 3000);
                 } catch (error) {

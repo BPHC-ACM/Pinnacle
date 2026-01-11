@@ -129,7 +129,7 @@ export default function ResumeBuilder() {
     setResumeData((prev) => ({
       ...prev,
       sections: prev.sections.map((section) =>
-        section.id === sectionId ? { ...section, enabled: !section.enabled } : section,
+        section.id === sectionId ? { ...section, enabled: !section.enabled } : section
       ),
     }));
   };
@@ -342,9 +342,7 @@ export default function ResumeBuilder() {
                             onChange={() => toggleItem('skills', skill.id)}
                             className="mt-1"
                           />
-                          <span className="text-gray-600 dark:text-gray-400">
-                            {skill.category}
-                          </span>
+                          <span className="text-gray-600 dark:text-gray-400">{skill.category}</span>
                         </label>
                       ))}
                     </div>
