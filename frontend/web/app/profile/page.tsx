@@ -329,7 +329,7 @@ export default function ProfilePage() {
 
     try {
       await api.delete('/upload/profile-picture');
-      setProfileForm({ ...profileForm, picture: null });
+      setProfileForm({ ...profileForm, picture: undefined });
       setPicturePreview(null);
       showMessage('success', 'Profile picture deleted successfully');
       await fetchAllData();

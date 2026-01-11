@@ -265,14 +265,14 @@ export interface UpdateLanguageRequest {
 // User Profile Schemas
 export const updateUserProfileSchema = z.object({
   name: z.string().min(1).max(255).optional(),
-  phone: z.string().max(50).optional(),
-  location: z.string().max(255).optional(),
-  linkedin: z.string().url().optional().or(z.literal('')),
-  github: z.string().url().optional().or(z.literal('')),
-  website: z.string().url().optional().or(z.literal('')),
-  bio: z.string().max(1000).optional(),
-  title: z.string().max(255).optional(),
-  summary: z.string().max(2000).optional(),
+  phone: z.string().max(50).nullable().optional(),
+  location: z.string().max(255).nullable().optional(),
+  linkedin: z.string().url().or(z.literal('')).nullable().optional(),
+  github: z.string().url().or(z.literal('')).nullable().optional(),
+  website: z.string().url().or(z.literal('')).nullable().optional(),
+  bio: z.string().max(1000).nullable().optional(),
+  title: z.string().max(255).nullable().optional(),
+  summary: z.string().max(2000).nullable().optional(),
 });
 
 // Experience Schemas

@@ -1,6 +1,8 @@
 'use client';
 
 import { useAuth } from '@/contexts/auth-context';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 // Feature icon components
 const ShieldIcon = ({ className }: { className?: string }) => (
@@ -47,12 +49,16 @@ const UsersIcon = ({ className }: { className?: string }) => (
 
 export default function Home() {
   const { isLoading: authLoading, isAuthenticated } = useAuth();
+  const router = useRouter();
 
-  console.log('Landing page - authLoading:', authLoading, 'isAuthenticated:', isAuthenticated);
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      router.push('/dashboard');
+    }
+  }, [authLoading, isAuthenticated, router]);
 
   // Show loading while checking auth
   if (authLoading) {
-    console.log('Landing page - showing loading state');
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
@@ -62,9 +68,8 @@ export default function Home() {
     );
   }
 
-  // If already logged in, the context handles the redirect
+  // If already logged in, show loading/null while redirecting
   if (isAuthenticated) {
-    console.log('Landing page - user is authenticated, returning null');
     return null;
   }
 
