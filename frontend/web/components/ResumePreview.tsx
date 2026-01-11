@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import type { ResumePreviewData, ResumeData } from '@/types/resume.types';
 import Image from 'next/image';
 
@@ -9,11 +9,36 @@ interface ResumePreviewProps {
   resumeData?: ResumeData;
 }
 
-export const ResumePreview: React.FC<ResumePreviewProps> = ({
-  data,
-  resumeData,
-}) => {
+export const ResumePreview: React.FC<ResumePreviewProps> = ({ data, resumeData }) => {
   const { profile, experiences, education, skills, projects, certifications, languages } = data;
+  const resumeRef = useRef<HTMLDivElement>(null);
+  const [fontSize, setFontSize] = useState(10);
+
+  useEffect(() => {
+    const adjustFontSize = () => {
+      if (!resumeRef.current) return;
+
+      const container = resumeRef.current;
+      const maxHeight = 297 * 3.7795275591; // 297mm to pixels (at 96 DPI)
+      let currentSize = 10;
+
+      // Reset to default
+      setFontSize(currentSize);
+
+      // Check if content overflows
+      setTimeout(() => {
+        while (container.scrollHeight > maxHeight && currentSize > 6) {
+          currentSize -= 0.2;
+          setFontSize(currentSize);
+          
+          // Force re-render to recalculate height
+          if (container.scrollHeight <= maxHeight) break;
+        }
+      }, 100);
+    };
+
+    adjustFontSize();
+  }, [data, resumeData]);
 
   // Filter items based on selected IDs
   const filteredExperiences = resumeData?.selectedExperiences
@@ -80,20 +105,49 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
             </h3>
             {filteredExperiences.map((exp) => (
               <div key={exp.id} style={{ marginBottom: '8px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                  <div style={{ fontWeight: 700, fontSize: '10.5pt', color: '#000' }}>{exp.position}</div>
-                  <div style={{ fontSize: '9pt', fontWeight: 600, color: '#1f2937', whiteSpace: 'nowrap' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'baseline',
+                  }}
+                >
+                  <div style={{ fontWeight: 700, fontSize: '10.5pt', color: '#000' }}>
+                    {exp.position}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: '9pt',
+                      fontWeight: 600,
+                      color: '#1f2937',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
                     {formatDuration(exp.startDate, exp.endDate, exp.current)}
                   </div>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '2px' }}>
-                  <div style={{ fontWeight: 500, fontStyle: 'italic', color: '#4b5563' }}>{exp.company}</div>
-                  <div style={{ fontSize: '9pt', color: '#4b5563', fontStyle: 'italic' }}>{exp.location}</div>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'baseline',
+                    marginBottom: '2px',
+                  }}
+                >
+                  <div style={{ fontWeight: 500, fontStyle: 'italic', color: '#4b5563' }}>
+                    {exp.company}
+                  </div>
+                  <div style={{ fontSize: '9pt', color: '#4b5563', fontStyle: 'italic' }}>
+                    {exp.location}
+                  </div>
                 </div>
                 {exp.highlights && exp.highlights.length > 0 && (
                   <ul style={{ marginTop: '2px', paddingLeft: '15px', listStyleType: 'disc' }}>
                     {exp.highlights.map((highlight, idx) => (
-                      <li key={idx} style={{ marginBottom: '1px', fontSize: '9.5pt', color: '#1f2937' }}>
+                      <li
+                        key={idx}
+                        style={{ marginBottom: '1px', fontSize: '9.5pt', color: '#1f2937' }}
+                      >
                         {highlight}
                       </li>
                     ))}
@@ -124,13 +178,28 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
             </h3>
             {filteredEducation.map((edu) => (
               <div key={edu.id} style={{ marginBottom: '8px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                  <div style={{ fontWeight: 700, fontSize: '10.5pt', color: '#000' }}>{edu.institution}</div>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'baseline',
+                  }}
+                >
+                  <div style={{ fontWeight: 700, fontSize: '10.5pt', color: '#000' }}>
+                    {edu.institution}
+                  </div>
                   <div style={{ fontSize: '9pt', fontWeight: 600, color: '#1f2937' }}>
                     {formatDuration(edu.startDate, edu.endDate, false)}
                   </div>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '2px' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'baseline',
+                    marginBottom: '2px',
+                  }}
+                >
                   <div style={{ fontWeight: 500, fontStyle: 'italic', color: '#4b5563' }}>
                     {edu.degree} in {edu.branch}
                   </div>
@@ -141,7 +210,10 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
                 {edu.achievements && edu.achievements.length > 0 && (
                   <ul style={{ marginTop: '2px', paddingLeft: '15px', listStyleType: 'disc' }}>
                     {edu.achievements.map((achievement, idx) => (
-                      <li key={idx} style={{ marginBottom: '1px', fontSize: '9.5pt', color: '#1f2937' }}>
+                      <li
+                        key={idx}
+                        style={{ marginBottom: '1px', fontSize: '9.5pt', color: '#1f2937' }}
+                      >
                         {achievement}
                       </li>
                     ))}
@@ -172,7 +244,13 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
             </h3>
             {filteredProjects.map((project) => (
               <div key={project.id} style={{ marginBottom: '8px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'baseline',
+                  }}
+                >
                   <div style={{ fontWeight: 700, fontSize: '10.5pt', color: '#000' }}>
                     {project.title}
                     {project.referenceUrl && (
@@ -198,7 +276,14 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
                 </div>
                 {project.tools && project.tools.length > 0 && (
                   <div style={{ marginBottom: '2px' }}>
-                    <span style={{ fontSize: '9pt', fontWeight: 500, fontStyle: 'italic', color: '#4b5563' }}>
+                    <span
+                      style={{
+                        fontSize: '9pt',
+                        fontWeight: 500,
+                        fontStyle: 'italic',
+                        color: '#4b5563',
+                      }}
+                    >
                       Stack: {project.tools.join(', ')}
                     </span>
                   </div>
@@ -206,7 +291,10 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
                 {project.outcomes && project.outcomes.length > 0 && (
                   <ul style={{ marginTop: '2px', paddingLeft: '15px', listStyleType: 'disc' }}>
                     {project.outcomes.map((outcome, idx) => (
-                      <li key={idx} style={{ marginBottom: '1px', fontSize: '9.5pt', color: '#1f2937' }}>
+                      <li
+                        key={idx}
+                        style={{ marginBottom: '1px', fontSize: '9.5pt', color: '#1f2937' }}
+                      >
                         {outcome}
                       </li>
                     ))}
@@ -235,11 +323,22 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
             >
               SKILLS
             </h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', columnGap: '12px', rowGap: '4px' }}>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'auto 1fr',
+                columnGap: '12px',
+                rowGap: '4px',
+              }}
+            >
               {filteredSkills.map((skill) => (
                 <React.Fragment key={skill.id}>
-                  <div style={{ fontWeight: 700, fontSize: '9.5pt', color: '#1f2937' }}>{skill.category}:</div>
-                  <div style={{ fontSize: '9.5pt', color: '#1f2937' }}>{skill.items.join(', ')}</div>
+                  <div style={{ fontWeight: 700, fontSize: '9.5pt', color: '#1f2937' }}>
+                    {skill.category}:
+                  </div>
+                  <div style={{ fontSize: '9.5pt', color: '#1f2937' }}>
+                    {skill.items.join(', ')}
+                  </div>
                 </React.Fragment>
               ))}
             </div>
@@ -265,7 +364,10 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
               CERTIFICATIONS
             </h3>
             {filteredCertifications.map((cert) => (
-              <div key={cert.id} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
+              <div
+                key={cert.id}
+                style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}
+              >
                 <div style={{ fontSize: '9.5pt' }}>
                   <span style={{ fontWeight: 600 }}>{cert.title}</span>
                   <span style={{ fontWeight: 400, color: '#4b5563' }}> — {cert.organization}</span>
@@ -319,6 +421,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
 
   return (
     <div
+      ref={resumeRef}
       style={{
         backgroundColor: 'white',
         width: '210mm',
@@ -328,7 +431,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
         padding: '12mm 15mm',
         boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
         fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-        fontSize: '10pt',
+        fontSize: `${fontSize}pt`,
         lineHeight: 1.4,
         color: '#1f2937',
         position: 'relative',
@@ -376,11 +479,22 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
               {profile.title}
             </h2>
           )}
-          <div style={{ fontSize: '9pt', color: '#4b5563', display: 'flex', flexWrap: 'wrap', gap: 0, lineHeight: 1.4 }}>
+          <div
+            style={{
+              fontSize: '9pt',
+              color: '#4b5563',
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: 0,
+              lineHeight: 1.4,
+            }}
+          >
             {contactItems.map((item, idx) => (
               <React.Fragment key={idx}>
                 <span>{item}</span>
-                {idx < contactItems.length - 1 && <span style={{ margin: '0 6px', color: '#9ca3af' }}>•</span>}
+                {idx < contactItems.length - 1 && (
+                  <span style={{ margin: '0 6px', color: '#9ca3af' }}>•</span>
+                )}
               </React.Fragment>
             ))}
           </div>
@@ -437,7 +551,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
           page-break-after: avoid;
           page-break-inside: avoid;
         }
-        
+
         @media print {
           .professional-resume {
             width: 100% !important;
@@ -451,12 +565,12 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
             page-break-after: avoid !important;
             page-break-inside: avoid !important;
           }
-          
+
           @page {
             size: A4;
             margin: 0;
           }
-          
+
           body {
             print-color-adjust: exact;
             -webkit-print-color-adjust: exact;
