@@ -3,7 +3,7 @@
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import {
   getResumePreviewData,
   getSavedResume,
@@ -11,11 +11,11 @@ import {
   updateSavedResume,
   generateAndDownloadResume,
 } from '@/services/resume.service';
-import type { ResumePreviewData, ResumeData, ResumeSection } from '@/types/resume.types';
+import type { ResumePreviewData, ResumeData } from '@/types/resume.types';
 import { ResumePreview } from '@/components/ResumePreview';
 
-export default function ResumeBuilder() {
-  const { user, loading: authLoading } = useAuth();
+function ResumeBuilderContent() {
+  const { user, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const resumeId = searchParams.get('id');
@@ -389,5 +389,14 @@ export default function ResumeBuilder() {
         </div>
       </div>
     </div>
+  );
+}
+export default function ResumeBuilder() {
+  return (
+    <Suspense
+      fallback={<div className="flex h-screen items-center justify-center">Loading...</div>}
+    >
+      <ResumeBuilderContent />
+    </Suspense>
   );
 }

@@ -1058,7 +1058,7 @@ export default function ProfilePage() {
                     className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium flex items-center gap-3 transition-colors ${
                       activeTab === tab.id
                         ? 'bg-primary-500/10 text-primary-500'
-                        : 'text-muted-foreground hover:bg-accent/5'
+                        : 'text-muted-foreground hover:bg-primary/5'
                     }`}
                   >
                     {tab.icon}

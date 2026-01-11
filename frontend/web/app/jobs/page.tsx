@@ -2,6 +2,13 @@
 
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api-client';
@@ -148,239 +155,194 @@ export default function JobsPage() {
       />
 
       <div className="flex-1 max-w-7xl mx-auto w-full px-6 py-8">
-        <div className="flex gap-6">
-          {/* Sidebar */}
-          <div className="w-64 shrink-0">
-            <nav className="space-y-1">
-              <button
-                onClick={() => router.push('/dashboard')}
-                className="w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:bg-accent/5 transition-colors"
-              >
-                Home
-              </button>
-              <button className="w-full text-left px-4 py-3 rounded-lg text-sm font-medium bg-primary-500/10 text-primary-500 transition-colors">
-                Job Profiles
-              </button>
-              <button
-                onClick={() => router.push('/profile')}
-                className="w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:bg-accent/5 transition-colors"
-              >
-                My Profile
-              </button>
-              <button className="w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:bg-accent/5 transition-colors">
-                Interviews
-              </button>
-              <button className="w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:bg-accent/5 transition-colors">
-                Assessments
-              </button>
-              <button className="w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:bg-accent/5 transition-colors">
-                Events
-              </button>
-              <button className="w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:bg-accent/5 transition-colors">
-                Competitions
-              </button>
-              <button className="w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:bg-accent/5 transition-colors">
-                Resume
-              </button>
-              <button className="w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:bg-accent/5 transition-colors">
-                Launchpad
-              </button>
-              <button className="w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:bg-accent/5 transition-colors">
-                Help
-              </button>
-            </nav>
+        <h1 className="text-3xl font-bold text-foreground mb-6">Job Profile</h1>
+
+        {/* Filters */}
+        <div className="bg-card border border-border rounded-lg p-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">Job Sector</label>
+              <Select value={sector} onValueChange={setSector}>
+                <SelectTrigger className="w-full bg-background border-border">
+                  <SelectValue placeholder="Select Sector" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="All Sectors">All Sectors</SelectItem>
+                  <SelectItem value="Technology">Technology</SelectItem>
+                  <SelectItem value="Finance">Finance</SelectItem>
+                  <SelectItem value="Healthcare">Healthcare</SelectItem>
+                  <SelectItem value="Marketing">Marketing</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">
+                Position Type
+              </label>
+              <Select value={positionType} onValueChange={setPositionType}>
+                <SelectTrigger className="w-full bg-background border-border">
+                  <SelectValue placeholder="Select Position" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="All">All</SelectItem>
+                  <SelectItem value="Internship">Internship</SelectItem>
+                  <SelectItem value="Full-time">Full-time</SelectItem>
+                  <SelectItem value="Part-time">Part-time</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">Status</label>
+              <Select value={status} onValueChange={setStatus}>
+                <SelectTrigger className="w-full bg-background border-border">
+                  <SelectValue placeholder="Select Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="All">All</SelectItem>
+                  <SelectItem value="Yet to apply">Yet to apply</SelectItem>
+                  <SelectItem value="Applied">Applied</SelectItem>
+                  <SelectItem value="Under Review">Under Review</SelectItem>
+                  <SelectItem value="Accepted">Accepted</SelectItem>
+                  <SelectItem value="Rejected">Rejected</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">Sort by</label>
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="w-full bg-background border-border">
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Created At">Created At</SelectItem>
+                  <SelectItem value="Company Name">Company Name</SelectItem>
+                  <SelectItem value="Deadline">Deadline</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
-          {/* Main Content */}
-          <div className="flex-1">
-            <h1 className="text-3xl font-bold text-foreground mb-6">Job Profile</h1>
+          <div className="flex gap-4 items-center">
+            <div className="flex-1 relative">
+              <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Search by job title or company"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent-500"
+              />
+            </div>
+            <Button
+              onClick={() => {
+                setSector('All Sectors');
+                setPositionType('All');
+                setStatus('All');
+                setSortBy('Created At');
+                setSearchQuery('');
+              }}
+              variant="outline"
+              size="sm"
+            >
+              Clear all filters
+            </Button>
+          </div>
+        </div>
 
-            {/* Filters */}
-            <div className="bg-card border border-border rounded-lg p-6 mb-6">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    Job Sector
-                  </label>
-                  <select
-                    value={sector}
-                    onChange={(e) => setSector(e.target.value)}
-                    className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  >
-                    <option>All Sectors</option>
-                    <option>Technology</option>
-                    <option>Finance</option>
-                    <option>Healthcare</option>
-                    <option>Marketing</option>
-                  </select>
-                </div>
+        {/* Tabs */}
+        <div className="flex gap-2 mb-6 border-b border-border">
+          <button
+            onClick={() => setActiveTab('all')}
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === 'all'
+                ? 'border-accent-500 text-accent-500'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            All Jobs
+          </button>
+          <button
+            onClick={() => setActiveTab('applied')}
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === 'applied'
+                ? 'border-accent-500 text-accent-500'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            Applied Jobs
+          </button>
+        </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    Position Type
-                  </label>
-                  <select
-                    value={positionType}
-                    onChange={(e) => setPositionType(e.target.value)}
-                    className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  >
-                    <option>All</option>
-                    <option>Internship</option>
-                    <option>Full-time</option>
-                    <option>Part-time</option>
-                  </select>
-                </div>
+        {/* Jobs List */}
+        <div className="space-y-4">
+          {loading ? (
+            <div className="text-center py-12 text-muted-foreground">Loading jobs...</div>
+          ) : filteredJobs.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">
+              No jobs found matching your filters.
+            </div>
+          ) : (
+            filteredJobs.map((job) => {
+              const applicationStatus = getApplicationStatus(job.id);
+              const daysAgo = getDaysAgo(job.createdAt);
+              const closesIn = getClosesIn(job.deadline);
 
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">Status</label>
-                  <select
-                    value={status}
-                    onChange={(e) => setStatus(e.target.value)}
-                    className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  >
-                    <option>All</option>
-                    <option>Yet to apply</option>
-                    <option>Applied</option>
-                    <option>Under Review</option>
-                    <option>Accepted</option>
-                    <option>Rejected</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">Sort by</label>
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                    className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  >
-                    <option>Created At</option>
-                    <option>Company Name</option>
-                    <option>Deadline</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="flex gap-4 items-center">
-                <div className="flex-1 relative">
-                  <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <input
-                    type="text"
-                    placeholder="Search by job title or company"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  />
-                </div>
-                <Button
-                  onClick={() => {
-                    setSector('All Sectors');
-                    setPositionType('All');
-                    setStatus('All');
-                    setSortBy('Created At');
-                    setSearchQuery('');
-                  }}
-                  variant="outline"
-                  size="sm"
+              return (
+                <div
+                  key={job.id}
+                  className="bg-card border border-border rounded-lg p-6 hover:shadow-md transition-shadow cursor-pointer"
+                  onClick={() => router.push(`/jobs/${job.id}`)}
                 >
-                  Clear all filters
-                </Button>
-              </div>
-            </div>
-
-            {/* Tabs */}
-            <div className="flex gap-2 mb-6 border-b border-border">
-              <button
-                onClick={() => setActiveTab('all')}
-                className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-                  activeTab === 'all'
-                    ? 'border-primary-500 text-primary-500'
-                    : 'border-transparent text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                All Jobs
-              </button>
-              <button
-                onClick={() => setActiveTab('applied')}
-                className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-                  activeTab === 'applied'
-                    ? 'border-primary-500 text-primary-500'
-                    : 'border-transparent text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                Applied Jobs
-              </button>
-            </div>
-
-            {/* Jobs List */}
-            <div className="space-y-4">
-              {loading ? (
-                <div className="text-center py-12 text-muted-foreground">Loading jobs...</div>
-              ) : filteredJobs.length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground">
-                  No jobs found matching your filters.
-                </div>
-              ) : (
-                filteredJobs.map((job) => {
-                  const applicationStatus = getApplicationStatus(job.id);
-                  const daysAgo = getDaysAgo(job.createdAt);
-                  const closesIn = getClosesIn(job.deadline);
-
-                  return (
-                    <div
-                      key={job.id}
-                      className="bg-card border border-border rounded-lg p-6 hover:shadow-md transition-shadow cursor-pointer"
-                      onClick={() => router.push(`/jobs/${job.id}`)}
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <div className="w-12 h-12 rounded-lg bg-primary-500/10 flex items-center justify-center">
-                              <span className="text-lg font-bold text-primary-500">
-                                {job.company.name.charAt(0)}
-                              </span>
-                            </div>
-                            <div>
-                              <h3 className="text-lg font-semibold text-foreground">{job.title}</h3>
-                              <p className="text-sm text-muted-foreground">
-                                {job.company.name} • {job.location}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground mt-3">
-                            <span>{daysAgo} days ago</span>
-                            {closesIn && (
-                              <>
-                                <span>•</span>
-                                <span
-                                  className={
-                                    closesIn.includes('Closed')
-                                      ? 'text-red-500'
-                                      : closesIn.includes('today') || closesIn.includes('1 day')
-                                      ? 'text-red-500'
-                                      : ''
-                                  }
-                                >
-                                  {closesIn}
-                                </span>
-                              </>
-                            )}
-                          </div>
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="w-12 h-12 rounded-lg bg-primary-500/10 flex items-center justify-center">
+                          <span className="text-lg font-bold text-primary-500">
+                            {job.company.name.charAt(0)}
+                          </span>
                         </div>
-                        <div
-                          className={`px-4 py-2 rounded-lg text-sm font-medium border ${getStatusColor(
-                            applicationStatus
-                          )}`}
-                        >
-                          {applicationStatus}
+                        <div>
+                          <h3 className="text-lg font-semibold text-foreground">{job.title}</h3>
+                          <p className="text-sm text-muted-foreground">
+                            {job.company.name} • {job.location}
+                          </p>
                         </div>
                       </div>
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground mt-3">
+                        <span>{daysAgo} days ago</span>
+                        {closesIn && (
+                          <>
+                            <span>•</span>
+                            <span
+                              className={
+                                closesIn.includes('Closed')
+                                  ? 'text-red-500'
+                                  : closesIn.includes('today') || closesIn.includes('1 day')
+                                  ? 'text-red-500'
+                                  : ''
+                              }
+                            >
+                              {closesIn}
+                            </span>
+                          </>
+                        )}
+                      </div>
                     </div>
-                  );
-                })
-              )}
-            </div>
-          </div>
+                    <div
+                      className={`px-4 py-2 rounded-lg text-sm font-medium border ${getStatusColor(
+                        applicationStatus
+                      )}`}
+                    >
+                      {applicationStatus}
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
         </div>
       </div>
 

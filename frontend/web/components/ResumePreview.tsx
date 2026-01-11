@@ -9,11 +9,7 @@ interface ResumePreviewProps {
   template?: string;
 }
 
-export const ResumePreview: React.FC<ResumePreviewProps> = ({
-  data,
-  resumeData,
-  template = 'modern',
-}) => {
+export const ResumePreview: React.FC<ResumePreviewProps> = ({ data, resumeData }) => {
   const { profile, experiences, education, skills, projects, certifications, languages } = data;
 
   // Filter items based on selected IDs in resumeData

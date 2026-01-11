@@ -52,7 +52,7 @@ const PlusIcon = ({ className }: { className?: string }) => (
 );
 
 export default function ResumePage() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [resumes, setResumes] = useState<SavedResume[]>([]);
