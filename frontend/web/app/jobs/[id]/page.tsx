@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { Button } from 'components/ui/button';
-import type { Job } from 'types/job.type';
+import { Button } from '@/components/ui/button';
+import type { Job } from '@/types/job.type';
 
 type PageProps = {
   params: Promise<{
@@ -10,7 +10,13 @@ type PageProps = {
 };
 
 async function getJob(id: string): Promise<Job> {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/jobs/${id}`, {
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL;
+
+  if (!apiBaseUrl) {
+    notFound();
+  }
+
+  const res = await fetch(`${apiBaseUrl}/api/jobs/${id}`, {
     cache: 'no-store',
   });
 
@@ -19,7 +25,7 @@ async function getJob(id: string): Promise<Job> {
   }
 
   const json = await res.json();
-  const job: Job | undefined = json?.data ?? json?.job ?? json;
+  const job = json?.data ?? json?.job ?? json;
 
   if (!job) {
     notFound();

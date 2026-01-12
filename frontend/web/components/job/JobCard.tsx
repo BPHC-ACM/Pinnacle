@@ -1,8 +1,8 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { Job } from 'types/job.type';
-import { Button } from 'components/ui/button';
+import { Job } from '@/types/job.type';
+import { Button } from '@/components/ui/button';
 
 export default function JobCard({ job }: { job: Job }) {
   const router = useRouter();
@@ -31,7 +31,10 @@ export default function JobCard({ job }: { job: Job }) {
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
-        if (e.key === 'Enter') goToJob();
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          goToJob();
+        }
       }}
     >
       {/* Header */}

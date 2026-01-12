@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api-client';
-import JobCard from 'components/job/JobCard';
-import { Job } from 'types/job.type';
+import JobCard from '@/components/job/JobCard';
+import { Job } from '@/types/job.type';
 
-export default function JobPage() {
+export default function JobsPage() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState<string | null>(null);
