@@ -8,6 +8,7 @@ import {
   googleCallback,
   refreshAccessToken,
   getMe,
+  googleMobileLogin,
 } from '../controllers/auth.controller';
 import { authenticateToken } from '../middleware/auth.middleware';
 import { authRateLimiter } from '../middleware/rate-limit.middleware';
@@ -18,6 +19,7 @@ const router = Router();
 router.get('/google/login', authRateLimiter, googleLogin);
 router.get('/google/callback', authRateLimiter, googleCallback);
 router.post('/refresh', authRateLimiter, refreshAccessToken);
+router.post('/google/mobile-login', authRateLimiter, googleMobileLogin);
 
 // Protected route (requires JWT)
 router.get('/me', authenticateToken, getMe);

@@ -35,7 +35,7 @@ export class JobService {
   async getJob(id: string): Promise<Job | null> {
     return prisma.job.findFirst({
       where: { id, deletedAt: null },
-      include: { questions: { orderBy: { order: 'asc' } } },
+      include: { questions: { orderBy: { order: 'asc' } }, company: true },
     }) as unknown as Promise<Job | null>;
   }
 
@@ -45,7 +45,7 @@ export class JobService {
     const [data, total] = await Promise.all([
       prisma.job.findMany({
         where,
-        include: { questions: { orderBy: { order: 'asc' } } },
+        include: { questions: { orderBy: { order: 'asc' } }, company: true },
         orderBy: { [sortBy]: sortOrder },
         skip: (page - 1) * limit,
         take: limit,
