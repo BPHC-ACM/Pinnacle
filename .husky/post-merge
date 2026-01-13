@@ -12,10 +12,11 @@ if git diff-tree -r --name-only --no-commit-id ORIG_HEAD HEAD | grep --quiet "fr
   cd frontend/web && pnpm install && cd ../..
 fi
 
-echo "Running Prisma migrations after merge..."
-cd backend || exit 1
-pnpm prisma migrate dev --skip-generate
-pnpm prisma generate
-cd ..
+if git diff-tree -r --name-only --no-commit-id ORIG_HEAD HEAD | grep --quiet "backend/prisma/"; then
+  echo "Prisma schema or migrations changed, updating..."
+  cd backend || exit 1
+  pnpm prisma migrate dev
+  cd ..
+fi
 
 echo "✓ Post-merge checks complete!"
