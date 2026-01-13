@@ -1,4 +1,14 @@
 packages:
-  - 'backend'
-  - 'frontend/*'
-  - 'packages/*'
+  - backend
+  - frontend/*
+  - packages/*
+
+ignoredBuiltDependencies:
+  - '@firebase/util'
+  - '@prisma/engines'
+  - '@scarf/scarf'
+  - esbuild
+  - prisma
+  - protobufjs
+  - sharp
+  - unrs-resolver
