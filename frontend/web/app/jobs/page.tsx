@@ -14,7 +14,7 @@ import {
 import { api } from '@/lib/api-client';
 import { useAuth } from '@/contexts/auth-context';
 import { JobDetailPane } from '@/components/job/JobDetailPane';
-import { Sector, ApplicationStatus as AppStatusEnum } from '@/types/enums';
+import { Sector, ApplicationStatus as AppStatusEnum } from '@repo/types';
 import { JobCardSkeleton } from '@/components/skeletons/JobCardSkeleton';
 
 const SearchIcon = ({ className }: { className?: string }) => (
@@ -47,22 +47,88 @@ interface Application {
 export default function JobsPage() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'all' | 'applied'>('all');
+
+  // Removed activeTab state
+  const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
+
   const [sector, setSector] = useState<string>(Sector.ALL_SECTORS);
   const [positionType, setPositionType] = useState('All');
   const [status, setStatus] = useState('All');
   const [sortBy, setSortBy] = useState('Created At');
   const [searchQuery, setSearchQuery] = useState('');
+
   const [jobs, setJobs] = useState<Job[]>([]);
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
 
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [fetchingMore, setFetchingMore] = useState(false);
+
   const observer = useRef<IntersectionObserver | null>(null);
 
+  const fetchApplications = useCallback(async () => {
+    try {
+      const response = await api.get('/applications');
+      const appsData = response.data?.data || response.data;
+      setApplications(Array.isArray(appsData) ? appsData : []);
+    } catch (error) {
+      console.error('Failed to fetch applications:', error);
+    }
+  }, []);
+
+  const fetchJobs = useCallback(
+    async (p: number, isNewSearch: boolean = false) => {
+      if (isNewSearch) {
+        setLoading(true);
+      } else {
+        setFetchingMore(true);
+      }
+
+      try {
+        const params = new URLSearchParams();
+        params.append('page', p.toString());
+        params.append('limit', '20');
+
+        if (searchQuery) params.append('q', searchQuery);
+        if (sector !== Sector.ALL_SECTORS) params.append('industry', sector);
+        if (positionType !== 'All') params.append('jobType', positionType);
+
+        const sortMap: Record<string, string> = {
+          'Created At': 'createdAt',
+          Deadline: 'deadline',
+          'Company Name': 'createdAt',
+        };
+        if (sortBy && sortMap[sortBy]) {
+          params.append('sortBy', sortMap[sortBy]);
+        }
+
+        const response = await api.get(`/jobs?${params.toString()}`);
+        const newJobs = response.data?.data || [];
+        const meta = response.data?.meta;
+
+        if (isNewSearch) {
+          setJobs(newJobs);
+        } else {
+          setJobs((prev) => [...prev, ...newJobs]);
+        }
+
+        setHasMore(meta ? meta.page < meta.totalPages : false);
+      } catch (error) {
+        console.error('Failed to fetch jobs:', error);
+      } finally {
+        setLoading(false);
+        setFetchingMore(false);
+      }
+    },
+    [searchQuery, sector, positionType, sortBy]
+  );
+
+  const refreshData = useCallback(() => {
+    fetchApplications();
+  }, [fetchApplications]);
+
+  // 3. Infinite Scroll Observer
   const lastJobElementRef = useCallback(
     (node: HTMLDivElement) => {
       if (loading || fetchingMore) return;
@@ -79,65 +145,48 @@ export default function JobsPage() {
     [loading, fetchingMore, hasMore]
   );
 
+  // --- Effects ---
+
   useEffect(() => {
     if (authLoading) return;
     if (!isAuthenticated) {
       router.push('/');
-    } else {
-      fetchData();
     }
   }, [isAuthenticated, authLoading, router]);
 
   useEffect(() => {
-    if (page > 1) {
-      fetchMoreJobs();
+    if (isAuthenticated) {
+      fetchApplications();
     }
-  }, [page]);
+  }, [isAuthenticated, fetchApplications]);
 
-  const fetchData = async () => {
-    setLoading(true);
+  // Debounced Search
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const timeoutId = setTimeout(() => {
+      setPage(1);
+      fetchJobs(1, true);
+    }, 500);
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery, isAuthenticated, fetchJobs]);
+
+  // Immediate Filters (Sector, Position, Sort)
+  useEffect(() => {
+    if (!isAuthenticated) return;
     setPage(1);
-    try {
-      const [jobsResponse, applicationsResponse] = await Promise.all([
-        api.get('/jobs?page=1&limit=20'),
-        api.get('/applications'),
-      ]);
+    fetchJobs(1, true);
+  }, [sector, positionType, sortBy, isAuthenticated, fetchJobs]);
 
-      const jobsData = jobsResponse.data?.data || [];
-      const appsData = applicationsResponse.data?.data || applicationsResponse.data;
-      const meta = jobsResponse.data?.meta;
-
-      setJobs(Array.isArray(jobsData) ? jobsData : []);
-      setApplications(Array.isArray(appsData) ? appsData : []);
-      setHasMore(meta ? meta.page < meta.totalPages : false);
-    } catch (error) {
-      console.error('Failed to fetch data:', error);
-      setJobs([]);
-      setApplications([]);
-    } finally {
-      setLoading(false);
+  // Pagination
+  useEffect(() => {
+    if (page > 1) {
+      fetchJobs(page, false);
     }
-  };
+  }, [page, fetchJobs]);
 
-  const fetchMoreJobs = async () => {
-    setFetchingMore(true);
-    try {
-      const response = await api.get(`/jobs?page=${page}&limit=20`);
-      const newJobs = response.data?.data || [];
-      const meta = response.data?.meta;
+  if (!user) return null;
 
-      setJobs((prev) => [...prev, ...newJobs]);
-      setHasMore(meta ? meta.page < meta.totalPages : false);
-    } catch (error) {
-      console.error('Failed to fetch more jobs:', error);
-    } finally {
-      setFetchingMore(false);
-    }
-  };
-
-  if (!user) {
-    return null;
-  }
+  // --- Helpers ---
 
   const getApplicationStatus = (jobId: string) => {
     const application = applications.find((app) => app.jobId === jobId);
@@ -145,35 +194,24 @@ export default function JobsPage() {
     return application.status;
   };
 
-  const getClosesIn = (deadline?: string) => {
+  // Fixed logic to handle text and color safely
+  const getDeadlineInfo = (deadline?: string) => {
     if (!deadline) return null;
     const date = new Date(deadline);
     const now = new Date();
     const diffTime = date.getTime() - now.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    if (diffDays < 0) return 'Closed';
-    if (diffDays === 0) return 'Closes today';
-    if (diffDays === 1) return 'Closes in 1 day';
-    return `Closes in ${diffDays} days`;
+
+    if (diffDays < 0) return { text: 'Closed', className: 'text-red-500' };
+    if (diffDays === 0) return { text: 'Closes today', className: 'text-red-500' };
+    if (diffDays === 1) return { text: 'Closes in 1 day', className: 'text-red-500' };
+
+    const isUrgent = diffDays <= 3;
+    return {
+      text: `Closes in ${diffDays} days`,
+      className: isUrgent ? 'text-red-500' : 'text-muted-foreground',
+    };
   };
-
-  const filteredJobs = jobs.filter((job) => {
-    const applicationStatus = getApplicationStatus(job.id);
-    const jType = job.jobType || job.type;
-    const jobSector = job.company?.industry;
-
-    if (activeTab === 'applied' && applicationStatus === 'Yet to apply') return false;
-    if (sector !== Sector.ALL_SECTORS && jobSector !== sector) return false;
-    if (positionType !== 'All' && jType !== positionType) return false;
-    if (status !== 'All' && applicationStatus !== status) return false;
-    if (
-      searchQuery &&
-      !job.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
-      (!job.company?.name || !job.company.name.toLowerCase().includes(searchQuery.toLowerCase()))
-    )
-      return false;
-    return true;
-  });
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -192,8 +230,15 @@ export default function JobsPage() {
     }
   };
 
+  const filteredJobs = jobs.filter((job) => {
+    const applicationStatus = getApplicationStatus(job.id);
+    // Removed activeTab logic
+    if (status !== 'All' && applicationStatus !== status) return false;
+    return true;
+  });
+
   return (
-    <div className="flex flex-col h-full bg-background overflow-hidden relative">
+    <div className="flex flex-col h-150vh bg-background overflow-hidden relative pb-8">
       <div
         className="absolute inset-0 opacity-20 pointer-events-none -z-10"
         style={{
@@ -205,9 +250,9 @@ export default function JobsPage() {
         }}
       />
 
-      <div className="flex h-full max-w-7xl mx-auto w-full">
-        <div className="flex-1 flex flex-col h-full min-w-0">
-          <div className="py-6 pb-0 border-b border-border">
+      <div className="flex flex-col h-400 border-b max-w-7xl mx-auto w-full">
+        <div className="w-full flex-none flex flex-col min-w-0">
+          <div className="py-6 pb-0 border-border">
             <h1 className="text-3xl font-bold text-foreground mb-6">Job Profile</h1>
 
             {/* Filters */}
@@ -316,129 +361,97 @@ export default function JobsPage() {
               </div>
             </div>
           </div>
+        </div>
 
-            <div className="flex gap-2 border-b border-border">
-              <button
-                onClick={() => setActiveTab('all')}
-                className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-                  activeTab === 'all'
-                    ? 'border-primary-500 text-primary-500'
-                    : 'border-transparent text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                All Jobs
-              </button>
-              <button
-                onClick={() => setActiveTab('applied')}
-                className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-                  activeTab === 'applied'
-                    ? 'border-primary-500 text-primary-500'
-                    : 'border-transparent text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                Applied Jobs
-              </button>
-            </div>
-          </div>
+        <div className="flex flex-1 w-full overflow-hidden border-t min-h-0">
+          <div className="w-full lg:w-1/3 overflow-y-auto py-6 pr-6 pl-6 md:pl-0 space-y-4 border-r border-border scrollbar-hide">
+            {loading ? (
+              Array.from({ length: 5 }).map((_, i) => <JobCardSkeleton key={i} />)
+            ) : filteredJobs.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">
+                No jobs found matching your filters.
+              </div>
+            ) : (
+              <>
+                {filteredJobs.map((job, index) => {
+                  const applicationStatus = getApplicationStatus(job.id);
+                  const deadlineInfo = getDeadlineInfo(job.deadline);
+                  const isSelected = selectedJobId === job.id;
 
-          <div className="flex flex-1 overflow-hidden max-h-screen">
-            <div className="flex-1 overflow-y-auto p-6 space-y-4 border-r border-border scrollbar-hide">
-              {loading ? (
-                Array.from({ length: 5 }).map((_, i) => <JobCardSkeleton key={i} />)
-              ) : filteredJobs.length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground">
-                  No jobs found matching your filters.
-                </div>
-              ) : (
-                <>
-                  {filteredJobs.map((job, index) => {
-                    const applicationStatus = getApplicationStatus(job.id);
-                    const closesIn = getClosesIn(job.deadline);
-                    const isSelected = selectedJobId === job.id;
+                  const isDeadlineFuture = job.deadline
+                    ? new Date(job.deadline) > new Date()
+                    : true;
+                  const isFrozen = job.status === 'CLOSED' && isDeadlineFuture;
 
-                    const isDeadlineFuture = job.deadline
-                      ? new Date(job.deadline) > new Date()
-                      : true;
-                    const isFrozen = job.status === 'CLOSED' && isDeadlineFuture;
+                  const isLastElement = index === filteredJobs.length - 1;
 
-                    const isLastElement = index === filteredJobs.length - 1;
-
-                    return (
-                      <div
-                        key={job.id}
-                        ref={isLastElement ? lastJobElementRef : null}
-                        className={`bg-card border rounded-lg p-6 hover:shadow-md transition-shadow cursor-pointer ${
-                          isSelected
-                            ? 'border-primary-500 ring-1 ring-primary-500'
-                            : 'border-border'
-                        }`}
-                        onClick={() => setSelectedJobId(job.id)}
-                      >
-                        <div className="flex gap-4">
-                          <div className="w-12 h-12 rounded-md bg-primary-500/10 flex items-center justify-center shrink-0">
-                            <span className="text-lg font-bold text-primary-500">
-                              {job.company?.name?.charAt(0) || '?'}
-                            </span>
+                  return (
+                    <div
+                      key={job.id}
+                      ref={isLastElement ? lastJobElementRef : null}
+                      className={`bg-card border rounded-lg p-6 hover:shadow-md transition-shadow cursor-pointer ${
+                        isSelected ? 'border-primary-500 ring-1 ring-primary-500' : 'border-border'
+                      }`}
+                      onClick={() => setSelectedJobId(job.id)}
+                    >
+                      <div className="flex gap-4">
+                        <div className="w-12 h-12 rounded-md bg-primary-500/10 flex items-center justify-center shrink-0">
+                          <span className="text-lg font-bold text-primary-500">
+                            {job.company?.name?.charAt(0) || '?'}
+                          </span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="mb-2">
+                            <h3 className="text-lg font-semibold text-foreground wrap-break-word">
+                              {job.title}
+                            </h3>
+                            <p className="text-sm text-muted-foreground truncate">
+                              {job.company?.name} • {job.location}
+                            </p>
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="mb-2">
-                              <h3 className="text-lg font-semibold text-foreground wrap-break-word">
-                                {job.title}
-                              </h3>
-                              <p className="text-sm text-muted-foreground truncate">
-                                {job.company?.name} • {job.location}
-                              </p>
+
+                          <div className="flex items-center justify-between mt-4">
+                            <div className="text-sm">
+                              {deadlineInfo && (
+                                <span className={deadlineInfo.className}>{deadlineInfo.text}</span>
+                              )}
                             </div>
 
-                            <div className="flex items-center justify-between mt-4">
-                              <div className="text-sm text-muted-foreground">
-                                {closesIn && (
-                                  <span
-                                    className={
-                                      closesIn.includes('Closed')
-                                        ? 'text-red-500'
-                                        : closesIn.includes('today') || closesIn.includes('1 day')
-                                        ? 'text-red-500'
-                                        : ''
-                                    }
-                                  >
-                                    {closesIn}
-                                  </span>
-                                )}
-                              </div>
-
-                              <div>
-                                {applicationStatus === 'Yet to apply' && isFrozen ? (
-                                  <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200">
-                                    Applications frozen
-                                  </span>
-                                ) : (
-                                  <span
-                                    className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(
-                                      applicationStatus
-                                    )}`}
-                                  >
-                                    {applicationStatus}
-                                  </span>
-                                )}
-                              </div>
+                            <div>
+                              {applicationStatus === 'Yet to apply' && isFrozen ? (
+                                <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200">
+                                  Frozen
+                                </span>
+                              ) : (
+                                <span
+                                  className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(
+                                    applicationStatus
+                                  )}`}
+                                >
+                                  {applicationStatus}
+                                </span>
+                              )}
                             </div>
                           </div>
                         </div>
                       </div>
-                    );
-                  })}
-                  {fetchingMore &&
-                    Array.from({ length: 2 }).map((_, i) => (
-                      <JobCardSkeleton key={`skeleton-nav-${i}`} />
-                    ))}
-                </>
-              )}
-            </div>
+                    </div>
+                  );
+                })}
+                {fetchingMore &&
+                  Array.from({ length: 2 }).map((_, i) => (
+                    <JobCardSkeleton key={`skeleton-nav-${i}`} />
+                  ))}
+              </>
+            )}
+          </div>
 
-            <div className="hidden lg:block flex-2 w-150 shrink-0 bg-background/50">
-              <JobDetailPane jobId={selectedJobId} onApplySuccess={fetchData} />
-            </div>
+          <div className="hidden lg:block w-2/3 bg-background/50">
+            <JobDetailPane
+              jobId={selectedJobId}
+              onApplySuccess={refreshData}
+              applicationStatus={selectedJobId ? getApplicationStatus(selectedJobId) : undefined}
+            />
           </div>
         </div>
       </div>

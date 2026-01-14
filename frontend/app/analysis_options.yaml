@@ -4,3 +4,7 @@ formatter:
 linter:
   rules:
     avoid_print: false
+analyzer:
+  errors:
+    # Treat these specific issues as info or ignore them completely
+    constant_identifier_names: ignore

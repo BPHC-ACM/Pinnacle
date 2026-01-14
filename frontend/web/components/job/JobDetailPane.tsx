@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -38,9 +39,14 @@ interface JobDetailPaneProps {
   jobId: string | null;
   onClose?: () => void;
   onApplySuccess?: () => void;
+  applicationStatus?: string;
 }
 
-export function JobDetailPane({ jobId, onApplySuccess }: JobDetailPaneProps) {
+export function JobDetailPane({
+  jobId,
+  onApplySuccess,
+  applicationStatus = 'Yet to apply',
+}: JobDetailPaneProps) {
   const [job, setJob] = useState<ExtendedJob | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -48,16 +54,19 @@ export function JobDetailPane({ jobId, onApplySuccess }: JobDetailPaneProps) {
   const [applying, setApplying] = useState(false);
   const [isApplyDialogOpen, setIsApplyDialogOpen] = useState(false);
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [hasJustApplied, setHasJustApplied] = useState(false);
 
   useEffect(() => {
     if (!jobId) {
       setJob(null);
+      setHasJustApplied(false);
       return;
     }
 
     const fetchJob = async () => {
       setLoading(true);
       setError(null);
+      setHasJustApplied(false);
       try {
         const res = await api.get(`/jobs/${jobId}`);
         // Handle different possible response structures
@@ -95,6 +104,7 @@ export function JobDetailPane({ jobId, onApplySuccess }: JobDetailPaneProps) {
       await api.post(`/jobs/${jobId}/applications`, {
         answers, // Send answers (will be empty object if no questions)
       });
+      setHasJustApplied(true);
       setIsApplyDialogOpen(false);
       if (onApplySuccess) {
         onApplySuccess();
@@ -142,7 +152,7 @@ export function JobDetailPane({ jobId, onApplySuccess }: JobDetailPaneProps) {
   const isOpen = status === 'OPEN';
 
   return (
-    <div className="h-full flex flex-col bg-card rounded-lg border border-border overflow-hidden">
+    <div className="h-full flex flex-col bg-card border border-border overflow-hidden">
       <div className="flex-1 overflow-y-auto p-6 scrollbar-hide">
         <div className="flex justify-between items-start gap-4 mb-6">
           <div>
@@ -181,22 +191,33 @@ export function JobDetailPane({ jobId, onApplySuccess }: JobDetailPaneProps) {
         </div>
 
         <div className="mb-8">
+          <Button
+            size="lg"
+            disabled={!isOpen || applying || applicationStatus !== 'Yet to apply' || hasJustApplied}
+            className="w-full"
+            onClick={handleApplyClick}
+          >
+            {applying ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Applying...
+              </>
+            ) : applicationStatus !== 'Yet to apply' || hasJustApplied ? (
+              'Applied'
+            ) : isOpen ? (
+              'Apply for this job'
+            ) : (
+              'Applications closed'
+            )}
+          </Button>
+        </div>
+
+        <div className="mb-8">
           <h3 className="text-lg font-semibold text-foreground mb-3">Job Description</h3>
           <div className="prose prose-sm dark:prose-invert max-w-none text-foreground whitespace-pre-line text-sm leading-relaxed">
             {job.description || 'No description provided.'}
           </div>
         </div>
-      </div>
-
-      <div className="p-6 border-t border-border bg-card">
-        <Button
-          size="lg"
-          disabled={!isOpen || applying}
-          className="w-full"
-          onClick={handleApplyClick}
-        >
-          {isOpen ? (applying ? 'Applying...' : 'Apply for this job') : 'Applications closed'}
-        </Button>
       </div>
 
       <Dialog open={isApplyDialogOpen} onOpenChange={setIsApplyDialogOpen}>
@@ -218,7 +239,7 @@ export function JobDetailPane({ jobId, onApplySuccess }: JobDetailPaneProps) {
                   placeholder="Type your answer here..."
                   value={answers[q.id] || ''}
                   onChange={(e) => setAnswers((prev) => ({ ...prev, [q.id]: e.target.value }))}
-                  className="bg-background"
+                  className="bg-background my-2 mx-1"
                 />
               </div>
             ))}
@@ -235,7 +256,14 @@ export function JobDetailPane({ jobId, onApplySuccess }: JobDetailPaneProps) {
                 (job.questions?.some((q) => q.required && !answers[q.id]?.trim()) ?? false)
               }
             >
-              {applying ? 'Submitting...' : 'Submit Application'}
+              {applying ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Submitting...
+                </>
+              ) : (
+                'Submit Application'
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>

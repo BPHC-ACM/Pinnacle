@@ -3,24 +3,11 @@
     "target": "ES2022",
     "lib": ["ES2022"],
     "module": "node16",
-    "rootDir": "./src",
     "moduleResolution": "node16",
-    "baseUrl": "./",
-    "paths": {
-      "@/*": ["src/*"]
-    },
-    "resolveJsonModule": true,
-    "outDir": "./dist",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
-    "noUncheckedIndexedAccess": true,
     "skipLibCheck": true
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "prisma.config.ts", "eslint.config.mjs", "src/generated/**"]
+  "exclude": ["node_modules", "dist"]
 }

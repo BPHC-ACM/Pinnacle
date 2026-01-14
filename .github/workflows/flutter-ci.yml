@@ -1,0 +1,50 @@
+name: Flutter CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'frontend/app/**' # Only trigger when files in the app folder change
+      - '.github/workflows/flutter-ci.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'frontend/app/**'
+      - '.github/workflows/flutter-ci.yml'
+
+jobs:
+  validate-app:
+    name: Validate Flutter
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./frontend/app
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          flutter-version: '3.19.x' # Set this to match your pubspec.yaml environment
+          cache: true
+
+      - name: Get Dependencies
+        run: flutter pub get
+
+      # 1. Check Formatting
+      - name: Check Formatting
+        run: dart format --output=none --set-exit-if-changed .
+
+      # 2. Check for Linting Errors (Static Analysis)
+      - name: Analyze
+        run: flutter analyze

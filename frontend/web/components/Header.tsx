@@ -26,7 +26,7 @@ export function Header() {
 
   return (
     <header className="fixed top-0 left-0 right-0 w-full border-b border-border bg-background/90 backdrop-blur-md z-50">
-      <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto py-4 flex items-center justify-between">
         <div className="flex items-center gap-8">
           <div className="cursor-pointer" onClick={handleLogoClick}>
             <Logo size="md" />
@@ -38,7 +38,7 @@ export function Header() {
                 href="/dashboard"
                 className={`flex items-center gap-2 text-sm font-medium transition-colors ${
                   isActive('/dashboard')
-                    ? 'text-accent-500 hover:text-accent-500'
+                    ? 'text-accent hover:text-accent'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
@@ -49,7 +49,7 @@ export function Header() {
                 href="/jobs"
                 className={`flex items-center gap-2 text-sm font-medium transition-colors ${
                   isActive('/jobs')
-                    ? 'text-accent-500 hover:text-accent-500'
+                    ? 'text-accent hover:text-accent'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
@@ -60,7 +60,7 @@ export function Header() {
                 href="/profile"
                 className={`flex items-center gap-2 text-sm font-medium transition-colors ${
                   isActive('/profile')
-                    ? 'text-accent-500 hover:text-accent-500'
+                    ? 'text-accent hover:text-accent'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
