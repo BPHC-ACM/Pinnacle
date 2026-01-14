@@ -1,7 +1,6 @@
-import type { NotificationType } from '@pinnacle/types';
+import { NotificationType, prisma } from '@repo/database';
 
 import { logger } from '../../config/logger.config';
-import prisma from '../../db/client';
 
 import { unifiedNotificationService } from './UnifiedNotification.service';
 

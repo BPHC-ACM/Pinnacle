@@ -1,10 +1,10 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "../../packages/types/node_modules/.prisma/client"
 }
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -41,6 +41,7 @@ model User {
   projects                  Project[]
   resumes                   Resume[]
   skills                    Skill[]
+  eligibleCycles            PlacementCycle[]
 
   @@index([email])
   @@index([googleId])
@@ -311,6 +312,10 @@ model Job {
   salary              String?
   deadline            DateTime?
   status              JobStatus     @default(OPEN)
+  
+  placementCycleId    String
+  placementCycle      PlacementCycle @relation(fields: [placementCycleId], references: [id], onDelete: Cascade)
+  
   createdAt           DateTime      @default(now())
   updatedAt           DateTime      @updatedAt
   deletedAt           DateTime?
@@ -384,6 +389,28 @@ model Announcement {
   sender    User?    @relation(fields: [senderId], references: [id])
 
   @@index([createdAt])
+}
+
+model PlacementCycle {
+  id           String             @id @default(uuid())
+  
+  name         String             // e.g., "Placement Drive 2025-26"
+  type         PlacementCycleType // PLACEMENT or INTERNSHIP
+  academicYear String             // e.g., "2025-2026"
+  
+  status       CycleStatus        @default(UPCOMING)
+  
+  startDate    DateTime
+  endDate      DateTime
+  
+  // --- RELATIONS ---
+  jobs             Job[]    // A cycle has many jobs
+  eligibleStudents User[]   // Students eligible for this cycle (Many-to-Many)
+  
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  
+  @@index([status])
 }
 
 enum UserRole {
@@ -473,4 +500,15 @@ enum NotificationChannel {
   IN_APP
   EMAIL
   PUSH
+}
+
+enum PlacementCycleType {
+  PLACEMENT
+  INTERNSHIP
+}
+
+enum CycleStatus {
+  UPCOMING
+  ACTIVE
+  COMPLETED
 }

@@ -1,4 +1,5 @@
-import prisma from '../../db/client';
+import { prisma } from '@repo/database';
+
 import type { PaginationParams, PaginatedResponse } from '../../types/pagination.types';
 import type {
   SavedResume,

@@ -2,7 +2,7 @@ import type { Request, Response } from 'express';
 import multer from 'multer';
 
 import { logger } from '@/config/logger.config';
-import prisma from '@/db/client';
+import { prisma } from '@/db/client';
 import imageStorageService from '@/services/storage-service/image-storage.service';
 import type {
   UserWithPicture,

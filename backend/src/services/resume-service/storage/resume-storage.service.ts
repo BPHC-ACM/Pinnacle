@@ -1,9 +1,9 @@
 import crypto from 'crypto';
 
-import type { ResumeFile } from '@pinnacle/types';
+import type { ResumeFile } from '@repo/database';
+import { prisma } from '@repo/database';
 
 import { logger } from '@/config/logger.config';
-import prisma from '@/db/client';
 import { MinioBucketStorage } from '@/services/storage-service/minio-service';
 
 const RESUME_BUCKET = 'resumes';

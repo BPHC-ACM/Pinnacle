@@ -1,4 +1,4 @@
-import prisma from '../../db/client';
+import { prisma } from '../../db/client';
 import { NotFoundError } from '../../types/errors.types';
 import type { PaginationParams, PaginatedResponse } from '../../types/pagination.types';
 import type {

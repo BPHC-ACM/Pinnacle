@@ -1,21 +1,29 @@
+import { prisma, Prisma } from '@repo/database';
+import { Job } from '@repo/types';
+
 import { logger } from '../../config/logger.config';
-import prisma from '../../db/client';
 import type { Application } from '../../types/application.types';
 import type {
-  Job,
   CreateJobRequest,
   AdminJobFilters,
+  PublicJobFilters,
   UpdateJobRequest,
   JobWithStats,
 } from '../../types/job.types';
 import type { PaginationParams, PaginatedResponse } from '../../types/pagination.types';
 
+function mapJobToDto(job: unknown): Job {
+  return job as Job;
+}
+
 export class JobService {
   async createJob(data: CreateJobRequest): Promise<Job> {
-    const { questions, ...jobData } = data;
+    const { questions, placementCycleId, ...jobData } = data;
+
     const job = await prisma.job.create({
       data: {
         ...jobData,
+        placementCycleId,
         questions: questions
           ? {
               create: questions.map((q, i) => ({
@@ -28,30 +36,57 @@ export class JobService {
       },
       include: { questions: true },
     });
-    logger.info({ jobId: job.id }, 'Job created');
-    return job as unknown as Job;
+
+    return mapJobToDto(job);
   }
 
   async getJob(id: string): Promise<Job | null> {
-    return prisma.job.findFirst({
+    const job = await prisma.job.findFirst({
       where: { id, deletedAt: null },
       include: { questions: { orderBy: { order: 'asc' } }, company: true },
-    }) as unknown as Promise<Job | null>;
+    });
+    return job ? mapJobToDto(job) : null;
   }
 
-  async getJobs(companyId?: string, params?: PaginationParams): Promise<PaginatedResponse<Job>> {
+  async getJobs(
+    filters: PublicJobFilters,
+    params?: PaginationParams,
+  ): Promise<PaginatedResponse<Job>> {
     const { page = 1, limit = 20, sortBy = 'createdAt', sortOrder = 'desc' } = params ?? {};
-    const where = { deletedAt: null, ...(companyId && { companyId }) };
+    const { companyId, search, industry, jobType } = filters;
+
+    const where: Prisma.JobWhereInput = { deletedAt: null };
+
+    if (companyId) where.companyId = companyId;
+    if (jobType && jobType !== 'All') where.type = jobType;
+
+    if (industry && industry !== 'ALL_SECTORS') {
+      where.company = { industry };
+    }
+
+    if (search) {
+      where.OR = [
+        { title: { contains: search, mode: 'insensitive' } },
+        { company: { name: { contains: search, mode: 'insensitive' } } },
+      ];
+    }
+
+    const orderBy = { [sortBy]: sortOrder } as Prisma.JobOrderByWithRelationInput;
+
     const [data, total] = await Promise.all([
       prisma.job.findMany({
         where,
-        include: { questions: { orderBy: { order: 'asc' } }, company: true },
-        orderBy: { [sortBy]: sortOrder },
+        include: {
+          questions: { orderBy: { order: 'asc' } },
+          company: true,
+        },
+        orderBy,
         skip: (page - 1) * limit,
         take: limit,
       }),
       prisma.job.count({ where }),
     ]);
+
     return {
       data: data as unknown as Job[],
       meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
@@ -62,10 +97,11 @@ export class JobService {
     const job = await prisma.job.findFirst({ where: { id, deletedAt: null } });
     if (!job) return null;
 
-    return (await prisma.job.update({
+    const updated = await prisma.job.update({
       where: { id },
       data: { status: 'CLOSED' },
-    })) as unknown as Job;
+    });
+    return mapJobToDto(updated);
   }
 
   // ADMIN METHODS
@@ -113,9 +149,10 @@ export class JobService {
     const jobsWithStats = jobs.map((job) => {
       const jobStats = allStats.filter((s) => s.jobId === job.id);
       const statMap = Object.fromEntries(jobStats.map((s) => [s.status, s._count]));
+      const jobDto = mapJobToDto(job);
 
       return {
-        ...job,
+        ...jobDto,
         applicationStats: {
           total: job._count.applications,
           applied: statMap.APPLIED ?? 0,
@@ -146,7 +183,7 @@ export class JobService {
     });
 
     logger.info({ jobId: id, updates: Object.keys(data) }, 'Job updated');
-    return updated as unknown as Job;
+    return mapJobToDto(updated);
   }
 
   // Delete job (soft delete) (Admin)
@@ -160,7 +197,7 @@ export class JobService {
     });
 
     logger.info({ jobId: id }, 'Job deleted');
-    return deleted as unknown as Job;
+    return mapJobToDto(deleted);
   }
 
   // Reopen a closed job (Admin)
@@ -176,9 +213,8 @@ export class JobService {
       },
       include: { questions: { orderBy: { order: 'asc' } } },
     });
-
     logger.info({ jobId: id }, 'Job reopened');
-    return updated as unknown as Job;
+    return mapJobToDto(updated);
   }
 
   // Export applications data for a job (Admin)
@@ -210,17 +246,12 @@ export class JobService {
         location: true,
       },
     });
+    const jobDto = mapJobToDto(job);
+
     const userMap = new Map(users.map((u) => [u.id, u]));
 
     return {
-      job: {
-        id: job.id,
-        title: job.title,
-        companyId: job.companyId,
-        status: job.status,
-        createdAt: job.createdAt,
-        updatedAt: job.updatedAt,
-      } as Job,
+      job: jobDto,
       applications: applications.map((app) => ({
         ...app,
         resumeId: app.resumeId ?? undefined,

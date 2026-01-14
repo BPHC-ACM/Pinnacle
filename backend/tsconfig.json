@@ -5,9 +5,11 @@
     "module": "node16",
     "rootDir": "./src",
     "moduleResolution": "node16",
+    "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "@pinnacle/types": ["./node_modules/@pinnacle/types"]
+      "@repo/database": ["../../packages/database/src/index.ts"],
+      "@repo/types": ["../../packages/types/src/index.ts"]
     },
     "resolveJsonModule": true,
     "outDir": "./dist",
@@ -19,7 +21,8 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "typeRoots": ["./node_modules/@types", "../../node_modules/@types"]
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "prisma.config.ts", "eslint.config.mjs", "src/generated/**"]

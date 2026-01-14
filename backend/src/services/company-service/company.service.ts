@@ -1,5 +1,6 @@
+import { prisma } from '@repo/database';
+
 import { logger } from '../../config/logger.config';
-import prisma from '../../db/client';
 import type {
   CreateCompanyRequest,
   UpdateCompanyRequest,
