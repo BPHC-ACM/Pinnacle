@@ -1,3 +1,4 @@
+import path from 'path';
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
@@ -12,6 +13,9 @@ const nextConfig: NextConfig = {
         hostname: 'upload.wikimedia.org',
       },
     ],
+  },
+  turbopack: {
+    root: path.resolve(__dirname, '../..'),
   },
 };
 
