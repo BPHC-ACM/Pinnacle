@@ -25,12 +25,12 @@ class AppColors {
   static const accentPurple100 = Color(0xFFF3E8FF); // light bg
 
   // Accent Teal (Light Mode Accent) - HSL(168, 70%, 45%)
-  static const accentTeal500 = Color(0xFF14B8A6); 
+  static const accentTeal500 = Color(0xFF14B8A6);
   static const accentTeal100 = Color(0xFFCCFBF1);
 
   // Semantic
   static const success = Color(0xFF16A34A); // Green
   static const warning = Color(0xFFD4A017); // Amber
-  static const error = Color(0xFFDC2626);   // Red
-  static const info = Color(0xFF3B82F6);    // Blue
-} 
+  static const error = Color(0xFFDC2626); // Red
+  static const info = Color(0xFF3B82F6); // Blue
+}

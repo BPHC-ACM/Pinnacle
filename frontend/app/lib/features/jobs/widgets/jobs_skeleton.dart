@@ -37,7 +37,14 @@ class _JobCardSkeleton extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(width: 48, height: 48, decoration: BoxDecoration(color: baseColor, borderRadius: BorderRadius.circular(8))),
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: baseColor,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(

@@ -74,14 +74,12 @@ class JobsRepository {
   Future<List<ApplicationModel>> getUserApplications() async {
     try {
       final response = await _apiClient.client.get('/api/applications');
-      
-      logger.d("Fetched Applications: ${response.data}"); 
 
-      final List<dynamic> applicationsJson = response.data['data']; 
-      
-      return applicationsJson
-          .map((e) => ApplicationModel.fromJson(e))
-          .toList();
+      logger.d("Fetched Applications: ${response.data}");
+
+      final List<dynamic> applicationsJson = response.data['data'];
+
+      return applicationsJson.map((e) => ApplicationModel.fromJson(e)).toList();
     } catch (e) {
       logger.e("Error fetching applications", error: e);
       return [];
