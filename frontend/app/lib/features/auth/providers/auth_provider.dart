@@ -74,7 +74,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
       await _repository.loginWithGoogle();
 
-      logger.d("AuthNotifier: Login flow completed at Repo. Refreshing status...");
+      logger.d(
+        "AuthNotifier: Login flow completed at Repo. Refreshing status...",
+      );
       await checkAuthStatus();
     } catch (e) {
       logger.e("AuthNotifier: Login Failed", error: e);

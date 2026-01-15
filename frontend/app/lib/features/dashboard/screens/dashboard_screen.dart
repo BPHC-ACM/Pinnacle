@@ -34,16 +34,21 @@ class DashboardScreen extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Welcome back,", style: Theme.of(context).textTheme.bodyLarge),
-                  const SizedBox(height: 8),
                   Text(
-                    user?.name ?? "Student", 
-                    style: Theme.of(context).textTheme.headlineMedium
+                    "Welcome back,",
+                    style: Theme.of(context).textTheme.bodyLarge,
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    user?.email ?? "", 
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey)
+                    user?.name ?? "Student",
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    user?.email ?? "",
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
                   ),
                 ],
               ),

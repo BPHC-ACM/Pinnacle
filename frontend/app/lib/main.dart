@@ -20,7 +20,7 @@ class PinnacleApp extends ConsumerWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system,
-      
+
       routerConfig: router,
     );
   }

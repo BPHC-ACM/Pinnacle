@@ -8,6 +8,7 @@ on:
 
 jobs:
   validate:
+    name: Validate Backend
     runs-on: ubuntu-latest
     env:
       DATABASE_URL: postgresql://user:password@localhost:5432/db
@@ -47,23 +48,12 @@ jobs:
 
       - name: Generate Prisma client
         if: steps.backend-changes.outputs.changed == 'true'
-        run: pnpm exec prisma generate
+        working-directory: .
+        run: pnpm --filter @repo/database generate
 
-      - name: Check formatting
+      - name: Validate
         if: steps.backend-changes.outputs.changed == 'true'
-        run: pnpm run format:check
-
-      - name: Lint
-        if: steps.backend-changes.outputs.changed == 'true'
-        run: pnpm run lint
-
-      - name: Type check
-        if: steps.backend-changes.outputs.changed == 'true'
-        run: pnpm run type-check
-
-      - name: Build
-        if: steps.backend-changes.outputs.changed == 'true'
-        run: pnpm run build
+        run: pnpm run validate
 
       - name: Backend checks skipped
         if: steps.backend-changes.outputs.changed == 'false'

@@ -1,25 +1,23 @@
 /*eslint-disable*/
 import 'dotenv/config';
 import { faker } from '@faker-js/faker';
-import { PrismaPg } from '@prisma/adapter-pg';
-import pg from 'pg';
 import {
   PrismaClient,
   UserRole,
   ApplicationStatus,
   JobStatus,
+  PlacementCycleType,
+  CycleStatus,
   ProficiencyLevel,
-  Sector,
-  AccomplishmentType,
-  Resume,
-  NotificationType,
-  NotificationChannel,
-} from '@pinnacle/types';
+} from '@prisma/client';
 
-const pool = new pg.Pool({
-  connectionString: process.env.DATABASE_URL,
+import 'dotenv/config';
+import { PrismaPg } from '@prisma/adapter-pg';
+
+const adapter = new PrismaPg({
+  connectionString: process.env.DATABASE_URL!,
 });
-const adapter = new PrismaPg(pool);
+
 const prisma = new PrismaClient({ adapter });
 
 async function main(): Promise<void> {
@@ -29,16 +27,17 @@ async function main(): Promise<void> {
   console.log('Cleaning existing data...');
   await prisma.announcement.deleteMany();
   await prisma.notification.deleteMany();
-  await prisma.application.deleteMany();
-  await prisma.jobQuestion.deleteMany();
-  await prisma.job.deleteMany();
-  await prisma.company.deleteMany();
-  await prisma.resumeFile.deleteMany();
-  await prisma.resume.deleteMany();
   await prisma.course.deleteMany();
   await prisma.positionOfResponsibility.deleteMany();
   await prisma.extracurricular.deleteMany();
   await prisma.accomplishment.deleteMany();
+  await prisma.application.deleteMany();
+  await prisma.jobQuestion.deleteMany();
+  await prisma.job.deleteMany();
+  await prisma.placementCycle.deleteMany();
+  await prisma.company.deleteMany();
+  await prisma.resumeFile.deleteMany();
+  await prisma.resume.deleteMany();
   await prisma.certification.deleteMany();
   await prisma.language.deleteMany();
   await prisma.project.deleteMany();
@@ -47,9 +46,22 @@ async function main(): Promise<void> {
   await prisma.experience.deleteMany();
   await prisma.user.deleteMany();
 
+  // 0. Create Placement Cycle
+  console.log('Creating placement cycle...');
+  const placementCycle = await prisma.placementCycle.create({
+    data: {
+      name: 'Placement Drive 2025-26',
+      type: PlacementCycleType.PLACEMENT,
+      academicYear: '2025-2026',
+      status: CycleStatus.ACTIVE,
+      startDate: new Date('2025-08-01'),
+      endDate: new Date('2026-05-31'),
+    },
+  });
+
   // 1. Create Admin User
   console.log('Creating admin user...');
-  const adminUser = await prisma.user.create({
+  await prisma.user.create({
     data: {
       email: 'admin@gmail.com',
       name: 'Admin User',
@@ -62,21 +74,6 @@ async function main(): Promise<void> {
       summary: 'Managing the placement portal and ensuring smooth operations.',
     },
   });
-
-  // Create Announcements
-  console.log('Creating announcements...');
-  await Promise.all(
-    Array.from({ length: 5 }).map(() =>
-      prisma.announcement.create({
-        data: {
-          title: faker.lorem.sentence(),
-          content: faker.lorem.paragraphs(2),
-          senderId: adminUser.id,
-          createdAt: faker.date.past(),
-        },
-      }),
-    ),
-  );
 
   // 2. Create Regular Users (Students)
   console.log('Creating regular users...');
@@ -102,7 +99,7 @@ async function main(): Promise<void> {
           summary: faker.lorem.paragraph(),
         },
       });
-    }),
+    })
   );
 
   // 3. Add Experiences for each user
@@ -116,12 +113,6 @@ async function main(): Promise<void> {
           company: faker.company.name(),
           position: faker.person.jobTitle(),
           location: faker.location.city(),
-          sector: faker.helpers.arrayElement(Object.values(Sector)),
-          salaryRange: faker.helpers.arrayElement([
-            '50000-75000',
-            '10000-15000/month',
-            '10-12 LPA',
-          ]),
           startDate: faker.date.past({ years: 3 }),
           endDate: i === 0 ? null : faker.date.recent({ days: 365 }),
           current: i === 0,
@@ -155,7 +146,6 @@ async function main(): Promise<void> {
             'Electronics',
             'Mechanical Engineering',
           ]),
-          rollNumber: faker.string.alphanumeric(10).toUpperCase(),
           location: faker.location.city(),
           startDate: faker.date.past({ years: 4 }),
           endDate: i === 0 ? null : faker.date.recent({ days: 365 }),
@@ -177,14 +167,14 @@ async function main(): Promise<void> {
         category: 'Programming Languages',
         items: faker.helpers.arrayElements(
           ['JavaScript', 'TypeScript', 'Python', 'Java', 'C++', 'Go', 'Rust'],
-          { min: 3, max: 5 },
+          { min: 3, max: 5 }
         ),
       },
       {
         category: 'Frameworks & Libraries',
         items: faker.helpers.arrayElements(
           ['React', 'Node.js', 'Express', 'Next.js', 'Django', 'Spring Boot', 'FastAPI'],
-          { min: 2, max: 4 },
+          { min: 2, max: 4 }
         ),
       },
       {
@@ -198,19 +188,18 @@ async function main(): Promise<void> {
         category: 'Tools & Technologies',
         items: faker.helpers.arrayElements(
           ['Docker', 'Git', 'AWS', 'Azure', 'Kubernetes', 'CI/CD'],
-          { min: 2, max: 4 },
+          { min: 2, max: 4 }
         ),
       },
     ];
 
-    for (const category of skillCategories) {
+    for (let i = 0; i < skillCategories.length; i++) {
       await prisma.skill.create({
         data: {
           userId: user.id,
-          category: category.category,
-          items: category.items,
-          proficiency: faker.helpers.arrayElement(Object.values(ProficiencyLevel)),
-          order: skillCategories.indexOf(category),
+          category: skillCategories[i].category,
+          items: skillCategories[i].items,
+          order: i,
         },
       });
     }
@@ -225,16 +214,19 @@ async function main(): Promise<void> {
         data: {
           userId: user.id,
           title: faker.commerce.productName() + ' Platform',
+          description: faker.lorem.paragraph(),
           domain: faker.commerce.department(),
           tools: faker.helpers.arrayElements(
             ['React', 'Node.js', 'TypeScript', 'PostgreSQL', 'Docker', 'AWS'],
-            { min: 3, max: 5 },
+            { min: 3, max: 5 }
           ),
-          description: faker.lorem.paragraph(),
+          referenceUrl: faker.helpers.maybe(() => faker.internet.url(), { probability: 0.5 }),
+          // github: `https://github.com/${user.name
+          //   .toLowerCase()
+          //   .replace(' ', '-')}/${faker.lorem.word()}`,
           outcomes: faker.helpers.multiple(() => faker.lorem.sentence(), {
             count: { min: 2, max: 4 },
           }),
-          referenceUrl: faker.helpers.maybe(() => faker.internet.url(), { probability: 0.5 }),
           order: i,
         },
       });
@@ -273,7 +265,7 @@ async function main(): Promise<void> {
   console.log('Creating language proficiencies...');
   for (const user of users) {
     const languages = [
-      { name: 'English', proficiency: ProficiencyLevel.NATIVE },
+      { name: 'English', proficiency: ProficiencyLevel.ADVANCED },
       {
         name: 'Hindi',
         proficiency: faker.helpers.arrayElement([
@@ -284,104 +276,19 @@ async function main(): Promise<void> {
       },
     ];
 
-    for (const language of languages) {
+    for (let i = 0; i < languages.length; i++) {
       await prisma.language.create({
         data: {
           userId: user.id,
-          name: language.name,
-          proficiency: language.proficiency,
-          order: languages.indexOf(language),
-        },
-      });
-    }
-  }
-
-  // 9. Add Accomplishments
-  console.log('Creating accomplishments...');
-  for (const user of users) {
-    const count = faker.number.int({ min: 1, max: 3 });
-    for (let i = 0; i < count; i++) {
-      await prisma.accomplishment.create({
-        data: {
-          userId: user.id,
-          type: faker.helpers.arrayElement(Object.values(AccomplishmentType)),
-          title: faker.lorem.sentence(),
-          issuer: faker.company.name(),
-          date: faker.date.past({ years: 2 }),
-          description: faker.lorem.paragraph(),
-          url: faker.internet.url(),
+          name: languages[i].name,
+          proficiency: languages[i].proficiency,
           order: i,
         },
       });
     }
   }
 
-  // 10. Add Positions of Responsibility
-  console.log('Creating positions of responsibility...');
-  for (const user of users) {
-    const count = faker.number.int({ min: 1, max: 2 });
-    for (let i = 0; i < count; i++) {
-      await prisma.positionOfResponsibility.create({
-        data: {
-          userId: user.id,
-          title: faker.person.jobTitle(),
-          organization: faker.company.name(),
-          location: faker.location.city(),
-          startDate: faker.date.past({ years: 2 }),
-          endDate: faker.date.recent(),
-          current: false,
-          description: faker.lorem.paragraph(),
-          highlights: faker.helpers.multiple(() => faker.lorem.sentence(), {
-            count: { min: 2, max: 4 },
-          }),
-          order: i,
-        },
-      });
-    }
-  }
-
-  // 11. Add Courses
-  console.log('Creating courses...');
-  for (const user of users) {
-    const count = faker.number.int({ min: 1, max: 3 });
-    for (let i = 0; i < count; i++) {
-      await prisma.course.create({
-        data: {
-          userId: user.id,
-          name: faker.lorem.words(3),
-          institution: faker.company.name(),
-          completionDate: faker.date.past({ years: 1 }),
-          grade: 'A',
-          description: faker.lorem.sentence(),
-          url: faker.internet.url(),
-          order: i,
-        },
-      });
-    }
-  }
-
-  // 12. Add Extracurriculars
-  console.log('Creating extracurriculars...');
-  for (const user of users) {
-    const count = faker.number.int({ min: 1, max: 2 });
-    for (let i = 0; i < count; i++) {
-      await prisma.extracurricular.create({
-        data: {
-          userId: user.id,
-          activity: faker.hacker.verb() + ' Club',
-          role: 'Member',
-          organization: faker.company.name(),
-          startDate: faker.date.past({ years: 2 }),
-          endDate: faker.date.recent(),
-          current: false,
-          description: faker.lorem.sentence(),
-          order: i,
-        },
-      });
-    }
-  }
-
-  // 13. Create Resumes for users
+  // 9. Create Resumes for users
   console.log('Creating resumes...');
   for (const user of users.slice(0, 8)) {
     const resumeCount = faker.number.int({ min: 1, max: 2 });
@@ -405,7 +312,7 @@ async function main(): Promise<void> {
     }
   }
 
-  // 14. Create Companies
+  // 10. Create Companies
   console.log('Creating companies...');
   const companies = await Promise.all(
     Array.from({ length: 5 }).map(async () => {
@@ -436,10 +343,10 @@ async function main(): Promise<void> {
           linkedin: `https://linkedin.com/company/${faker.lorem.word()}`,
         },
       });
-    }),
+    })
   );
 
-  // 15. Create Jobs
+  // 11. Create Jobs
   console.log('Creating job postings...');
   const jobs = [];
   for (const company of companies) {
@@ -448,6 +355,7 @@ async function main(): Promise<void> {
       const job = await prisma.job.create({
         data: {
           companyId: company.id,
+          placementCycleId: placementCycle.id,
           title: faker.person.jobTitle(),
           description: faker.lorem.paragraphs(3),
           location: faker.helpers.arrayElement(['Remote', 'Hybrid', faker.location.city()]),
@@ -491,7 +399,7 @@ async function main(): Promise<void> {
     }
   }
 
-  // 16. Create Applications
+  // 12. Create Applications
   console.log('Creating job applications...');
   for (const user of users) {
     const selectedJobs = faker.helpers.arrayElements(jobs, { min: 2, max: 5 });
@@ -504,7 +412,11 @@ async function main(): Promise<void> {
           userId: user.id,
           jobId: job.id,
           resumeId:
-            userResumes.length > 0 ? (faker.helpers.arrayElement(userResumes) as Resume).id : null,
+            userResumes.length > 0
+              ? faker.helpers.maybe(() => faker.helpers.arrayElement(userResumes).id, {
+                  probability: 0.7,
+                })
+              : null,
           status: faker.helpers.arrayElement([
             ApplicationStatus.APPLIED,
             ApplicationStatus.APPLIED,
@@ -523,33 +435,13 @@ async function main(): Promise<void> {
     }
   }
 
-  // 17. Create Notifications
-  console.log('Creating notifications...');
-  for (const user of users) {
-    const notificationCount = faker.number.int({ min: 3, max: 8 });
-    for (let i = 0; i < notificationCount; i++) {
-      const isRead = faker.datatype.boolean();
-      await prisma.notification.create({
-        data: {
-          userId: user.id,
-          type: faker.helpers.arrayElement(Object.values(NotificationType)),
-          channel: NotificationChannel.IN_APP,
-          title: faker.lorem.sentence(),
-          message: faker.lorem.paragraph(),
-          isRead: isRead,
-          readAt: isRead ? faker.date.recent() : null,
-          createdAt: faker.date.recent({ days: 30 }),
-        },
-      });
-    }
-  }
-
   console.log('Seeding completed successfully!');
   console.log(`
 Summary:
 - Admin: 1
 - Users: ${users.length}
 - Companies: ${companies.length}
+- Placement Cycles: ${await prisma.placementCycle.count()}
 - Jobs: ${jobs.length}
 - Applications: ${await prisma.application.count()}
 - Resumes: ${await prisma.resume.count()}
@@ -559,12 +451,6 @@ Summary:
 - Projects: ${await prisma.project.count()}
 - Certifications: ${await prisma.certification.count()}
 - Languages: ${await prisma.language.count()}
-- Accomplishments: ${await prisma.accomplishment.count()}
-- Positions of Responsibility: ${await prisma.positionOfResponsibility.count()}
-- Courses: ${await prisma.course.count()}
-- Extracurriculars: ${await prisma.extracurricular.count()}
-- Notifications: ${await prisma.notification.count()}
-- Announcements: ${await prisma.announcement.count()}
   `);
 }
 

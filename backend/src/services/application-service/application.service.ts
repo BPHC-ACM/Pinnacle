@@ -1,17 +1,19 @@
-import type { User } from '@pinnacle/types';
+import type { User } from '@repo/database';
+import { prisma } from '@repo/database';
+import { ApplicationStatus } from '@repo/types';
 
 import { logger } from '../../config/logger.config';
-import prisma from '../../db/client';
 import type {
   Application,
   ApplyRequest,
-  ApplicationStatus,
   AdminApplicationFilters,
   ApplicationWithDetails,
   AdminDashboardStats,
 } from '../../types/application.types';
 import { NotFoundError, ValidationError } from '../../types/errors.types';
 import type { PaginatedResponse, PaginationParams } from '../../types/pagination.types';
+
+const ALLOWED_APP_SORT_FIELDS = ['appliedAt', 'status', 'updatedAt'];
 
 export class ApplicationService {
   async apply(userId: string, jobId: string, data: ApplyRequest): Promise<Application> {
@@ -63,7 +65,7 @@ export class ApplicationService {
     }
 
     const application = await prisma.application.create({
-      data: { userId, jobId, ...data },
+      data: { userId, jobId, status: ApplicationStatus.APPLIED, ...data },
     });
     logger.info({ applicationId: application.id, userId, jobId }, 'Application submitted');
     return application as unknown as Application;
@@ -81,10 +83,22 @@ export class ApplicationService {
   ): Promise<PaginatedResponse<Application>> {
     const { page = 1, limit = 20, sortBy = 'appliedAt', sortOrder = 'desc' } = params ?? {};
     const where = { userId };
+
+    let safeSortBy = sortBy;
+    if (safeSortBy === 'createdAt') {
+      safeSortBy = 'appliedAt';
+    }
+
+    if (!ALLOWED_APP_SORT_FIELDS.includes(safeSortBy)) {
+      safeSortBy = 'appliedAt';
+    }
+
+    const orderBy = { [safeSortBy]: sortOrder };
+
     const [data, total] = await Promise.all([
       prisma.application.findMany({
         where,
-        orderBy: { [sortBy]: sortOrder },
+        orderBy,
         skip: (page - 1) * limit,
         take: limit,
       }),
@@ -102,10 +116,22 @@ export class ApplicationService {
   ): Promise<PaginatedResponse<Application>> {
     const { page = 1, limit = 20, sortBy = 'appliedAt', sortOrder = 'desc' } = params ?? {};
     const where = { jobId };
+
+    let safeSortBy = sortBy;
+    if (safeSortBy === 'createdAt') {
+      safeSortBy = 'appliedAt';
+    }
+
+    if (!ALLOWED_APP_SORT_FIELDS.includes(safeSortBy)) {
+      safeSortBy = 'appliedAt';
+    }
+
+    const orderBy = { [safeSortBy]: sortOrder };
+
     const [data, total] = await Promise.all([
       prisma.application.findMany({
         where,
-        orderBy: { [sortBy]: sortOrder },
+        orderBy,
         skip: (page - 1) * limit,
         take: limit,
       }),
@@ -192,11 +218,22 @@ export class ApplicationService {
       }),
     };
 
+    let safeSortBy = sortBy;
+    if (safeSortBy === 'createdAt') {
+      safeSortBy = 'appliedAt';
+    }
+
+    if (!ALLOWED_APP_SORT_FIELDS.includes(safeSortBy)) {
+      safeSortBy = 'appliedAt';
+    }
+
+    const orderBy = { [safeSortBy]: sortOrder };
+
     const [applications, total] = await Promise.all([
       prisma.application.findMany({
         where,
         include: { job: { include: { questions: true } } },
-        orderBy: { [sortBy]: sortOrder },
+        orderBy,
         skip: (page - 1) * limit,
         take: limit,
       }),

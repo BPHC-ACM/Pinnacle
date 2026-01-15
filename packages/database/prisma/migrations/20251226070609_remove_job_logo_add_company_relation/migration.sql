@@ -6,7 +6,6 @@
 */
 -- AlterTable
 ALTER TABLE "Job" ADD COLUMN     "descriptionDocument" TEXT;
-
 -- DropTable
 DROP TABLE "trial";
 

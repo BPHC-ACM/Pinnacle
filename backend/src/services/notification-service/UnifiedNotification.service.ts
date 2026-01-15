@@ -1,9 +1,9 @@
-import type { NotificationChannel, NotificationType, Prisma } from '@pinnacle/types';
+import { NotificationChannel, NotificationType, Prisma } from '@repo/database';
 import * as amqplib from 'amqplib';
 
 import { getFirebaseAdmin } from '../../config/firebase.config';
 import { logger } from '../../config/logger.config';
-import prismaClient from '../../db/client';
+import { prisma as prismaClient } from '../../db/client';
 
 const prisma = prismaClient;
 

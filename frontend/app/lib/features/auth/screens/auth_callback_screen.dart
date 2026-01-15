@@ -6,7 +6,7 @@
 //   final Map<String, String> queryParams;
 
 //   const AuthCallbackScreen({super.key, required this.queryParams});
-  
+
 //   @override
 //   ConsumerState<AuthCallbackScreen> createState() => _AuthCallbackScreenState();
 // }

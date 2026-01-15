@@ -2,7 +2,7 @@ import type { Request, Response } from 'express';
 import { OAuth2Client } from 'google-auth-library';
 
 import { logger } from '../../config/logger.config';
-import prisma from '../../db/client';
+import { prisma } from '../../db/client';
 import { config } from '../config/env.config';
 import { UserRole } from '../types/user.types';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../utils/jwt.utils';

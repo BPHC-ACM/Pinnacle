@@ -61,6 +61,28 @@ components:
               type: string
             email:
               type: string
+    Accomplishment:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        type: { type: string }
+        title: { type: string }
+        issuer: { type: string }
+        date: { type: string }
+        description: { type: string }
+        url: { type: string }
+        order: { type: integer }
+    PositionOfResponsibility:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        organization: { type: string }
+        startDate: { type: string }
+        endDate: { type: string }
+        current: { type: boolean }
+        description: { type: string }
+        order: { type: integer }
 
 security:
   - bearerAuth: []
@@ -169,6 +191,38 @@ paths:
         tags: [UserDetails],
         parameters: [{ $ref: '#/components/parameters/id' }],
       }
+  /api/user-details/accomplishments:
+    get: { summary: 'Get all accomplishments', tags: [UserDetails] }
+    post: { summary: 'Create an accomplishment', tags: [UserDetails] }
+  /api/user-details/accomplishments/{id}:
+    patch:
+      {
+        summary: 'Update an accomplishment',
+        tags: [UserDetails],
+        parameters: [{ $ref: '#/components/parameters/id' }],
+      }
+    delete:
+      {
+        summary: 'Delete an accomplishment',
+        tags: [UserDetails],
+        parameters: [{ $ref: '#/components/parameters/id' }],
+      }
+  /api/user-details/extracurriculars:
+    get: { summary: 'Get all positions of responsibility', tags: [UserDetails] }
+    post: { summary: 'Create a position of responsibility', tags: [UserDetails] }
+  /api/user-details/extracurriculars/{id}:
+    patch:
+      {
+        summary: 'Update a position of responsibility',
+        tags: [UserDetails],
+        parameters: [{ $ref: '#/components/parameters/id' }],
+      }
+    delete:
+      {
+        summary: 'Delete a position of responsibility',
+        tags: [UserDetails],
+        parameters: [{ $ref: '#/components/parameters/id' }],
+      }
   /api/user-details/languages:
     get: { summary: 'Get all languages', tags: [UserDetails] }
     post: { summary: 'Create a language entry', tags: [UserDetails] }
@@ -226,10 +280,65 @@ paths:
       description: 'Public endpoint - returns all open job postings'
       tags: [Jobs]
       security: [] # Public endpoint
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: q
+          in: query
+          description: Search by job title or company name
+          schema:
+            type: string
+        - name: industry
+          in: query
+          description: Filter by company industry
+          schema:
+            type: string
+        - name: jobType
+          in: query
+          description: Filter by job type
+          schema:
+            type: string
+        - name: companyId
+          in: query
+          description: Filter by company ID
+          schema:
+            type: string
     post:
       summary: 'Create a new job posting'
       description: 'Admin only - create a new job posting'
       tags: [Jobs]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [placementCycleId, companyId, title]
+              properties:
+                placementCycleId: { type: string, format: uuid }
+                companyId: { type: string, format: uuid }
+                title: { type: string }
+                description: { type: string }
+                descriptionDocument: { type: string }
+                location: { type: string }
+                type: { type: string }
+                salary: { type: string }
+                deadline: { type: string, format: date-time }
+                questions:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      question: { type: string }
+                      required: { type: boolean }
   /api/jobs/{id}:
     get:
       summary: 'Get a single job by ID'
@@ -472,7 +581,17 @@ paths:
           description: 'Type of item to verify'
           schema:
             type: string
-            enum: [user, experience, education, skill, project, certification]
+            enum:
+              [
+                user,
+                experience,
+                education,
+                skill,
+                project,
+                certification,
+                accomplishment,
+                positionofresponsibility,
+              ]
         - name: itemId
           in: path
           required: true

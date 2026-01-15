@@ -1,20 +1,4 @@
 #!/bin/bash
 
-echo "Running backend checks..."
-cd backend || exit 1
-pnpm run format:check || exit 1
-pnpm run lint || exit 1
-pnpm run type-check || exit 1
-pnpm run build || exit 1
-echo "Checking Prisma schema status..."
-pnpm prisma migrate status
-cd ..
-
-echo "Running frontend checks..."
-cd frontend/web || exit 1
-pnpm run lint || exit 1
-pnpm exec tsc --noEmit || exit 1
-pnpm run build || exit 1
-cd ../..
-
-echo "✓ All pre-push checks passed!"
+echo "Running pre-push validation..."
+pnpm run validate

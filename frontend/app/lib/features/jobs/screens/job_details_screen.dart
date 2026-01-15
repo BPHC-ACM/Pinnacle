@@ -207,7 +207,7 @@ class _JobDetailsScreenState extends ConsumerState<JobDetailsScreen> {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 24,
             offset: const Offset(0, 12),
           ),
@@ -223,7 +223,7 @@ class _JobDetailsScreenState extends ConsumerState<JobDetailsScreen> {
               color: theme.scaffoldBackgroundColor,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: theme.colorScheme.outline.withOpacity(0.5),
+                color: theme.colorScheme.outline.withValues(alpha: 0.5),
               ),
             ),
             alignment: Alignment.center,
@@ -261,7 +261,7 @@ class _JobDetailsScreenState extends ConsumerState<JobDetailsScreen> {
           ),
 
           const SizedBox(height: 24),
-          Divider(color: theme.colorScheme.outline.withOpacity(0.5)),
+          Divider(color: theme.colorScheme.outline.withValues(alpha: 0.5)),
           const SizedBox(height: 24),
 
           // Metadata Pills
@@ -301,10 +301,12 @@ class _JobDetailsScreenState extends ConsumerState<JobDetailsScreen> {
       decoration: BoxDecoration(
         color: theme.cardTheme.color,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: theme.colorScheme.outline.withOpacity(0.5)),
+        border: Border.all(
+          color: theme.colorScheme.outline.withValues(alpha: 0.5),
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),
@@ -342,7 +344,9 @@ class _JobDetailsScreenState extends ConsumerState<JobDetailsScreen> {
       decoration: BoxDecoration(
         color: theme.scaffoldBackgroundColor,
         borderRadius: BorderRadius.circular(100),
-        border: Border.all(color: theme.colorScheme.outline.withOpacity(0.5)),
+        border: Border.all(
+          color: theme.colorScheme.outline.withValues(alpha: 0.5),
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -384,9 +388,11 @@ class _JobDetailsScreenState extends ConsumerState<JobDetailsScreen> {
             20 + MediaQuery.paddingOf(context).bottom,
           ),
           decoration: BoxDecoration(
-            color: theme.scaffoldBackgroundColor.withOpacity(0.8),
+            color: theme.scaffoldBackgroundColor.withValues(alpha: 0.8),
             border: Border(
-              top: BorderSide(color: colorScheme.outline.withOpacity(0.5)),
+              top: BorderSide(
+                color: colorScheme.outline.withValues(alpha: 0.5),
+              ),
             ),
           ),
           child: SafeArea(
@@ -421,7 +427,7 @@ class _JobDetailsScreenState extends ConsumerState<JobDetailsScreen> {
                           : "Apply Now",
                       onPressed: isApplied
                           ? null
-                          : () => _handleApply(context, notifier, job),
+                          : () => _handleApply(notifier, job),
                       variant: isApplied
                           ? ButtonVariant.outline
                           : ButtonVariant.primary,
@@ -441,7 +447,7 @@ class _JobDetailsScreenState extends ConsumerState<JobDetailsScreen> {
   }
 
   Future<void> _handleApply(
-    BuildContext context,
+    // BuildContext context,  <-- DELETE THIS PARAMETER
     JobsNotifier notifier,
     JobModel job,
   ) async {
@@ -449,6 +455,9 @@ class _JobDetailsScreenState extends ConsumerState<JobDetailsScreen> {
     Map<String, dynamic>? answers;
 
     if (job.questions.isNotEmpty) {
+      // 'context' here now refers to the State's context automatically
+      if (!mounted) return; // Good safety check before showing dialog
+
       answers = await showDialog<Map<String, dynamic>>(
         context: context,
         barrierDismissible: false,
@@ -462,10 +471,12 @@ class _JobDetailsScreenState extends ConsumerState<JobDetailsScreen> {
     setState(() => _isApplying = true);
     try {
       await notifier.apply(widget.jobId, answers: answers);
+
+      // Now 'mounted' correctly guards the State's 'context'
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Row(
+          const SnackBar(
+            content: Row(
               children: [
                 Icon(LucideIcons.squareCheck, color: Colors.white, size: 20),
                 SizedBox(width: 12),

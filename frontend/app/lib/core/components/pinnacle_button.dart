@@ -66,8 +66,12 @@ class PinnacleButton extends StatelessWidget {
         ),
         child: isLoading
             ? SizedBox(
-                height: 16, width: 16,
-                child: CircularProgressIndicator(strokeWidth: 2, color: foregroundColor),
+                height: 16,
+                width: 16,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: foregroundColor,
+                ),
               )
             : Row(
                 mainAxisSize: MainAxisSize.min,

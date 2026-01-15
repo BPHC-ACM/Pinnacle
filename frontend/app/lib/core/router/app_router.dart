@@ -25,12 +25,12 @@ final routerProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final isLoggingIn = state.uri.path == '/login';
       final isSplash = state.uri.path == '/';
-      
+
       // Log the redirect check
       // logger.t (Trace) is good here to avoid spamming Info logs during navigation
       logger.t(
         "Router: Check -> Path: ${state.uri.path}, "
-        "Auth: ${authState.isAuthenticated}, Loading: ${authState.isLoading}"
+        "Auth: ${authState.isAuthenticated}, Loading: ${authState.isLoading}",
       );
 
       if (authState.isLoading) {
@@ -45,7 +45,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         }
       } else {
         if (isSplash) {
-           return '/login';
+          return '/login';
         }
         if (!isLoggingIn) {
           logger.i("Router: User unauthenticated. Redirecting to /login");
@@ -100,8 +100,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         navigatorContainerBuilder: (context, navigationShell, children) {
           return MainNavScaffold(
             navigationShell: navigationShell,
-            children: children, 
             currentPath: GoRouterState.of(context).uri.path,
+            children: children,
           );
         },
         builder: (context, state, shell) => shell,
