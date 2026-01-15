@@ -2,21 +2,16 @@
 
 // --- Enums (Source of Truth) ---
 export enum Sector {
-  ALL_SECTORS = 'ALL_SECTORS',
-  ANALYTICS = 'ANALYTICS',
-  CONSULTING = 'CONSULTING',
-  COMPUTER_SCIENCE_SOFTWARE_IT = 'COMPUTER_SCIENCE_SOFTWARE_IT',
-  E_COMMERCE = 'E_COMMERCE',
-  EDUCATION = 'EDUCATION',
-  ENGINEERING_TECHNOLOGY = 'ENGINEERING_TECHNOLOGY',
-  FINANCE_BFSI = 'FINANCE_BFSI',
-  FMCG = 'FMCG',
+  IT = 'IT',
+  FINANCE = 'FINANCE',
+  ECOMMERCE = 'ECOMMERCE',
   HEALTHCARE = 'HEALTHCARE',
-  MEDIA_ENTERTAINMENT = 'MEDIA_ENTERTAINMENT',
-  RESEARCH_DEVELOPMENT = 'RESEARCH_DEVELOPMENT',
-  TELECOM = 'TELECOM',
-  ENERGY = 'ENERGY',
-  MANUFACTURING_TECHNOLOGY = 'MANUFACTURING_TECHNOLOGY',
+  CONSULTING = 'CONSULTING',
+  ANALYTICS = 'ANALYTICS',
+  EDUCATION = 'EDUCATION',
+  ELECTRONICS = 'ELECTRONICS',
+  MECHANICS = 'MECHANICS',
+  MANAGEMENT = 'MANAGEMENT',
   OTHERS = 'OTHERS',
 }
 
@@ -29,9 +24,7 @@ export enum ApplicationStatus {
   WITHDRAWN = 'WITHDRAWN',
 }
 
-export type JobStatus = 'OPEN' | 'CLOSED';
-
-// --- Interfaces (DTOs) ---
+export type JobStatus = 'OPEN' | 'CLOSED' | 'PAUSED';
 
 export interface Company {
   id: string;
@@ -39,7 +32,7 @@ export interface Company {
   website?: string;
   description?: string;
   logo?: string;
-  industry?: string;
+  sector?: Sector;
   size?: string;
   location?: string;
   email?: string;

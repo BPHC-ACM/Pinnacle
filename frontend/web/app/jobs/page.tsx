@@ -51,7 +51,8 @@ export default function JobsPage() {
   // Removed activeTab state
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
 
-  const [sector, setSector] = useState<string>(Sector.ALL_SECTORS);
+  const [sector, setSector] = useState<string>('ALL_SECTORS');
+
   const [positionType, setPositionType] = useState('All');
   const [status, setStatus] = useState('All');
   const [sortBy, setSortBy] = useState('Created At');
@@ -91,7 +92,7 @@ export default function JobsPage() {
         params.append('limit', '20');
 
         if (searchQuery) params.append('q', searchQuery);
-        if (sector !== Sector.ALL_SECTORS) params.append('industry', sector);
+        if (sector !== 'ALL_SECTORS') params.append('industry', sector);
         if (positionType !== 'All') params.append('jobType', positionType);
 
         const sortMap: Record<string, string> = {
@@ -267,14 +268,13 @@ export default function JobsPage() {
                       <SelectValue placeholder="Select Sector" />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="ALL_SECTORS">All Sectors</SelectItem>
                       {Object.values(Sector).map((s) => (
                         <SelectItem key={s} value={s}>
-                          {s === Sector.ALL_SECTORS
-                            ? 'All Sectors'
-                            : s
-                                .replace(/_/g, ' ')
-                                .toLowerCase()
-                                .replace(/\b\w/g, (l) => l.toUpperCase())}
+                          {s
+                            .replace(/_/g, ' ')
+                            .toLowerCase()
+                            .replace(/\b\w/g, (l) => l.toUpperCase())}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -347,7 +347,7 @@ export default function JobsPage() {
                 </div>
                 <Button
                   onClick={() => {
-                    setSector(Sector.ALL_SECTORS);
+                    setSector('ALL_SECTORS');
                     setPositionType('All');
                     setStatus('All');
                     setSortBy('Created At');

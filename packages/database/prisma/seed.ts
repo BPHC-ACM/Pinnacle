@@ -322,12 +322,12 @@ async function main(): Promise<void> {
           website: faker.internet.url(),
           description: faker.company.catchPhrase() + '. ' + faker.lorem.paragraph(),
           logo: faker.image.avatar(),
-          industry: faker.helpers.arrayElement([
-            'Technology',
-            'Finance',
-            'Healthcare',
-            'E-commerce',
-            'Consulting',
+          sector: faker.helpers.arrayElement([
+            'IT',
+            'FINANCE',
+            'HEALTHCARE',
+            'ECOMMERCE',
+            'CONSULTING',
           ]),
           size: faker.helpers.arrayElement([
             '1-10',
