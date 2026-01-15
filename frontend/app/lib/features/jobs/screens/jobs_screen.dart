@@ -132,7 +132,7 @@ class _JobsScreenState extends ConsumerState<JobsScreen>
             borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 10,
                 offset: const Offset(0, -2),
               ),
@@ -161,7 +161,7 @@ class _JobsScreenState extends ConsumerState<JobsScreen>
               color: theme.colorScheme.surface,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: theme.colorScheme.outline.withOpacity(0.5),
+                color: theme.colorScheme.outline.withValues(alpha: 0.5),
               ),
             ),
             child: TextField(
@@ -202,7 +202,7 @@ class _JobsScreenState extends ConsumerState<JobsScreen>
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: AppColors.primary500.withOpacity(0.25),
+                color: AppColors.primary500.withValues(alpha: 0.25),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -229,7 +229,7 @@ class _JobsScreenState extends ConsumerState<JobsScreen>
       indicatorColor: AppColors.primary500,
       indicatorSize: TabBarIndicatorSize.label,
       indicatorWeight: 3,
-      dividerColor: theme.colorScheme.outline.withOpacity(0.5),
+      dividerColor: theme.colorScheme.outline.withValues(alpha: 0.5),
       labelStyle: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14),
       unselectedLabelStyle: GoogleFonts.inter(
         fontWeight: FontWeight.w500,
@@ -383,7 +383,7 @@ class _JobsScreenState extends ConsumerState<JobsScreen>
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.error.withOpacity(0.1),
+                color: AppColors.error.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: const Icon(

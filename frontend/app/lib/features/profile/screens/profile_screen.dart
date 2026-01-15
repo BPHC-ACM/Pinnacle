@@ -198,8 +198,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               animation: _scrollController,
               builder: (context, child) {
                 double offset = 0;
-                if (_scrollController.hasClients)
+                if (_scrollController.hasClients) {
                   offset = _scrollController.offset;
+                }
                 final opacity = (1.0 - (offset / 150.0)).clamp(0.0, 1.0);
                 return Opacity(opacity: opacity, child: child);
               },
@@ -271,7 +272,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         icon: Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.2),
+                            color: Colors.black.withValues(alpha: 0.2),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
@@ -442,7 +443,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 24,
             offset: const Offset(0, 12),
           ),
@@ -548,7 +549,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ),
           ),
         const SizedBox(height: 12),
-        Divider(color: theme.colorScheme.outline.withOpacity(0.5)),
+        Divider(color: theme.colorScheme.outline.withValues(alpha: 0.5)),
         const SizedBox(height: 12),
         Wrap(
           spacing: 16,
@@ -836,7 +837,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       const SizedBox(width: 8),
                       _buildActionIcon(
                         icon: LucideIcons.trash2,
-                        color: AppColors.error.withOpacity(0.8),
+                        color: AppColors.error.withValues(alpha: 0.8),
                         onTap: () => _deleteItem(
                           ref.read(profileProvider.notifier).removeSkill,
                           skill.id,
@@ -861,7 +862,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           color: theme.scaffoldBackgroundColor,
                           borderRadius: BorderRadius.circular(6),
                           border: Border.all(
-                            color: theme.colorScheme.outline.withOpacity(0.5),
+                            color: theme.colorScheme.outline.withValues(
+                              alpha: 0.5,
+                            ),
                           ),
                         ),
                         child: Text(
@@ -879,7 +882,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
         ),
         if (!isLast)
-          Divider(height: 1, color: theme.colorScheme.outline.withOpacity(0.5)),
+          Divider(
+            height: 1,
+            color: theme.colorScheme.outline.withValues(alpha: 0.5),
+          ),
       ],
     );
   }
@@ -906,7 +912,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ),
             backgroundColor: theme.scaffoldBackgroundColor,
             side: BorderSide(
-              color: theme.colorScheme.outline.withOpacity(0.5),
+              color: theme.colorScheme.outline.withValues(alpha: 0.5),
             ),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(50),
@@ -952,7 +958,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     width: 44,
                     height: 44,
                     decoration: BoxDecoration(
-                      color: color.withOpacity(0.1),
+                      color: color.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     alignment: Alignment.center,
@@ -993,8 +999,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       Text(
                         meta,
                         style: GoogleFonts.inter(
-                          color: theme.colorScheme.onSurfaceVariant.withOpacity(
-                            0.8,
+                          color: theme.colorScheme.onSurfaceVariant.withValues(
+                            alpha: 0.8,
                           ),
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
@@ -1029,7 +1035,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   if (onDelete != null) ...[
                     _buildActionIcon(
                       icon: LucideIcons.trash2,
-                      color: AppColors.error.withOpacity(0.8),
+                      color: AppColors.error.withValues(alpha: 0.8),
                       onTap: onDelete,
                     ),
                   ],
@@ -1047,7 +1053,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
         ),
         if (!isLast)
-          Divider(height: 1, color: theme.colorScheme.outline.withOpacity(0.5)),
+          Divider(
+            height: 1,
+            color: theme.colorScheme.outline.withValues(alpha: 0.5),
+          ),
       ],
     );
   }
@@ -1092,7 +1101,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
+            color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.5),
           ),
         ),
         child: Icon(icon, size: 20),
@@ -1125,7 +1134,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(
-            color: theme.colorScheme.outline.withOpacity(0.3),
+            color: theme.colorScheme.outline.withValues(alpha: 0.3),
           ),
         ),
       ),

@@ -150,7 +150,7 @@ class _AddEditItemSheetState extends ConsumerState<AddEditItemSheet> {
                   height: 5,
                   margin: const EdgeInsets.only(bottom: 24),
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.outline.withOpacity(0.5),
+                    color: theme.colorScheme.outline.withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
@@ -381,13 +381,13 @@ class _AddEditItemSheetState extends ConsumerState<AddEditItemSheet> {
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(
-                  color: theme.colorScheme.outline.withOpacity(0.5),
+                  color: theme.colorScheme.outline.withValues(alpha: 0.5),
                 ),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(
-                  color: theme.colorScheme.outline.withOpacity(0.5),
+                  color: theme.colorScheme.outline.withValues(alpha: 0.5),
                 ),
               ),
               contentPadding: const EdgeInsets.all(16),
@@ -462,13 +462,13 @@ class _AddEditItemSheetState extends ConsumerState<AddEditItemSheet> {
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(
-                  color: theme.colorScheme.outline.withOpacity(0.5),
+                  color: theme.colorScheme.outline.withValues(alpha: 0.5),
                 ),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(
-                  color: theme.colorScheme.outline.withOpacity(0.5),
+                  color: theme.colorScheme.outline.withValues(alpha: 0.5),
                 ),
               ),
               contentPadding: const EdgeInsets.all(16),
@@ -542,7 +542,7 @@ class _AddEditItemSheetState extends ConsumerState<AddEditItemSheet> {
           ),
           const SizedBox(height: 8),
           DropdownButtonFormField<String>(
-            value: _formData[key]?.toString(),
+            initialValue: _formData[key]?.toString(),
             style: GoogleFonts.inter(
               fontSize: 14,
               color: theme.colorScheme.onSurface,
@@ -553,13 +553,13 @@ class _AddEditItemSheetState extends ConsumerState<AddEditItemSheet> {
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(
-                  color: theme.colorScheme.outline.withOpacity(0.5),
+                  color: theme.colorScheme.outline.withValues(alpha: 0.5),
                 ),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(
-                  color: theme.colorScheme.outline.withOpacity(0.5),
+                  color: theme.colorScheme.outline.withValues(alpha: 0.5),
                 ),
               ),
               contentPadding: const EdgeInsets.all(16),

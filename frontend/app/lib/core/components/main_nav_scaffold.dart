@@ -160,7 +160,7 @@ class _MainNavScaffoldState extends State<MainNavScaffold> {
                           borderRadius: BorderRadius.circular(outerRadius),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
+                              color: Colors.black.withValues(alpha: 0.2),
                               blurRadius: 35,
                               offset: const Offset(0, 15),
                               spreadRadius: -5,
@@ -174,7 +174,7 @@ class _MainNavScaffoldState extends State<MainNavScaffold> {
                           filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
                           child: Container(
                             height: navHeight,
-                            color: colorScheme.surface.withOpacity(0.30),
+                            color: colorScheme.surface.withValues(alpha: 0.30),
                           ),
                         ),
                       ),
@@ -248,7 +248,7 @@ class _MainNavScaffoldState extends State<MainNavScaffold> {
               size: 22,
               color: isSelected
                   ? colorScheme.onPrimary
-                  : colorScheme.onSurfaceVariant.withOpacity(0.6),
+                  : colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
             ),
             AnimatedSize(
               duration: const Duration(milliseconds: 150),

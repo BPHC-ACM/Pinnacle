@@ -32,7 +32,7 @@ class _AnimatedGridBackgroundState extends State<AnimatedGridBackground>
     final theme = Theme.of(context);
     // Default to a subtle version of primary or onSurface
     final gridColor =
-        widget.color ?? theme.colorScheme.onSurface.withOpacity(0.05);
+        widget.color ?? theme.colorScheme.onSurface.withValues(alpha: 0.05);
 
     return CustomPaint(
       painter: GridPainter(

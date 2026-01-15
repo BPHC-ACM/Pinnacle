@@ -21,15 +21,15 @@ class _JobCardSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final baseColor = colorScheme.surfaceVariant;
-    final highlightColor = colorScheme.surface.withOpacity(0.6);
+    final baseColor = colorScheme.surface;
+    final highlightColor = colorScheme.surface.withValues(alpha: 0.6);
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: theme.cardColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: colorScheme.outline.withOpacity(0.4)),
+        border: Border.all(color: colorScheme.outline.withValues(alpha: 0.4)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

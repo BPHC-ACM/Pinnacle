@@ -53,11 +53,13 @@ class JobCard extends StatelessWidget {
         color: theme.cardTheme.color,
         // Match Profile Card Radius
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: theme.colorScheme.outline.withOpacity(0.5)),
+        border: Border.all(
+          color: theme.colorScheme.outline.withValues(alpha: 0.5),
+        ),
         boxShadow: [
           BoxShadow(
             // Softer shadow to match Profile aesthetics (0.02 vs 0.04)
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),
@@ -86,11 +88,11 @@ class JobCard extends StatelessWidget {
                         color: colorScheme.surface,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: colorScheme.outline.withOpacity(0.5),
+                          color: colorScheme.outline.withValues(alpha: 0.5),
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
+                            color: Colors.black.withValues(alpha: 0.05),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),
@@ -144,10 +146,10 @@ class JobCard extends StatelessWidget {
                           vertical: 6,
                         ),
                         decoration: BoxDecoration(
-                          color: statusColor.withOpacity(0.1),
+                          color: statusColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(100),
                           border: Border.all(
-                            color: statusColor.withOpacity(0.2),
+                            color: statusColor.withValues(alpha: 0.2),
                           ),
                         ),
                         child: Text(
@@ -229,7 +231,9 @@ class JobCard extends StatelessWidget {
         color: theme.scaffoldBackgroundColor,
         // Updated to Pill shape (circular)
         borderRadius: BorderRadius.circular(100),
-        border: Border.all(color: theme.colorScheme.outline.withOpacity(0.5)),
+        border: Border.all(
+          color: theme.colorScheme.outline.withValues(alpha: 0.5),
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

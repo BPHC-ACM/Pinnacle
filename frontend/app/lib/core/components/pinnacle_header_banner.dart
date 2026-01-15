@@ -57,7 +57,7 @@ class _PinnacleHeaderBannerState extends State<PinnacleHeaderBanner>
         builder: (context, child) {
           return CustomPaint(
             painter: _PinnacleGridPainter(
-              color: Colors.white.withOpacity(0.15), // White grid lines
+              color: Colors.white.withValues(alpha: 0.15), // White grid lines
               animationValue: _controller.value,
             ),
           );

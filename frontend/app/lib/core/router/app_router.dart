@@ -100,8 +100,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         navigatorContainerBuilder: (context, navigationShell, children) {
           return MainNavScaffold(
             navigationShell: navigationShell,
-            children: children,
             currentPath: GoRouterState.of(context).uri.path,
+            children: children,
           );
         },
         builder: (context, state, shell) => shell,

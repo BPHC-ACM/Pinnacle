@@ -86,10 +86,10 @@ class _ProfileSectionCardState extends State<ProfileSectionCard>
       decoration: BoxDecoration(
         color: theme.cardTheme.color ?? colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colorScheme.outline.withOpacity(0.5)),
+        border: Border.all(color: colorScheme.outline.withValues(alpha: 0.5)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),
@@ -141,7 +141,7 @@ class _ProfileSectionCardState extends State<ProfileSectionCard>
               children: [
                 Divider(
                   height: 1,
-                  color: colorScheme.outline.withOpacity(0.5),
+                  color: colorScheme.outline.withValues(alpha: 0.5),
                 ),
                 if (widget.children.isEmpty)
                   Padding(
@@ -150,7 +150,7 @@ class _ProfileSectionCardState extends State<ProfileSectionCard>
                       child: Text(
                         "No details added yet.",
                         style: GoogleFonts.inter(
-                          color: colorScheme.onSurface.withOpacity(0.5),
+                          color: colorScheme.onSurface.withValues(alpha: 0.5),
                           fontSize: 14,
                         ),
                       ),
