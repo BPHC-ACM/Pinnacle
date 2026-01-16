@@ -62,7 +62,7 @@ export default function Dashboard() {
       />
 
       {/* Main Content */}
-      <main className="flex-1 max-w-7xl mx-auto w-full py-12">
+      <main className="flex-1 max-w-7xl mx-auto w-full py-12 px-6">
         <>
           {/* Welcome Section */}
           <div className="text-center w-full mb-16">
