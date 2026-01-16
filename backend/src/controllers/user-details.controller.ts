@@ -66,6 +66,11 @@ export async function addUserDetails(req: Request, res: Response): Promise<void>
     .json(await userService.addUserDetails(userId, req.body as CreateUserDetailsRequest));
 }
 
+export async function getOnboardingStatus(req: Request, res: Response): Promise<void> {
+  const userId = getUserId(req);
+  res.json(await userService.getOnboardingStatus(userId));
+}
+
 export async function getExperiences(req: Request, res: Response): Promise<void> {
   const userId = getUserId(req);
   const params = parsePagination(req.query as Record<string, unknown>);

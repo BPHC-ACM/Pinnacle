@@ -162,4 +162,7 @@ router.get('/', userDetailsController.getUserDetails);
 // PUT /api/user-details - Add user details (onboarding)
 router.put('/', validateBody(createUserDetailsSchema), userDetailsController.addUserDetails);
 
+// GET /api/user-details/onboarding-status - check if user has onboarded
+router.get('/onboarding-status', userDetailsController.getOnboardingStatus);
+
 export default router;

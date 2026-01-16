@@ -130,6 +130,19 @@ export class UserService {
     });
   }
 
+  async getOnboardingStatus(userId: string): Promise<{ hasOnboarded: boolean }> {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { hasOnboarded: true },
+    });
+
+    if (!user) {
+      throw new NotFoundError('User not found', 'User not found');
+    }
+
+    return { hasOnboarded: user.hasOnboarded };
+  }
+
   // Experience
   async getExperiences(
     userId: string,

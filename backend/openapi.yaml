@@ -157,6 +157,21 @@ paths:
               schema: { $ref: '#/components/schemas/UserDetails' }
         '400':
           description: 'Validation error or User has already onboarded'
+  /api/user-details/onboarding-status:
+    get:
+      summary: 'Check if user has onboarded'
+      tags: [UserDetails]
+      responses:
+        '200':
+          description: 'Onboarding status retrieved'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  hasOnboarded: { type: boolean }
+        '404':
+          description: 'User not found'
   /api/user-details/profile:
     get: { summary: "Get user's core profile", tags: [UserDetails] }
     patch: { summary: "Update user's core profile", tags: [UserDetails] }
