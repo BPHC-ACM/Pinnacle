@@ -17,6 +17,7 @@ import type {
   UpdateCertificationRequest,
   CreateLanguageRequest,
   UpdateLanguageRequest,
+  CreateUserDetailsRequest,
 } from '../types/user-details.types';
 
 const getUserId = (req: Request): string => {
@@ -47,6 +48,22 @@ export async function getUserProfile(req: Request, res: Response): Promise<void>
 export async function updateUserProfile(req: Request, res: Response): Promise<void> {
   const userId = getUserId(req);
   res.json(await userService.updateUserProfile(userId, req.body as UpdateUserProfileRequest));
+}
+
+export async function getUserDetails(req: Request, res: Response): Promise<void> {
+  const userId = getUserId(req);
+  const details = await userService.getUserDetails(userId);
+  if (!details) {
+    throw new NotFoundError(`User details not found for user ${userId}`, 'User details not found');
+  }
+  res.json(details);
+}
+
+export async function addUserDetails(req: Request, res: Response): Promise<void> {
+  const userId = getUserId(req);
+  res
+    .status(201)
+    .json(await userService.addUserDetails(userId, req.body as CreateUserDetailsRequest));
 }
 
 export async function getExperiences(req: Request, res: Response): Promise<void> {

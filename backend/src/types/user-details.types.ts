@@ -260,6 +260,35 @@ export interface UpdateLanguageRequest {
   order?: number;
 }
 
+// User Details
+export interface UserDetails {
+  id: string;
+  userId: string;
+  name: string;
+  branch: string;
+  address: string;
+  parentName: string;
+  parentMobileNumber: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CreateUserDetailsRequest {
+  name: string;
+  branch: string;
+  address: string;
+  parentName: string;
+  parentMobileNumber: string;
+}
+
+export const createUserDetailsSchema = z.object({
+  name: z.string().min(1).max(255),
+  branch: z.string().min(1).max(255),
+  address: z.string().min(1),
+  parentName: z.string().min(1).max(255),
+  parentMobileNumber: z.string().min(10).max(15),
+});
+
 // ZOD SCHEMAS
 
 // User Profile Schemas

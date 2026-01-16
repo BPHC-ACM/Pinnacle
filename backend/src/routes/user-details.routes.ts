@@ -17,6 +17,7 @@ import {
   updateCertificationSchema,
   createLanguageSchema,
   updateLanguageSchema,
+  createUserDetailsSchema,
 } from '../types/user-details.types';
 
 const router = express.Router();
@@ -152,5 +153,13 @@ router.patch(
 
 // DELETE /api/user-details/languages/:id - Soft delete language
 router.delete('/languages/:id', userDetailsController.deleteLanguage);
+
+// USER DETAILS ROUTES
+
+// GET /api/user-details - Get user details
+router.get('/', userDetailsController.getUserDetails);
+
+// PUT /api/user-details - Add user details (onboarding)
+router.put('/', validateBody(createUserDetailsSchema), userDetailsController.addUserDetails);
 
 export default router;

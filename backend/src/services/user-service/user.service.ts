@@ -1,5 +1,5 @@
 import { prisma } from '../../db/client';
-import { NotFoundError } from '../../types/errors.types';
+import { NotFoundError, ValidationError } from '../../types/errors.types';
 import type { PaginationParams, PaginatedResponse } from '../../types/pagination.types';
 import type {
   UserProfile,
@@ -22,6 +22,8 @@ import type {
   Language,
   CreateLanguageRequest,
   UpdateLanguageRequest,
+  UserDetails,
+  CreateUserDetailsRequest,
 } from '../../types/user-details.types';
 
 // Helper to convert YYYY-MM string to Date object (defaults to 1st of month)
@@ -88,6 +90,44 @@ export class UserService {
         verificationStatus: 'PENDING',
       },
     })) as UserProfile;
+  }
+
+  // User Details
+  async getUserDetails(userId: string): Promise<UserDetails | null> {
+    return (await prisma.userDetails.findUnique({
+      where: { userId },
+    })) as unknown as UserDetails | null;
+  }
+
+  async addUserDetails(userId: string, data: CreateUserDetailsRequest): Promise<UserDetails> {
+    return prisma.$transaction(async (tx) => {
+      const user = await tx.user.findUnique({
+        where: { id: userId },
+        select: { hasOnboarded: true },
+      });
+
+      if (!user) {
+        throw new NotFoundError('User not found', 'User not found');
+      }
+
+      if (user.hasOnboarded) {
+        throw new ValidationError('User has already onboarded', 'User has already onboarded');
+      }
+
+      const details = await tx.userDetails.create({
+        data: {
+          ...data,
+          userId,
+        },
+      });
+
+      await tx.user.update({
+        where: { id: userId },
+        data: { hasOnboarded: true },
+      });
+
+      return details as unknown as UserDetails;
+    });
   }
 
   // Experience

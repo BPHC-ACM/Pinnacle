@@ -83,6 +83,27 @@ components:
         current: { type: boolean }
         description: { type: string }
         order: { type: integer }
+    UserDetails:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        userId: { type: string, format: uuid }
+        name: { type: string }
+        branch: { type: string }
+        address: { type: string }
+        parentName: { type: string }
+        parentMobileNumber: { type: string }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    CreateUserDetailsRequest:
+      type: object
+      required: [name, branch, address, parentName, parentMobileNumber]
+      properties:
+        name: { type: string }
+        branch: { type: string }
+        address: { type: string }
+        parentName: { type: string }
+        parentMobileNumber: { type: string }
 
 security:
   - bearerAuth: []
@@ -108,6 +129,34 @@ paths:
     get: { summary: 'Get Current Authenticated User', tags: [Auth] }
 
   # User Details (Student Profile)
+  /api/user-details:
+    get:
+      summary: 'Get user details'
+      tags: [UserDetails]
+      responses:
+        '200':
+          description: 'User details retrieved successfully'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserDetails' }
+        '404':
+          description: 'User details not found'
+    put:
+      summary: 'Add user details (onboarding)'
+      tags: [UserDetails]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateUserDetailsRequest' }
+      responses:
+        '201':
+          description: 'User details added successfully'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserDetails' }
+        '400':
+          description: 'Validation error or User has already onboarded'
   /api/user-details/profile:
     get: { summary: "Get user's core profile", tags: [UserDetails] }
     patch: { summary: "Update user's core profile", tags: [UserDetails] }
