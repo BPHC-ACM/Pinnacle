@@ -16,6 +16,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { JobDetailPane } from '@/components/job/JobDetailPane';
 import { Sector, ApplicationStatus as AppStatusEnum } from '@repo/types';
 import { JobCardSkeleton } from '@/components/skeletons/JobCardSkeleton';
+import Image from 'next/image';
 
 const SearchIcon = ({ className }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -27,7 +28,7 @@ const SearchIcon = ({ className }: { className?: string }) => (
 interface Job {
   id: string;
   title: string;
-  company: { name: string; id: string; industry?: string };
+  company: { name: string; id: string; industry?: string; logo?: string | null };
   location: string;
   createdAt: string;
   deadline?: string;
@@ -280,7 +281,7 @@ export default function JobsPage() {
         }}
       />
 
-      <div className="flex flex-col h-400 border-b max-w-7xl px-6 mx-auto w-full">
+      <div className="flex flex-col max-h-300 border-b max-w-7xl px-6 mx-auto w-full">
         <div className="w-full flex-none flex flex-col min-w-0">
           <div className="py-6 pb-0 border-border">
             <h1 className="text-3xl font-bold text-foreground mb-6">Job Profile</h1>
@@ -430,10 +431,22 @@ export default function JobsPage() {
                       onClick={() => setSelectedJobId(job.id)}
                     >
                       <div className="flex gap-4">
-                        <div className="w-12 h-12 rounded-md bg-primary-500/10 flex items-center justify-center shrink-0">
-                          <span className="text-lg font-bold text-primary-500">
-                            {job.company?.name?.charAt(0) || '?'}
-                          </span>
+                        <div className="w-12 h-12 rounded-md bg-primary-500/10 flex items-center justify-center shrink-0 overflow-hidden">
+                          <div className="w-12 h-12 bg-white flex items-center justify-center rounded">
+                            {job.company?.logo ? (
+                              <Image
+                                src={job.company.logo}
+                                width={48}
+                                height={48}
+                                alt={job.company.name}
+                                className="w-full h-full object-contain p-1"
+                              />
+                            ) : (
+                              <span className="text-lg font-bold text-primary-500">
+                                {job.company?.name?.charAt(0) || '?'}
+                              </span>
+                            )}
+                          </div>
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="mb-2">
