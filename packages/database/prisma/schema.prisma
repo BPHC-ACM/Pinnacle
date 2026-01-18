@@ -286,7 +286,7 @@ model Company {
   website     String?
   description String?
   logo        String?
-  industry    String?
+  sector      Sector?   @default(OTHERS) 
   size        String?
   location    String?
   email       String?
@@ -442,21 +442,16 @@ enum AccomplishmentType {
 }
 
 enum Sector {
-  ALL_SECTORS
-  ANALYTICS
-  CONSULTING
-  COMPUTER_SCIENCE_SOFTWARE_IT
-  E_COMMERCE
-  EDUCATION
-  ENGINEERING_TECHNOLOGY
-  FINANCE_BFSI
-  FMCG
+  IT
+  FINANCE
+  ECOMMERCE
   HEALTHCARE
-  MEDIA_ENTERTAINMENT
-  RESEARCH_DEVELOPMENT
-  TELECOM
-  ENERGY
-  MANUFACTURING_TECHNOLOGY
+  CONSULTING
+  ANALYTICS
+  EDUCATION
+  ELECTRONICS
+  MECHANICS
+  MANAGEMENT
   OTHERS
 }
 
