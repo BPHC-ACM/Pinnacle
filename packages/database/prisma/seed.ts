@@ -9,6 +9,7 @@ import {
   PlacementCycleType,
   CycleStatus,
   ProficiencyLevel,
+  AttendanceType,
 } from '@prisma/client';
 
 import 'dotenv/config';
@@ -25,6 +26,9 @@ async function main(): Promise<void> {
 
   // Clear existing data (optional - be careful in production!)
   console.log('Cleaning existing data...');
+  await prisma.attendanceRecord.deleteMany();
+  await prisma.jobEligibility.deleteMany();
+  await prisma.markSheet.deleteMany();
   await prisma.announcement.deleteMany();
   await prisma.notification.deleteMany();
   await prisma.course.deleteMany();
@@ -65,7 +69,7 @@ async function main(): Promise<void> {
     data: {
       email: 'admin@gmail.com',
       name: 'Admin User',
-      googleId: 'admin-google-id-123',
+      googleId: 'dev-admin-google-id',
       role: UserRole.ADMIN,
       phone: faker.phone.number(),
       location: faker.location.city() + ', ' + faker.location.country(),
@@ -77,11 +81,20 @@ async function main(): Promise<void> {
 
   // 2. Create Regular Users (Students)
   console.log('Creating regular users...');
+  const branches = [
+    'Computer Science',
+    'Electronics',
+    'Mechanical',
+    'Civil',
+    'Information Technology',
+  ];
   const users = await Promise.all(
-    Array.from({ length: 10 }).map(async () => {
+    Array.from({ length: 30 }).map(async (_, index) => {
       const firstName = faker.person.firstName();
       const lastName = faker.person.lastName();
       const email = faker.internet.email({ firstName, lastName }).toLowerCase();
+      const year = faker.helpers.arrayElement([2, 3, 4]);
+      const branch = faker.helpers.arrayElement(branches);
 
       return prisma.user.create({
         data: {
@@ -97,6 +110,16 @@ async function main(): Promise<void> {
           bio: faker.person.bio(),
           title: faker.person.jobTitle(),
           summary: faker.lorem.paragraph(),
+          // Student-specific fields
+          studentId: `2022A7PS${String(index + 1).padStart(4, '0')}`,
+          branch: branch,
+          currentYear: year,
+          isFrozen: faker.helpers.maybe(() => true, { probability: 0.1 }),
+          // Parent details
+          parentName: faker.person.fullName(),
+          parentEmail: faker.internet.email(),
+          parentPhone: faker.phone.number(),
+          parentRelation: faker.helpers.arrayElement(['Father', 'Mother', 'Guardian']),
         },
       });
     })
@@ -435,11 +458,108 @@ async function main(): Promise<void> {
     }
   }
 
+  // 13. Create Marksheets for students
+  console.log('Creating marksheets...');
+  for (const user of users) {
+    const year = user.currentYear || 2;
+    // Create marksheets for previous semesters
+    for (let sem = 1; sem < year * 2; sem++) {
+      await prisma.markSheet.create({
+        data: {
+          userId: user.id,
+          term: `Semester ${sem}`,
+          academicYear: `202${3 + Math.floor(sem / 2)}-202${4 + Math.floor(sem / 2)}`,
+          fileUrl: `https://fake-storage.com/marksheets/${user.id}/sem${sem}.pdf`,
+          fileName: `Semester_${sem}_Marksheet.pdf`,
+        },
+      });
+    }
+  }
+
+  // 14. Create Job Eligibility Criteria
+  console.log('Creating job eligibility criteria...');
+  for (const job of jobs.slice(0, Math.floor(jobs.length * 0.7))) {
+    await prisma.jobEligibility.create({
+      data: {
+        jobId: job.id,
+        minCgpa: faker.helpers.arrayElement([7.0, 7.5, 8.0]),
+        maxActiveBacklogs: faker.helpers.arrayElement([0, 1]),
+        maxTotalBacklogs: faker.helpers.arrayElement([1, 2, 3]),
+        allowedBranches: faker.helpers.arrayElements(branches, { min: 2, max: 5 }),
+        allowedYears: faker.helpers.arrayElement([[3, 4], [4], [2, 3, 4]]),
+      },
+    });
+  }
+
+  // 15. Create Attendance Records
+  console.log('Creating attendance records...');
+  const attendanceTypes: AttendanceType[] = ['OA', 'PPT', 'INTERVIEW'];
+  for (const job of jobs.slice(0, 10)) {
+    // Get applicants for this job
+    const applicants = await prisma.application.findMany({
+      where: { jobId: job.id },
+      select: { userId: true },
+      take: 15,
+    });
+
+    if (applicants.length === 0) continue;
+
+    for (const type of attendanceTypes) {
+      const maxAttended = Math.min(applicants.length, 15);
+      const attendedCount = faker.number.int({ min: Math.min(5, maxAttended), max: maxAttended });
+
+      for (let i = 0; i < attendedCount; i++) {
+        await prisma.attendanceRecord.create({
+          data: {
+            jobId: job.id,
+            userId: applicants[i].userId,
+            eventType: type,
+            attended: faker.helpers.weightedArrayElement([
+              { value: true, weight: 8 },
+              { value: false, weight: 2 },
+            ]),
+            remarks: faker.helpers.maybe(() => faker.lorem.sentence(), { probability: 0.3 }),
+          },
+        });
+      }
+    }
+  }
+
+  // 16. Create some JPT and SPT users
+  console.log('Creating JPT and SPT coordinators...');
+  await prisma.user.create({
+    data: {
+      email: 'jpt@university.edu',
+      name: 'JPT Coordinator',
+      googleId: 'jpt-google-id',
+      role: UserRole.JPT,
+      phone: faker.phone.number(),
+      location: faker.location.city(),
+      bio: 'Joint Placement Team Coordinator',
+      title: 'JPT Coordinator',
+    },
+  });
+
+  await prisma.user.create({
+    data: {
+      email: 'spt@university.edu',
+      name: 'SPT Coordinator',
+      googleId: 'spt-google-id',
+      role: UserRole.SPT,
+      phone: faker.phone.number(),
+      location: faker.location.city(),
+      bio: 'Student Placement Team Coordinator',
+      title: 'SPT Coordinator',
+    },
+  });
+
   console.log('Seeding completed successfully!');
   console.log(`
 Summary:
 - Admin: 1
-- Users: ${users.length}
+- JPT: 1
+- SPT: 1
+- Students: ${users.length}
 - Companies: ${companies.length}
 - Placement Cycles: ${await prisma.placementCycle.count()}
 - Jobs: ${jobs.length}
@@ -451,6 +571,9 @@ Summary:
 - Projects: ${await prisma.project.count()}
 - Certifications: ${await prisma.certification.count()}
 - Languages: ${await prisma.language.count()}
+- Marksheets: ${await prisma.markSheet.count()}
+- Job Eligibility: ${await prisma.jobEligibility.count()}
+- Attendance Records: ${await prisma.attendanceRecord.count()}
   `);
 }
 

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export type JobStatus = 'OPEN' | 'CLOSED';
+export type JobStatus = 'OPEN' | 'CLOSED' | 'PAUSED';
 
 export interface Job {
   id: string;
@@ -14,6 +14,18 @@ export interface Job {
   deadline?: Date;
   status: JobStatus;
   questions?: JobQuestion[];
+  oaDate?: Date;
+  oaVenue?: string;
+  oaInstructions?: string;
+  pptDate?: Date;
+  pptVenue?: string;
+  pptInstructions?: string;
+  interviewStartDate?: Date;
+  interviewEndDate?: Date;
+  interviewVenue?: string;
+  interviewInstructions?: string;
+  offerDate?: Date;
+  joiningDate?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -109,4 +121,126 @@ export const updateJobSchema = z.object({
   salary: z.string().max(255).optional(),
   deadline: z.coerce.date().optional(),
   status: z.enum(['OPEN', 'CLOSED']).optional(),
+});
+
+// ========== JOB SCHEDULING TYPES ==========
+export interface UpdateJobScheduleRequest {
+  oaDate?: Date;
+  oaVenue?: string;
+  oaInstructions?: string;
+  pptDate?: Date;
+  pptVenue?: string;
+  pptInstructions?: string;
+  interviewStartDate?: Date;
+  interviewEndDate?: Date;
+  interviewVenue?: string;
+  interviewInstructions?: string;
+  offerDate?: Date;
+  joiningDate?: Date;
+}
+
+export const updateJobScheduleSchema = z.object({
+  oaDate: z.coerce.date().optional(),
+  oaVenue: z.string().max(500).optional(),
+  oaInstructions: z.string().max(2000).optional(),
+  pptDate: z.coerce.date().optional(),
+  pptVenue: z.string().max(500).optional(),
+  pptInstructions: z.string().max(2000).optional(),
+  interviewStartDate: z.coerce.date().optional(),
+  interviewEndDate: z.coerce.date().optional(),
+  interviewVenue: z.string().max(500).optional(),
+  interviewInstructions: z.string().max(2000).optional(),
+  offerDate: z.coerce.date().optional(),
+  joiningDate: z.coerce.date().optional(),
+});
+
+// ========== JOB ELIGIBILITY TYPES ==========
+export interface JobEligibility {
+  id: string;
+  jobId: string;
+  minCgpa?: number;
+  maxActiveBacklogs?: number;
+  maxTotalBacklogs?: number;
+  allowedBranches: string[];
+  allowedYears: number[];
+  customCriteria?: Record<string, unknown>;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CreateJobEligibilityRequest {
+  minCgpa?: number;
+  maxActiveBacklogs?: number;
+  maxTotalBacklogs?: number;
+  allowedBranches?: string[];
+  allowedYears?: number[];
+  customCriteria?: Record<string, unknown>;
+}
+
+export interface UpdateJobEligibilityRequest {
+  minCgpa?: number;
+  maxActiveBacklogs?: number;
+  maxTotalBacklogs?: number;
+  allowedBranches?: string[];
+  allowedYears?: number[];
+  customCriteria?: Record<string, unknown>;
+}
+
+export const createJobEligibilitySchema = z.object({
+  minCgpa: z.number().min(0).max(10).optional(),
+  maxActiveBacklogs: z.number().int().min(0).optional(),
+  maxTotalBacklogs: z.number().int().min(0).optional(),
+  allowedBranches: z.array(z.string()).optional(),
+  allowedYears: z.array(z.number().int().min(1).max(5)).optional(),
+  customCriteria: z.record(z.string(), z.unknown()).optional(),
+});
+
+export const updateJobEligibilitySchema = createJobEligibilitySchema;
+
+// ========== ATTENDANCE TYPES ==========
+export type AttendanceType = 'OA' | 'PPT' | 'INTERVIEW';
+
+export interface AttendanceRecord {
+  id: string;
+  jobId: string;
+  userId: string;
+  eventType: AttendanceType;
+  attended: boolean;
+  markedBy?: string;
+  markedAt?: Date;
+  remarks?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface MarkAttendanceRequest {
+  userId: string;
+  eventType: AttendanceType;
+  attended: boolean;
+  remarks?: string;
+}
+
+export interface BulkMarkAttendanceRequest {
+  attendanceRecords: {
+    userId: string;
+    attended: boolean;
+    remarks?: string;
+  }[];
+}
+
+export const markAttendanceSchema = z.object({
+  userId: z.string().uuid(),
+  eventType: z.enum(['OA', 'PPT', 'INTERVIEW']),
+  attended: z.boolean(),
+  remarks: z.string().max(500).optional(),
+});
+
+export const bulkMarkAttendanceSchema = z.object({
+  attendanceRecords: z.array(
+    z.object({
+      userId: z.string().uuid(),
+      attended: z.boolean(),
+      remarks: z.string().max(500).optional(),
+    }),
+  ),
 });

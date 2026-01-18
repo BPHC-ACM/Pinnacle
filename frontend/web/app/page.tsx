@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
+import { Header } from '@/components/Header';
 
 // Feature icon components
 const ShieldIcon = ({ className }: { className?: string }) => (
@@ -84,6 +85,7 @@ export default function Home() {
   console.log('Landing page - rendering main content');
   return (
     <div className="flex flex-col min-h-screen bg-background relative">
+      <Header />
       {/* Grid background pattern */}
       <div
         className="absolute inset-0 opacity-20 pointer-events-none -z-10"

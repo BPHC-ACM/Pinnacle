@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import AnnouncementsFeed from '@/components/AnnouncementsFeed';
+import { Header } from '@/components/Header';
 
 // Icon components
 const FileTextIcon = ({ className }: { className?: string }) => (
@@ -49,6 +50,7 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background relative">
+      <Header />
       {/* Grid background pattern */}
       <div
         className="absolute inset-0 opacity-20 pointer-events-none -z-10"

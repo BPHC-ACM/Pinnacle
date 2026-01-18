@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Header } from '@/components/Header';
 import {
   Select,
   SelectContent,
@@ -239,6 +240,7 @@ export default function JobsPage() {
 
   return (
     <div className="flex flex-col h-150vh bg-background overflow-hidden relative pb-8">
+      <Header />
       <div
         className="absolute inset-0 opacity-20 pointer-events-none -z-10"
         style={{

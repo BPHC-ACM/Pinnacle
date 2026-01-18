@@ -260,6 +260,38 @@ export class JobService {
       })) as Application[],
     };
   }
+
+  async updateJobSchedule(
+    jobId: string,
+    data: import('../../types/job.types').UpdateJobScheduleRequest,
+  ): Promise<Job> {
+    const job = await prisma.job.findFirst({ where: { id: jobId, deletedAt: null } });
+    if (!job) {
+      throw new Error('Job not found');
+    }
+
+    const updated = await prisma.job.update({
+      where: { id: jobId },
+      data: {
+        oaDate: data.oaDate,
+        oaVenue: data.oaVenue,
+        oaInstructions: data.oaInstructions,
+        pptDate: data.pptDate,
+        pptVenue: data.pptVenue,
+        pptInstructions: data.pptInstructions,
+        interviewStartDate: data.interviewStartDate,
+        interviewEndDate: data.interviewEndDate,
+        interviewVenue: data.interviewVenue,
+        interviewInstructions: data.interviewInstructions,
+        offerDate: data.offerDate,
+        joiningDate: data.joiningDate,
+      },
+      include: { questions: true, company: true },
+    });
+
+    logger.info({ jobId }, 'Job schedule updated');
+    return mapJobToDto(updated);
+  }
 }
 
 export default new JobService();

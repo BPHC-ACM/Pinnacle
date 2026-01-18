@@ -27,6 +27,19 @@ model User {
   deviceTokens              String[]                   @default([])
   profileStatus             ProfileStatus              @default(DRAFT)
   verificationStatus        VerificationStatus         @default(PENDING)
+  
+  // Student-specific fields
+  studentId                 String?                    @unique // Roll number/Student ID
+  branch                    String?                    // e.g., "Computer Science", "Electronics"
+  currentYear               Int?                       // Current year of study
+  isFrozen                  Boolean                    @default(false) // Freeze account for placement
+  
+  // Parent details
+  parentName                String?
+  parentEmail               String?
+  parentPhone               String?
+  parentRelation            String?                    // e.g., "Father", "Mother", "Guardian"
+  
   accomplishments           Accomplishment[]
   sentAnnouncements         Announcement[]
   certifications            Certification[]
@@ -41,10 +54,14 @@ model User {
   resumes                   Resume[]
   skills                    Skill[]
   eligibleCycles            PlacementCycle[]
+  markSheets                MarkSheet[]
+  applications              Application[]
 
   @@index([email])
   @@index([googleId])
   @@index([deletedAt])
+  @@index([studentId])
+  @@index([isFrozen])
 }
 
 model Experience {
@@ -302,7 +319,7 @@ model Company {
 }
 
 model Job {
-  id                  String        @id @default(uuid())
+  id                  String              @id @default(uuid())
   companyId           String
   title               String
   description         String?
@@ -310,18 +327,37 @@ model Job {
   type                String?
   salary              String?
   deadline            DateTime?
-  status              JobStatus     @default(OPEN)
+  status              JobStatus           @default(OPEN)
   
   placementCycleId    String
-  placementCycle      PlacementCycle @relation(fields: [placementCycleId], references: [id], onDelete: Cascade)
+  placementCycle      PlacementCycle      @relation(fields: [placementCycleId], references: [id], onDelete: Cascade)
   
-  createdAt           DateTime      @default(now())
-  updatedAt           DateTime      @updatedAt
+  // Scheduling fields
+  oaDate              DateTime?           // Online Assessment date
+  oaVenue             String?             // OA venue/platform
+  oaInstructions      String?             // OA instructions
+  
+  pptDate             DateTime?           // Pre-Placement Talk date
+  pptVenue            String?             // PPT venue
+  pptInstructions     String?             // PPT instructions
+  
+  interviewStartDate  DateTime?           // Interview start date
+  interviewEndDate    DateTime?           // Interview end date
+  interviewVenue      String?             // Interview venue/platform
+  interviewInstructions String?           // Interview instructions
+  
+  offerDate           DateTime?           // Offer rollout date
+  joiningDate         DateTime?           // Expected joining date
+  
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
   deletedAt           DateTime?
   descriptionDocument String?
   applications        Application[]
-  company             Company       @relation(fields: [companyId], references: [id])
+  company             Company             @relation(fields: [companyId], references: [id])
   questions           JobQuestion[]
+  eligibilityCriteria JobEligibility[]
+  attendanceRecords   AttendanceRecord[]
 
   @@index([companyId])
   @@index([status])
@@ -353,6 +389,7 @@ model Application {
   updatedAt   DateTime          @updatedAt
   withdrawnAt DateTime?
   job         Job               @relation(fields: [jobId], references: [id])
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, jobId])
   @@index([userId])
@@ -412,9 +449,74 @@ model PlacementCycle {
   @@index([status])
 }
 
+// Term-wise marksheets for students
+model MarkSheet {
+  id           String   @id @default(uuid())
+  userId       String
+  term         String   // e.g., "Semester 1", "Semester 2"
+  academicYear String   // e.g., "2024-2025"
+  fileUrl      String   // S3/MinIO URL to PDF
+  fileName     String
+  uploadedAt   DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, term, academicYear])
+}
+
+// Job eligibility criteria
+model JobEligibility {
+  id                    String   @id @default(uuid())
+  jobId                 String
+  
+  // CGPA criteria
+  minCgpa               Float?
+  maxActiveBacklogs     Int?     // Maximum allowed active backlogs
+  maxTotalBacklogs      Int?     // Maximum total backlogs (including cleared)
+  
+  // Branch eligibility
+  allowedBranches       String[] @default([]) // Empty array means all branches
+  
+  // Year eligibility
+  allowedYears          Int[]    @default([]) // e.g., [3, 4] for 3rd and 4th year
+  
+  // Custom criteria
+  customCriteria        Json?    // For any additional custom rules
+  
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  job                   Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([jobId])
+}
+
+// OA/PPT Attendance tracking
+model AttendanceRecord {
+  id           String           @id @default(uuid())
+  jobId        String
+  userId       String
+  eventType    AttendanceType
+  attended     Boolean          @default(false)
+  markedBy     String?          // Admin/JPT who marked attendance
+  markedAt     DateTime?
+  remarks      String?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  job          Job              @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@unique([jobId, userId, eventType])
+  @@index([jobId])
+  @@index([userId])
+  @@index([eventType])
+}
+
 enum UserRole {
   USER
   ADMIN
+  SUPER_ADMIN
+  JPT       // Job Placement Team
+  SPT       // Student Placement Team
 }
 
 enum VerificationStatus {
@@ -480,6 +582,7 @@ enum ApplicationStatus {
 enum JobStatus {
   OPEN
   CLOSED
+  PAUSED
 }
 
 enum NotificationType {
@@ -510,4 +613,10 @@ enum CycleStatus {
   UPCOMING
   ACTIVE
   COMPLETED
+}
+
+enum AttendanceType {
+  OA          // Online Assessment
+  PPT         // Pre-Placement Talk
+  INTERVIEW   // Interview
 }

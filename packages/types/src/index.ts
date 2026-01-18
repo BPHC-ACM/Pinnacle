@@ -29,7 +29,7 @@ export enum ApplicationStatus {
   WITHDRAWN = 'WITHDRAWN',
 }
 
-export type JobStatus = 'OPEN' | 'CLOSED';
+export type JobStatus = 'OPEN' | 'CLOSED' | 'PAUSED';
 
 // --- Interfaces (DTOs) ---
 
@@ -69,6 +69,18 @@ export interface Job {
   deadline?: string; // Dates are strings over JSON
   status: JobStatus;
   questions?: JobQuestion[];
+  oaDate?: string;
+  oaVenue?: string;
+  oaInstructions?: string;
+  pptDate?: string;
+  pptVenue?: string;
+  pptInstructions?: string;
+  interviewStartDate?: string;
+  interviewEndDate?: string;
+  interviewVenue?: string;
+  interviewInstructions?: string;
+  offerDate?: string;
+  joiningDate?: string;
   createdAt: string; // Dates are strings over JSON
   updatedAt: string;
   company?: Company; // Often resolved in API responses

@@ -90,6 +90,21 @@ export class UserService {
     })) as UserProfile;
   }
 
+  async updateParentDetails(
+    userId: string,
+    data: import('../../types/user-details.types').UpdateParentDetailsRequest,
+  ): Promise<UserProfile> {
+    return (await prisma.user.update({
+      where: { id: userId },
+      data: {
+        parentName: data.parentName,
+        parentEmail: data.parentEmail,
+        parentPhone: data.parentPhone,
+        parentRelation: data.parentRelation,
+      },
+    })) as UserProfile;
+  }
+
   // Experience
   async getExperiences(
     userId: string,

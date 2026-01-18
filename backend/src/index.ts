@@ -14,6 +14,7 @@ import { generalApiRateLimiter } from './auth/middleware/rate-limit.middleware';
 import authRoutes from './auth/routes/auth.routes';
 import { logger } from './config/logger.config';
 import errorHandler from './middleware/error-handler';
+import adminStudentRoutes from './routes/admin-student.routes';
 import adminRoutes from './routes/admin.routes';
 import announcementRoutes from './routes/announcement.routes';
 import applicationRoutes from './routes/application.routes';
@@ -79,7 +80,7 @@ app.use('/api', generalApiRateLimiter);
 app.set('trust proxy', 1);
 
 // Routes
-app.use('/auth', authRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api/user-details', userDetailsRoutes);
 app.use('/api/companies', companyRoutes);
 app.use('/api/resume', resumeRoutes);
@@ -89,6 +90,7 @@ app.use('/api/applications', applicationRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/admin', adminStudentRoutes);
 app.use('/api/announcements', announcementRoutes);
 
 // API Documentation endpoint (via Swagger UI)

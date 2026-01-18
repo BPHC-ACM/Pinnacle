@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { api } from '@/lib/api-client';
 import Image from 'next/image';
 import { generateAndDownloadResume } from '@/services/resume.service';
+import { Header } from '@/components/Header';
 
 // Icon components
 const UserIcon = ({ className }: { className?: string }) => (
@@ -1085,6 +1086,7 @@ export default function ProfilePage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background relative">
+      <Header />
       {/* Grid background pattern */}
       <div
         className="absolute inset-0 opacity-20 pointer-events-none -z-10"
