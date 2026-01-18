@@ -1,5 +1,6 @@
+import { prisma } from '@repo/database';
+
 import { logger } from '../../config/logger.config';
-import prisma from '../../db/client';
 import { minioClient } from '../../db/minio';
 import { ForbiddenError, NotFoundError, ValidationError } from '../../types/errors.types';
 

@@ -62,7 +62,7 @@ export default function Dashboard() {
       />
 
       {/* Main Content */}
-      <main className="flex-1 max-w-7xl mx-auto w-full py-12">
+      <main className="flex-1 max-w-7xl mx-auto w-full py-12 px-6">
         <>
           {/* Welcome Section */}
           <div className="text-center w-full mb-16">
@@ -89,7 +89,7 @@ export default function Dashboard() {
             <div className="order-1 md:order-2 md:col-span-1 flex flex-col gap-6">
               <div
                 onClick={() => router.push('/jobs')}
-                className="group p-8 rounded-2xl border border-border bg-card hover:shadow-lg transition-all duration-300 cursor-pointer h-64 flex flex-col justify-center"
+                className="group p-8 rounded-2xl border border-border bg-card hover:shadow-lg transition-all duration-300 cursor-pointer flex flex-col justify-center"
               >
                 <div className="p-4 rounded-xl bg-accent/10 w-fit mb-4">
                   <FileTextIcon className="h-8 w-8 text-accent" />
@@ -104,7 +104,7 @@ export default function Dashboard() {
 
               <div
                 onClick={() => router.push('/profile')}
-                className="group p-8 rounded-2xl border border-border bg-card hover:shadow-lg transition-all duration-300 cursor-pointer h-64 flex flex-col justify-center"
+                className="group p-8 rounded-2xl border border-border bg-card hover:shadow-lg transition-all duration-300 cursor-pointer flex flex-col justify-center"
               >
                 <div className="p-4 rounded-xl bg-accent/10 w-fit mb-4">
                   <UserIcon className="h-8 w-8 text-accent" />

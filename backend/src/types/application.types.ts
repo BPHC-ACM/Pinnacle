@@ -1,14 +1,9 @@
+import { ApplicationStatus } from '@repo/types';
 import { z } from 'zod';
 
 import type { Job } from './job.types';
 
-export type ApplicationStatus =
-  | 'APPLIED'
-  | 'SHORTLISTED'
-  | 'INTERVIEWING'
-  | 'REJECTED'
-  | 'HIRED'
-  | 'WITHDRAWN';
+export { ApplicationStatus };
 
 export interface Application {
   id: string;
@@ -85,11 +80,11 @@ export const applyRequestSchema = z.object({
 
 // Update Application Status Schema
 export const updateApplicationStatusSchema = z.object({
-  status: z.enum(['APPLIED', 'SHORTLISTED', 'INTERVIEWING', 'REJECTED', 'HIRED', 'WITHDRAWN']),
+  status: z.nativeEnum(ApplicationStatus),
 });
 
 // Bulk Status Update Schema
 export const bulkStatusUpdateSchema = z.object({
   applicationIds: z.array(z.string().uuid()).min(1),
-  status: z.enum(['APPLIED', 'SHORTLISTED', 'INTERVIEWING', 'REJECTED', 'HIRED', 'WITHDRAWN']),
+  status: z.nativeEnum(ApplicationStatus),
 });

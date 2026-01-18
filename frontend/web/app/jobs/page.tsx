@@ -1,12 +1,23 @@
 'use client';
 
-import { useAuth } from '@/contexts/auth-context';
-import { Button } from '@/components/ui/button';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { api } from '@/lib/api-client';
+import { useAuth } from '@/contexts/auth-context';
+import { JobDetailPane } from '@/components/job/JobDetailPane';
+import { Sector, ApplicationStatus as AppStatusEnum } from '@repo/types';
+import { JobCardSkeleton } from '@/components/skeletons/JobCardSkeleton';
+import Image from 'next/image';
 
-// Icon components
 const SearchIcon = ({ className }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <circle cx="11" cy="11" r="8" />
@@ -17,12 +28,13 @@ const SearchIcon = ({ className }: { className?: string }) => (
 interface Job {
   id: string;
   title: string;
-  company: { name: string; id: string };
+  company: { name: string; id: string; industry?: string; logo?: string | null };
   location: string;
   createdAt: string;
   deadline?: string;
   status?: string;
-  jobType: string;
+  jobType?: string;
+  type?: string;
   description?: string;
 }
 
@@ -36,45 +48,178 @@ interface Application {
 export default function JobsPage() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'all' | 'applied'>('all');
-  const [sector, setSector] = useState('All Sectors');
+
+  const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
+
+  const [sector, setSector] = useState<string>('ALL_SECTORS');
   const [positionType, setPositionType] = useState('All');
   const [status, setStatus] = useState('All');
   const [sortBy, setSortBy] = useState('Created At');
   const [searchQuery, setSearchQuery] = useState('');
+
   const [jobs, setJobs] = useState<Job[]>([]);
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [fetchingMore, setFetchingMore] = useState(false);
+
+  const observer = useRef<IntersectionObserver | null>(null);
+  const inflightKeyRef = useRef<string | null>(null);
+  const searchQueryRef = useRef('');
+  const sectorRef = useRef('ALL_SECTORS');
+  const positionTypeRef = useRef('All');
+  const sortByRef = useRef('Created At');
+
+  searchQueryRef.current = searchQuery;
+  sectorRef.current = sector;
+  positionTypeRef.current = positionType;
+  sortByRef.current = sortBy;
+
+  const fetchApplications = useCallback(async () => {
+    try {
+      const response = await api.get('/applications');
+      const appsData = response.data?.data || response.data;
+      setApplications(Array.isArray(appsData) ? appsData : []);
+    } catch (error) {
+      console.error('Failed to fetch applications:', error);
+    }
+  }, []);
+
+  const fetchJobs = useCallback(async (p: number, isNewSearch: boolean = false) => {
+    try {
+      const params = new URLSearchParams();
+      params.append('page', p.toString());
+      params.append('limit', '20');
+
+      // 3 char limit check
+      const trimmedQuery = searchQueryRef.current.trim();
+      if (trimmedQuery.length >= 3) params.append('q', trimmedQuery);
+
+      if (sectorRef.current !== 'ALL_SECTORS') params.append('industry', sectorRef.current);
+      if (positionTypeRef.current !== 'All') params.append('jobType', positionTypeRef.current);
+
+      const sortConfig: Record<string, { field: string; order: 'asc' | 'desc' }> = {
+        'Created At': { field: 'createdAt', order: 'desc' },
+        Deadline: { field: 'deadline', order: 'asc' },
+        'Company Name': { field: 'companyName', order: 'asc' },
+      };
+
+      const config = sortConfig[sortByRef.current];
+
+      if (config) {
+        params.append('sortBy', config.field);
+        params.append('sortOrder', config.order);
+      }
+
+      const fetchKey = `${params.toString()}|${isNewSearch ? 'new' : 'append'}`;
+      if (inflightKeyRef.current === fetchKey) return;
+      inflightKeyRef.current = fetchKey;
+
+      if (isNewSearch) {
+        setLoading(true);
+      } else {
+        setFetchingMore(true);
+      }
+
+      const response = await api.get(`/jobs?${params.toString()}`);
+      const newJobs = response.data?.data || [];
+      const meta = response.data?.meta;
+
+      if (isNewSearch) {
+        setJobs(newJobs);
+      } else {
+        setJobs((prev) => [...prev, ...newJobs]);
+      }
+
+      setHasMore(meta ? meta.page < meta.totalPages : false);
+    } catch (error) {
+      console.error('Failed to fetch jobs:', error);
+    } finally {
+      inflightKeyRef.current = null;
+      setLoading(false);
+      setFetchingMore(false);
+    }
+  }, []);
+
+  const refreshData = useCallback(() => {
+    fetchApplications();
+  }, [fetchApplications]);
+
+  const lastJobElementRef = useCallback(
+    (node: HTMLDivElement) => {
+      if (loading || fetchingMore) return;
+      if (observer.current) observer.current.disconnect();
+
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          setPage((prevPage) => prevPage + 1);
+        }
+      });
+
+      if (node) observer.current.observe(node);
+    },
+    [loading, fetchingMore, hasMore]
+  );
+
+  // --- Effects ---
 
   useEffect(() => {
     if (authLoading) return;
     if (!isAuthenticated) {
       router.push('/');
-    } else {
-      fetchData();
     }
   }, [isAuthenticated, authLoading, router]);
 
-  const fetchData = async () => {
-    try {
-      const [jobsResponse, applicationsResponse] = await Promise.all([
-        api.get('/jobs'),
-        api.get('/applications'),
-      ]);
-      setJobs(Array.isArray(jobsResponse.data) ? jobsResponse.data : []);
-      setApplications(Array.isArray(applicationsResponse.data) ? applicationsResponse.data : []);
-    } catch (error) {
-      console.error('Failed to fetch data:', error);
-      setJobs([]);
-      setApplications([]);
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchApplications();
     }
-  };
+  }, [isAuthenticated, fetchApplications]);
 
-  if (!user) {
-    return null;
-  }
+  //Debounced search with character limit handling
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const trimmedQuery = searchQuery.trim();
+
+    // If search box is cleared → fetch default jobs
+    if (trimmedQuery.length === 0) {
+      setPage(1);
+      fetchJobs(1, true);
+      return;
+    }
+
+    // Enforce minimum 3 characters
+    if (trimmedQuery.length > 0 && trimmedQuery.length < 3) {
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      setPage(1);
+      fetchJobs(1, true);
+    }, 500);
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery, isAuthenticated, fetchJobs]);
+
+  // Immediate Filters (Sector, Position, Sort)
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    setPage(1);
+    fetchJobs(1, true);
+  }, [sector, positionType, sortBy, isAuthenticated, fetchJobs]);
+
+  // Pagination
+  useEffect(() => {
+    if (page > 1) {
+      fetchJobs(page, false);
+    }
+  }, [page, fetchJobs]);
+
+  if (!user) return null;
+
+  // --- Helpers ---
 
   const getApplicationStatus = (jobId: string) => {
     const application = applications.find((app) => app.jobId === jobId);
@@ -82,39 +227,23 @@ export default function JobsPage() {
     return application.status;
   };
 
-  const getDaysAgo = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffTime = Math.abs(now.getTime() - date.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
-  };
-
-  const getClosesIn = (deadline?: string) => {
+  const getDeadlineInfo = (deadline?: string) => {
     if (!deadline) return null;
     const date = new Date(deadline);
     const now = new Date();
     const diffTime = date.getTime() - now.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    if (diffDays < 0) return 'Closed';
-    if (diffDays === 0) return 'Closes today';
-    if (diffDays === 1) return 'Closes in 1 day';
-    return `Closes in ${diffDays} days`;
-  };
 
-  const filteredJobs = jobs.filter((job) => {
-    const applicationStatus = getApplicationStatus(job.id);
-    if (activeTab === 'applied' && applicationStatus === 'Yet to apply') return false;
-    if (positionType !== 'All' && job.jobType !== positionType) return false;
-    if (status !== 'All' && applicationStatus !== status) return false;
-    if (
-      searchQuery &&
-      !job.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
-      !job.company.name.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-      return false;
-    return true;
-  });
+    if (diffDays < 0) return { text: 'Closed', className: 'text-red-500' };
+    if (diffDays === 0) return { text: 'Closes today', className: 'text-red-500' };
+    if (diffDays === 1) return { text: 'Closes in 1 day', className: 'text-red-500' };
+
+    const isUrgent = diffDays <= 3;
+    return {
+      text: `Closes in ${diffDays} days`,
+      className: isUrgent ? 'text-red-500' : 'text-muted-foreground',
+    };
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -133,9 +262,14 @@ export default function JobsPage() {
     }
   };
 
+  const filteredJobs = jobs.filter((job) => {
+    const applicationStatus = getApplicationStatus(job.id);
+    if (status !== 'All' && applicationStatus !== status) return false;
+    return true;
+  });
+
   return (
-    <div className="flex flex-col min-h-screen bg-background relative">
-      {/* Grid background pattern */}
+    <div className="flex flex-col h-150vh bg-background overflow-hidden relative pb-8">
       <div
         className="absolute inset-0 opacity-20 pointer-events-none -z-10"
         style={{
@@ -147,134 +281,108 @@ export default function JobsPage() {
         }}
       />
 
-      <div className="flex-1 max-w-7xl mx-auto w-full px-6 py-8">
-        <div className="flex gap-6">
-          {/* Sidebar */}
-          <div className="w-64 shrink-0">
-            <nav className="space-y-1">
-              <button
-                onClick={() => router.push('/dashboard')}
-                className="w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:bg-accent/5 transition-colors"
-              >
-                Home
-              </button>
-              <button className="w-full text-left px-4 py-3 rounded-lg text-sm font-medium bg-primary-500/10 text-primary-500 transition-colors">
-                Job Profiles
-              </button>
-              <button
-                onClick={() => router.push('/profile')}
-                className="w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:bg-accent/5 transition-colors"
-              >
-                My Profile
-              </button>
-              <button className="w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:bg-accent/5 transition-colors">
-                Interviews
-              </button>
-              <button className="w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:bg-accent/5 transition-colors">
-                Assessments
-              </button>
-              <button className="w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:bg-accent/5 transition-colors">
-                Events
-              </button>
-              <button className="w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:bg-accent/5 transition-colors">
-                Competitions
-              </button>
-              <button className="w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:bg-accent/5 transition-colors">
-                Resume
-              </button>
-              <button className="w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:bg-accent/5 transition-colors">
-                Launchpad
-              </button>
-              <button className="w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:bg-accent/5 transition-colors">
-                Help
-              </button>
-            </nav>
-          </div>
-
-          {/* Main Content */}
-          <div className="flex-1">
+      <div className="flex flex-col max-h-300 border-b max-w-7xl px-6 mx-auto w-full">
+        <div className="w-full flex-none flex flex-col min-w-0">
+          <div className="py-6 pb-0 border-border">
             <h1 className="text-3xl font-bold text-foreground mb-6">Job Profile</h1>
 
             {/* Filters */}
             <div className="bg-card border border-border rounded-lg p-6 mb-6">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-2">
                     Job Sector
                   </label>
-                  <select
-                    value={sector}
-                    onChange={(e) => setSector(e.target.value)}
-                    className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  >
-                    <option>All Sectors</option>
-                    <option>Technology</option>
-                    <option>Finance</option>
-                    <option>Healthcare</option>
-                    <option>Marketing</option>
-                  </select>
+                  <Select value={sector} onValueChange={setSector}>
+                    <SelectTrigger className="w-full bg-background border-border">
+                      <SelectValue placeholder="Select Sector" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ALL_SECTORS">All Sectors</SelectItem>
+                      {Object.values(Sector).map((s) => (
+                        <SelectItem key={s} value={s}>
+                          {s
+                            .replace(/_/g, ' ')
+                            .toLowerCase()
+                            .replace(/\b\w/g, (l) => l.toUpperCase())}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-2">
                     Position Type
                   </label>
-                  <select
-                    value={positionType}
-                    onChange={(e) => setPositionType(e.target.value)}
-                    className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  >
-                    <option>All</option>
-                    <option>Internship</option>
-                    <option>Full-time</option>
-                    <option>Part-time</option>
-                  </select>
+                  <Select value={positionType} onValueChange={setPositionType}>
+                    <SelectTrigger className="w-full bg-background border-border">
+                      <SelectValue placeholder="Position Type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="All">All</SelectItem>
+                      <SelectItem value="Internship">Internship</SelectItem>
+                      <SelectItem value="Full-time">Full-time</SelectItem>
+                      <SelectItem value="Part-time">Part-time</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-2">Status</label>
-                  <select
-                    value={status}
-                    onChange={(e) => setStatus(e.target.value)}
-                    className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  >
-                    <option>All</option>
-                    <option>Yet to apply</option>
-                    <option>Applied</option>
-                    <option>Under Review</option>
-                    <option>Accepted</option>
-                    <option>Rejected</option>
-                  </select>
+                  <Select value={status} onValueChange={setStatus}>
+                    <SelectTrigger className="w-full bg-background border-border">
+                      <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="All">All</SelectItem>
+                      <SelectItem value="Yet to apply">Yet to apply</SelectItem>
+                      {Object.values(AppStatusEnum).map((s) => (
+                        <SelectItem key={s} value={s}>
+                          {s
+                            .replace(/_/g, ' ')
+                            .toLowerCase()
+                            .replace(/\b\w/g, (l) => l.toUpperCase())}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-2">Sort by</label>
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                    className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  >
-                    <option>Created At</option>
-                    <option>Company Name</option>
-                    <option>Deadline</option>
-                  </select>
+                  <Select value={sortBy} onValueChange={setSortBy}>
+                    <SelectTrigger className="w-full bg-background border-border">
+                      <SelectValue placeholder="Sort by" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Created At">Created At</SelectItem>
+                      <SelectItem value="Company Name">Company Name</SelectItem>
+                      <SelectItem value="Deadline">Deadline</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
               <div className="flex gap-4 items-center">
                 <div className="flex-1 relative">
-                  <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <input
+                  <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
+                  <Input
                     type="text"
                     placeholder="Search by job title or company"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full pl-10 bg-background border-border"
                   />
                 </div>
+                {searchQuery.trim().length > 0 && searchQuery.trim().length < 3 && (
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Type at least 3 characters to search
+                  </p>
+                )}
                 <Button
                   onClick={() => {
-                    setSector('All Sectors');
+                    setSector('ALL_SECTORS');
                     setPositionType('All');
                     setStatus('All');
                     setSortBy('Created At');
@@ -283,131 +391,118 @@ export default function JobsPage() {
                   variant="outline"
                   size="sm"
                 >
-                  Clear all filters
+                  Clear filters
                 </Button>
               </div>
             </div>
+          </div>
+        </div>
 
-            {/* Tabs */}
-            <div className="flex gap-2 mb-6 border-b border-border">
-              <button
-                onClick={() => setActiveTab('all')}
-                className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-                  activeTab === 'all'
-                    ? 'border-primary-500 text-primary-500'
-                    : 'border-transparent text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                All Jobs
-              </button>
-              <button
-                onClick={() => setActiveTab('applied')}
-                className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-                  activeTab === 'applied'
-                    ? 'border-primary-500 text-primary-500'
-                    : 'border-transparent text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                Applied Jobs
-              </button>
-            </div>
-
-            {/* Jobs List */}
-            <div className="space-y-4">
-              {loading ? (
-                <div className="text-center py-12 text-muted-foreground">Loading jobs...</div>
-              ) : filteredJobs.length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground">
-                  No jobs found matching your filters.
-                </div>
-              ) : (
-                filteredJobs.map((job) => {
+        <div className="flex flex-1 w-full overflow-hidden border-t min-h-0">
+          {/* Theme restoration: restored scrollbar-theme and padding */}
+          <div className="w-full lg:w-1/3 overflow-y-auto py-6 pr-6 pl-6 md:pl-0 space-y-4 border-r border-border scrollbar-theme">
+            {loading ? (
+              Array.from({ length: 5 }).map((_, i) => <JobCardSkeleton key={i} />)
+            ) : filteredJobs.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">
+                No jobs found matching your filters.
+              </div>
+            ) : (
+              <>
+                {filteredJobs.map((job, index) => {
                   const applicationStatus = getApplicationStatus(job.id);
-                  const daysAgo = getDaysAgo(job.createdAt);
-                  const closesIn = getClosesIn(job.deadline);
+                  const deadlineInfo = getDeadlineInfo(job.deadline);
+                  const isSelected = selectedJobId === job.id;
+
+                  const isDeadlineFuture = job.deadline
+                    ? new Date(job.deadline) > new Date()
+                    : true;
+                  const isFrozen = job.status === 'CLOSED' && isDeadlineFuture;
+
+                  const isLastElement = index === filteredJobs.length - 1;
 
                   return (
                     <div
                       key={job.id}
-                      className="bg-card border border-border rounded-lg p-6 hover:shadow-md transition-shadow cursor-pointer"
-                      onClick={() => router.push(`/jobs/${job.id}`)}
+                      ref={isLastElement ? lastJobElementRef : null}
+                      className={`bg-card border rounded-lg p-6 hover:shadow-md transition-shadow cursor-pointer ${
+                        isSelected ? 'border-primary-500 ring-1 ring-primary-500' : 'border-border'
+                      }`}
+                      onClick={() => setSelectedJobId(job.id)}
                     >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <div className="w-12 h-12 rounded-lg bg-primary-500/10 flex items-center justify-center">
+                      <div className="flex gap-4">
+                        <div className="w-12 h-12 rounded-md bg-primary-500/10 flex items-center justify-center shrink-0 overflow-hidden">
+                          <div className="w-12 h-12 bg-white flex items-center justify-center rounded">
+                            {job.company?.logo ? (
+                              <Image
+                                src={job.company.logo}
+                                width={48}
+                                height={48}
+                                alt={job.company.name}
+                                className="w-full h-full object-contain p-1"
+                              />
+                            ) : (
                               <span className="text-lg font-bold text-primary-500">
-                                {job.company.name.charAt(0)}
+                                {job.company?.name?.charAt(0) || '?'}
                               </span>
-                            </div>
-                            <div>
-                              <h3 className="text-lg font-semibold text-foreground">{job.title}</h3>
-                              <p className="text-sm text-muted-foreground">
-                                {job.company.name} • {job.location}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground mt-3">
-                            <span>{daysAgo} days ago</span>
-                            {closesIn && (
-                              <>
-                                <span>•</span>
-                                <span
-                                  className={
-                                    closesIn.includes('Closed')
-                                      ? 'text-red-500'
-                                      : closesIn.includes('today') || closesIn.includes('1 day')
-                                      ? 'text-red-500'
-                                      : ''
-                                  }
-                                >
-                                  {closesIn}
-                                </span>
-                              </>
                             )}
                           </div>
                         </div>
-                        <div
-                          className={`px-4 py-2 rounded-lg text-sm font-medium border ${getStatusColor(
-                            applicationStatus
-                          )}`}
-                        >
-                          {applicationStatus}
+                        <div className="flex-1 min-w-0">
+                          <div className="mb-2">
+                            <h3 className="text-lg font-semibold text-foreground wrap-break-word">
+                              {job.title}
+                            </h3>
+                            <p className="text-sm text-muted-foreground truncate">
+                              {job.company?.name} • {job.location}
+                            </p>
+                          </div>
+
+                          <div className="flex items-center justify-between mt-4">
+                            <div className="text-sm">
+                              {deadlineInfo && (
+                                <span className={deadlineInfo.className}>{deadlineInfo.text}</span>
+                              )}
+                            </div>
+
+                            <div>
+                              {applicationStatus === 'Yet to apply' && isFrozen ? (
+                                <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200">
+                                  Frozen
+                                </span>
+                              ) : (
+                                <span
+                                  className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(
+                                    applicationStatus
+                                  )}`}
+                                >
+                                  {applicationStatus}
+                                </span>
+                              )}
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
                   );
-                })
-              )}
-            </div>
+                })}
+                {fetchingMore &&
+                  Array.from({ length: 2 }).map((_, i) => (
+                    <JobCardSkeleton key={`skeleton-nav-${i}`} />
+                  ))}
+              </>
+            )}
+          </div>
+
+          <div className="hidden lg:block w-2/3 bg-background/50">
+            <JobDetailPane
+              jobId={selectedJobId}
+              onApplySuccess={refreshData}
+              applicationStatus={selectedJobId ? getApplicationStatus(selectedJobId) : undefined}
+            />
           </div>
         </div>
       </div>
-
-      {/* Footer */}
-      <footer className="w-full border-t border-border bg-background/80 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-6 py-6">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span>© {new Date().getFullYear()} Pinnacle. All rights reserved.</span>
-            </div>
-            <div className="flex items-center gap-6 text-sm">
-              <a
-                href="/privacy"
-                className="text-muted-foreground hover:text-foreground transition-colors underline-offset-4 hover:underline"
-              >
-                Privacy Policy
-              </a>
-              <a
-                href="/terms"
-                className="text-muted-foreground hover:text-foreground transition-colors underline-offset-4 hover:underline"
-              >
-                Terms of Service
-              </a>
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

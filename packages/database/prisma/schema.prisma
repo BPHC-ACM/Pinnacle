@@ -1,0 +1,508 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id                        String                     @id @default(uuid())
+  email                     String                     @unique
+  name                      String
+  picture                   String?
+  googleId                  String                     @unique
+  phone                     String?
+  location                  String?
+  linkedin                  String?
+  github                    String?
+  website                   String?
+  bio                       String?
+  title                     String?
+  summary                   String?
+  createdAt                 DateTime                   @default(now())
+  updatedAt                 DateTime                   @updatedAt
+  deletedAt                 DateTime?
+  role                      UserRole                   @default(USER)
+  deviceTokens              String[]                   @default([])
+  profileStatus             ProfileStatus              @default(DRAFT)
+  verificationStatus        VerificationStatus         @default(PENDING)
+  accomplishments           Accomplishment[]
+  sentAnnouncements         Announcement[]
+  certifications            Certification[]
+  courses                   Course[]
+  education                 Education[]
+  experiences               Experience[]
+  extracurriculars          Extracurricular[]
+  languages                 Language[]
+  notifications             Notification[]
+  positionsOfResponsibility PositionOfResponsibility[]
+  projects                  Project[]
+  resumes                   Resume[]
+  skills                    Skill[]
+  eligibleCycles            PlacementCycle[]
+
+  @@index([email])
+  @@index([googleId])
+  @@index([deletedAt])
+}
+
+model Experience {
+  id                 String             @id @default(uuid())
+  userId             String
+  company            String
+  position           String
+  location           String
+  current            Boolean            @default(false)
+  description        String?
+  highlights         String[]           @default([])
+  order              Int                @default(0)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  deletedAt          DateTime?
+  verificationDoc    String?
+  salaryRange        String?
+  sector             Sector?
+  verificationStatus VerificationStatus @default(PENDING)
+  startDate          DateTime
+  endDate            DateTime?
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([deletedAt])
+}
+
+model Education {
+  id                 String             @id @default(uuid())
+  userId             String
+  institution        String
+  degree             String
+  location           String
+  gpa                String?
+  achievements       String[]           @default([])
+  order              Int                @default(0)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  deletedAt          DateTime?
+  verificationDoc    String?
+  branch             String
+  rollNumber         String?
+  verificationStatus VerificationStatus @default(PENDING)
+  startDate          DateTime
+  endDate            DateTime?
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([deletedAt])
+}
+
+model Skill {
+  id                 String             @id @default(uuid())
+  userId             String
+  category           String
+  items              String[]           @default([])
+  order              Int                @default(0)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  deletedAt          DateTime?
+  proficiency        ProficiencyLevel?
+  verificationStatus VerificationStatus @default(PENDING)
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([deletedAt])
+}
+
+model Project {
+  id                 String             @id @default(uuid())
+  userId             String
+  order              Int                @default(0)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  deletedAt          DateTime?
+  verificationDoc    String?
+  verificationStatus VerificationStatus @default(PENDING)
+  description        String
+  domain             String
+  outcomes           String[]           @default([])
+  referenceUrl       String?
+  title              String
+  tools              String[]           @default([])
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([deletedAt])
+}
+
+model Certification {
+  id                 String             @id @default(uuid())
+  userId             String
+  name               String
+  issuer             String
+  url                String?
+  order              Int                @default(0)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  deletedAt          DateTime?
+  verificationDoc    String?
+  verificationStatus VerificationStatus @default(PENDING)
+  date               DateTime
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([deletedAt])
+}
+
+model Language {
+  id          String           @id @default(uuid())
+  userId      String
+  name        String
+  order       Int              @default(0)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  deletedAt   DateTime?
+  proficiency ProficiencyLevel
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([deletedAt])
+}
+
+model Accomplishment {
+  id                 String             @id @default(uuid())
+  userId             String
+  type               AccomplishmentType
+  title              String
+  issuer             String?
+  description        String?
+  url                String?
+  metadata           Json?
+  order              Int                @default(0)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  deletedAt          DateTime?
+  verificationDoc    String?
+  verificationStatus VerificationStatus @default(PENDING)
+  date               DateTime
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([type])
+  @@index([deletedAt])
+}
+
+model Extracurricular {
+  id           String    @id @default(uuid())
+  userId       String
+  activity     String
+  role         String?
+  organization String?
+  current      Boolean   @default(false)
+  description  String?
+  order        Int       @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
+  startDate    DateTime?
+  endDate      DateTime?
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([deletedAt])
+}
+
+model PositionOfResponsibility {
+  id                 String             @id @default(uuid())
+  userId             String
+  title              String
+  organization       String
+  location           String?
+  current            Boolean            @default(false)
+  description        String?
+  highlights         String[]           @default([])
+  order              Int                @default(0)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  deletedAt          DateTime?
+  verificationDoc    String?
+  verificationStatus VerificationStatus @default(PENDING)
+  startDate          DateTime
+  endDate            DateTime?
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([deletedAt])
+}
+
+model Course {
+  id             String    @id @default(uuid())
+  userId         String
+  name           String
+  institution    String
+  grade          String?
+  description    String?
+  url            String?
+  order          Int       @default(0)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  deletedAt      DateTime?
+  completionDate DateTime?
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([deletedAt])
+}
+
+model Resume {
+  id        String      @id @default(uuid())
+  userId    String
+  title     String
+  template  String      @default("modern")
+  data      Json
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  deletedAt DateTime?
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  file      ResumeFile?
+
+  @@index([userId])
+  @@index([deletedAt])
+}
+
+model ResumeFile {
+  id        String   @id @default(uuid())
+  resumeId  String   @unique
+  bucket    String
+  objectKey String
+  mimeType  String
+  size      Int
+  createdAt DateTime @default(now())
+  resume    Resume   @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+}
+
+model Company {
+  id          String    @id @default(uuid())
+  name        String
+  website     String?
+  description String?
+  logo        String?
+  sector      Sector?   @default(OTHERS) 
+  size        String?
+  location    String?
+  email       String?
+  phone       String?
+  linkedin    String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+  jobs        Job[]
+
+  @@index([name])
+  @@index([deletedAt])
+}
+
+model Job {
+  id                  String        @id @default(uuid())
+  companyId           String
+  title               String
+  description         String?
+  location            String?
+  type                String?
+  salary              String?
+  deadline            DateTime?
+  status              JobStatus     @default(OPEN)
+  
+  placementCycleId    String
+  placementCycle      PlacementCycle @relation(fields: [placementCycleId], references: [id], onDelete: Cascade)
+  
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  deletedAt           DateTime?
+  descriptionDocument String?
+  applications        Application[]
+  company             Company       @relation(fields: [companyId], references: [id])
+  questions           JobQuestion[]
+
+  @@index([companyId])
+  @@index([status])
+  @@index([deletedAt])
+}
+
+model JobQuestion {
+  id        String   @id @default(uuid())
+  jobId     String
+  question  String
+  required  Boolean  @default(true)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([jobId])
+}
+
+model Application {
+  id          String            @id @default(uuid())
+  userId      String
+  jobId       String
+  resumeId    String?
+  status      ApplicationStatus @default(APPLIED)
+  coverLetter String?
+  answers     Json?
+  appliedAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  withdrawnAt DateTime?
+  job         Job               @relation(fields: [jobId], references: [id])
+
+  @@unique([userId, jobId])
+  @@index([userId])
+  @@index([jobId])
+  @@index([status])
+}
+
+model Notification {
+  id        String              @id @default(uuid())
+  userId    String
+  type      NotificationType
+  channel   NotificationChannel @default(IN_APP)
+  title     String
+  message   String
+  data      Json?
+  isRead    Boolean             @default(false)
+  readAt    DateTime?
+  createdAt DateTime            @default(now())
+  user      User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+  @@index([userId, isRead])
+}
+
+model Announcement {
+  id        String   @id @default(uuid())
+  title     String
+  content   String
+  createdAt DateTime @default(now())
+  senderId  String?
+  sender    User?    @relation(fields: [senderId], references: [id])
+
+  @@index([createdAt])
+}
+
+model PlacementCycle {
+  id           String             @id @default(uuid())
+  
+  name         String             // e.g., "Placement Drive 2025-26"
+  type         PlacementCycleType // PLACEMENT or INTERNSHIP
+  academicYear String             // e.g., "2025-2026"
+  
+  status       CycleStatus        @default(UPCOMING)
+  
+  startDate    DateTime
+  endDate      DateTime
+  
+  // --- RELATIONS ---
+  jobs             Job[]    // A cycle has many jobs
+  eligibleStudents User[]   // Students eligible for this cycle (Many-to-Many)
+  
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  
+  @@index([status])
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ProfileStatus {
+  DRAFT
+  SUBMITTED_FOR_REVIEW
+  VERIFIED
+  REJECTED
+}
+
+enum AccomplishmentType {
+  AWARD
+  CERTIFICATION
+  COMPETITION
+  CONFERENCE
+  TEST_SCORE
+  PATENT
+  PUBLICATION
+  SCHOLARSHIP
+}
+
+enum Sector {
+  IT
+  FINANCE
+  ECOMMERCE
+  HEALTHCARE
+  CONSULTING
+  ANALYTICS
+  EDUCATION
+  ELECTRONICS
+  MECHANICS
+  MANAGEMENT
+  OTHERS
+}
+
+enum ProficiencyLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+  NATIVE
+}
+
+enum ApplicationStatus {
+  APPLIED
+  SHORTLISTED
+  INTERVIEWING
+  REJECTED
+  HIRED
+  WITHDRAWN
+}
+
+enum JobStatus {
+  OPEN
+  CLOSED
+}
+
+enum NotificationType {
+  JOB_CREATED
+  JOB_UPDATED
+  JOB_DEADLINE_EXTENDED
+  JOB_CLOSED
+  JOB_REOPENED
+  APPLICATION_SUBMITTED
+  APPLICATION_STATUS_CHANGED
+  INTERVIEW_SCHEDULED
+  OFFER_RECEIVED
+  APPLICATION_REJECTED
+}
+
+enum NotificationChannel {
+  IN_APP
+  EMAIL
+  PUSH
+}
+
+enum PlacementCycleType {
+  PLACEMENT
+  INTERNSHIP
+}
+
+enum CycleStatus {
+  UPCOMING
+  ACTIVE
+  COMPLETED
+}

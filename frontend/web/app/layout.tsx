@@ -27,7 +27,7 @@ export default function RootLayout({
         <ThemeProvider defaultTheme="dark" storageKey="pinnacle-theme">
           <AuthProvider>
             <Header />
-            {children}
+            <main className="pt-18">{children}</main>
           </AuthProvider>
         </ThemeProvider>
       </body>

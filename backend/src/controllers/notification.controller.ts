@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
 
-import prisma from '../db/client';
+import { prisma } from '../db/client';
 import { unifiedNotificationService } from '../services/notification-service/UnifiedNotification.service';
 import { AuthError, ValidationError, NotFoundError } from '../types/errors.types';
 

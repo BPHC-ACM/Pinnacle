@@ -3,5 +3,10 @@
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit"
+  },
+  "files.exclude": {
+    "backend/tsconfig.json": true,
+    "frontend/web/tsconfig.json": true,
+    "packages/database/tsconfig.json": true
   }
 }

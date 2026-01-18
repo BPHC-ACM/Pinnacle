@@ -41,8 +41,7 @@ class AuthRepository {
 
       logger.i("AuthRepository: User selected: ${googleUser.email}");
 
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth = googleUser.authentication;
       logger.d("AuthRepository: Authentication details obtained.");
 
       final String? idToken = googleAuth.idToken;

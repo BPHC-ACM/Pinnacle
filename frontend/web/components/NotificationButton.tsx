@@ -37,6 +37,9 @@ export default function NotificationButton() {
       setUnreadCount(calculateUnreadCount(data.notifications, storedTime));
     } catch (error) {
       console.error('Failed to fetch notifications:', error);
+      // Set empty state on error
+      setNotifications([]);
+      setUnreadCount(0);
     } finally {
       setIsLoading(false);
     }
@@ -50,6 +53,8 @@ export default function NotificationButton() {
       setUnreadCount(calculateUnreadCount(data.notifications, storedTime));
     } catch (error) {
       console.error('Failed to fetch unread count:', error);
+      // Silently fail for unread count
+      setUnreadCount(0);
     }
   }, [calculateUnreadCount]);
 
@@ -95,14 +100,14 @@ export default function NotificationButton() {
       >
         <Bell className="h-4 w-4" />
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-primary-500 text-xs text-white flex items-center justify-center font-semibold">
+          <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-accent-500 text-xs text-white flex items-center justify-center font-semibold">
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}
       </Button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-popover text-popover-foreground border border-border rounded-lg shadow-lg z-50 overflow-hidden">
+        <div className="fixed left-4 right-4 top-18 max-h-[80vh] sm:absolute sm:top-full sm:left-auto sm:right-0 sm:max-h-none sm:mt-2 sm:w-96 bg-popover text-popover-foreground border border-border rounded-lg shadow-lg z-50 overflow-hidden">
           <div className="p-4 border-b border-border flex justify-between items-center">
             <h3 className="font-semibold">Notifications</h3>
             <Button

@@ -27,6 +27,7 @@ export interface JobQuestion {
 }
 
 export interface CreateJobRequest {
+  placementCycleId: string;
   companyId: string;
   title: string;
   description?: string;
@@ -55,6 +56,13 @@ export interface AdminJobFilters {
   fromDate?: Date;
   toDate?: Date;
   search?: string; // Search by job title
+}
+
+export interface PublicJobFilters {
+  companyId?: string;
+  search?: string; // Search by job title or company name
+  industry?: string;
+  jobType?: string;
 }
 
 export interface JobWithStats extends Job {

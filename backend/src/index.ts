@@ -34,7 +34,43 @@ const app = express();
 app.use(cors({ origin: config.frontendUrl, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
-app.use(pinoHttp({ logger }));
+// Define custom serializers to keep logs clean
+app.use(
+  pinoHttp({
+    logger,
+    // Custom serializers: Only log what we actually need to debug
+    serializers: {
+      req: (req: unknown) => {
+        const _req = req as Request & { id?: string };
+        return {
+          id: _req.id,
+          method: _req.method,
+          url: _req.url,
+          query: _req.query,
+          params: _req.params,
+        };
+      },
+      res: (res: unknown) => {
+        const _res = res as Response;
+        return {
+          statusCode: _res.statusCode,
+        };
+      },
+    },
+    autoLogging: {
+      ignore: (req) => (req as Request).url === '/health',
+    },
+    customSuccessMessage: (req, res) => {
+      const _req = req as Request;
+      const _res = res as Response;
+      return `${_req.method} ${_req.url} completed with ${_res.statusCode}`;
+    },
+    customErrorMessage: (req, _res, err) => {
+      const _req = req as Request;
+      return `${_req.method} ${_req.url} FAILED: ${err.message}`;
+    },
+  }),
+);
 
 // Apply general rate limiting to all API routes
 app.use('/api', generalApiRateLimiter);

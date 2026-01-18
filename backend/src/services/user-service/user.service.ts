@@ -1,4 +1,5 @@
-import prisma from '../../db/client';
+import { prisma, Sector } from '@repo/database'; // Import Sector from Prisma
+
 import { NotFoundError } from '../../types/errors.types';
 import type { PaginationParams, PaginatedResponse } from '../../types/pagination.types';
 import type {
@@ -113,13 +114,16 @@ export class UserService {
   }
 
   async createExperience(userId: string, data: CreateExperienceRequest): Promise<Experience> {
+    const { sector, startDate, endDate, ...rest } = data;
+    const safeSector = (sector as string) === 'ALL_SECTORS' ? null : (sector as Sector);
+
     return (await prisma.experience.create({
       data: {
-        ...data,
-        // Date parsing fix
-        startDate: parseDate(data.startDate),
-        endDate: parseOptionalDate(data.endDate),
+        ...rest,
+        sector: safeSector,
         userId,
+        startDate: parseDate(startDate),
+        endDate: parseOptionalDate(endDate),
         highlights: data.highlights ?? [],
         current: data.current ?? false,
         order: data.order ?? 0,
@@ -142,17 +146,22 @@ export class UserService {
       );
     }
 
-    // date conversion
-    const updateData = {
-      ...data,
-      verificationStatus: 'PENDING' as const,
-      ...(data.startDate && { startDate: parseDate(data.startDate) }),
-      ...(data.endDate !== undefined && { endDate: parseOptionalDate(data.endDate) }),
-    };
+    const { sector, startDate, endDate, ...rest } = data;
+
+    let safeSector = undefined;
+    if (sector !== undefined) {
+      safeSector = (sector as string) === 'ALL_SECTORS' ? null : (sector as Sector);
+    }
 
     return (await prisma.experience.update({
       where: { id },
-      data: updateData,
+      data: {
+        ...rest,
+        verificationStatus: 'PENDING',
+        ...(safeSector !== undefined && { sector: safeSector }),
+        ...(startDate && { startDate: parseDate(startDate) }),
+        ...(endDate !== undefined && { endDate: parseOptionalDate(endDate) }),
+      },
     })) as Experience;
   }
 

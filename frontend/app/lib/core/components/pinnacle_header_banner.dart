@@ -36,7 +36,7 @@ class _PinnacleHeaderBannerState extends State<PinnacleHeaderBanner>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     // "Brighter like the linear gradient": using the primary/tertiary gradient
     // as the background for the grid to maintain vibrancy.
     return Container(
@@ -57,7 +57,7 @@ class _PinnacleHeaderBannerState extends State<PinnacleHeaderBanner>
         builder: (context, child) {
           return CustomPaint(
             painter: _PinnacleGridPainter(
-              color: Colors.white.withOpacity(0.15), // White grid lines
+              color: Colors.white.withValues(alpha: 0.15), // White grid lines
               animationValue: _controller.value,
             ),
           );

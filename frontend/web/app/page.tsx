@@ -51,7 +51,11 @@ export default function Home() {
   const { isLoading: authLoading, isAuthenticated } = useAuth();
   const router = useRouter();
 
-  console.log('Landing page - authLoading:', authLoading, 'isAuthenticated:', isAuthenticated);
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      router.push('/dashboard');
+    }
+  }, [authLoading, isAuthenticated, router]);
 
   useEffect(() => {
     // If authenticated, redirect to dashboard
@@ -63,7 +67,6 @@ export default function Home() {
 
   // Show loading while checking auth
   if (authLoading) {
-    console.log('Landing page - showing loading state');
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
@@ -73,16 +76,9 @@ export default function Home() {
     );
   }
 
-  // If already logged in, show loading while redirecting
+  // If already logged in, show loading/null while redirecting
   if (isAuthenticated) {
-    console.log('Landing page - user is authenticated, redirecting...');
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-xl font-semibold">Redirecting...</h2>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   console.log('Landing page - rendering main content');

@@ -4,9 +4,10 @@ import '../../../core/utils/logger.dart';
 import '../models/student_profile_model.dart';
 import '../repositories/profile_repository.dart';
 
-final profileProvider = StateNotifierProvider<ProfileNotifier, AsyncValue<StudentProfile>>((ref) {
-  return ProfileNotifier(ref.read(profileRepositoryProvider));
-});
+final profileProvider =
+    StateNotifierProvider<ProfileNotifier, AsyncValue<StudentProfile>>((ref) {
+      return ProfileNotifier(ref.read(profileRepositoryProvider));
+    });
 
 class ProfileNotifier extends StateNotifier<AsyncValue<StudentProfile>> {
   final ProfileRepository _repository;
@@ -47,32 +48,50 @@ class ProfileNotifier extends StateNotifier<AsyncValue<StudentProfile>> {
   }
 
   // Experience
-  Future<void> addExperience(Map<String, dynamic> data) => _performAction(() => _repository.createExperience(data));
-  Future<void> editExperience(String id, Map<String, dynamic> data) => _performAction(() => _repository.updateExperience(id, data));
-  Future<void> removeExperience(String id) => _performAction(() => _repository.deleteExperience(id));
+  Future<void> addExperience(Map<String, dynamic> data) =>
+      _performAction(() => _repository.createExperience(data));
+  Future<void> editExperience(String id, Map<String, dynamic> data) =>
+      _performAction(() => _repository.updateExperience(id, data));
+  Future<void> removeExperience(String id) =>
+      _performAction(() => _repository.deleteExperience(id));
 
   // Education
-  Future<void> addEducation(Map<String, dynamic> data) => _performAction(() => _repository.createEducation(data));
-  Future<void> editEducation(String id, Map<String, dynamic> data) => _performAction(() => _repository.updateEducation(id, data));
-  Future<void> removeEducation(String id) => _performAction(() => _repository.deleteEducation(id));
+  Future<void> addEducation(Map<String, dynamic> data) =>
+      _performAction(() => _repository.createEducation(data));
+  Future<void> editEducation(String id, Map<String, dynamic> data) =>
+      _performAction(() => _repository.updateEducation(id, data));
+  Future<void> removeEducation(String id) =>
+      _performAction(() => _repository.deleteEducation(id));
 
   // Skills
-  Future<void> addSkill(Map<String, dynamic> data) => _performAction(() => _repository.createSkill(data));
-  Future<void> editSkill(String id, Map<String, dynamic> data) => _performAction(() => _repository.updateSkill(id, data));
-  Future<void> removeSkill(String id) => _performAction(() => _repository.deleteSkill(id));
+  Future<void> addSkill(Map<String, dynamic> data) =>
+      _performAction(() => _repository.createSkill(data));
+  Future<void> editSkill(String id, Map<String, dynamic> data) =>
+      _performAction(() => _repository.updateSkill(id, data));
+  Future<void> removeSkill(String id) =>
+      _performAction(() => _repository.deleteSkill(id));
 
   // Projects
-  Future<void> addProject(Map<String, dynamic> data) => _performAction(() => _repository.createProject(data));
-  Future<void> editProject(String id, Map<String, dynamic> data) => _performAction(() => _repository.updateProject(id, data));
-  Future<void> removeProject(String id) => _performAction(() => _repository.deleteProject(id));
+  Future<void> addProject(Map<String, dynamic> data) =>
+      _performAction(() => _repository.createProject(data));
+  Future<void> editProject(String id, Map<String, dynamic> data) =>
+      _performAction(() => _repository.updateProject(id, data));
+  Future<void> removeProject(String id) =>
+      _performAction(() => _repository.deleteProject(id));
 
   // Certifications
-  Future<void> addCertification(Map<String, dynamic> data) => _performAction(() => _repository.createCertification(data));
-  Future<void> editCertification(String id, Map<String, dynamic> data) => _performAction(() => _repository.updateCertification(id, data));
-  Future<void> removeCertification(String id) => _performAction(() => _repository.deleteCertification(id));
-  
+  Future<void> addCertification(Map<String, dynamic> data) =>
+      _performAction(() => _repository.createCertification(data));
+  Future<void> editCertification(String id, Map<String, dynamic> data) =>
+      _performAction(() => _repository.updateCertification(id, data));
+  Future<void> removeCertification(String id) =>
+      _performAction(() => _repository.deleteCertification(id));
+
   // Languages
-  Future<void> addLanguage(Map<String, dynamic> data) => _performAction(() => _repository.createLanguage(data));
-  Future<void> editLanguage(String id, Map<String, dynamic> data) => _performAction(() => _repository.updateLanguage(id, data));
-  Future<void> removeLanguage(String id) => _performAction(() => _repository.deleteLanguage(id));
+  Future<void> addLanguage(Map<String, dynamic> data) =>
+      _performAction(() => _repository.createLanguage(data));
+  Future<void> editLanguage(String id, Map<String, dynamic> data) =>
+      _performAction(() => _repository.updateLanguage(id, data));
+  Future<void> removeLanguage(String id) =>
+      _performAction(() => _repository.deleteLanguage(id));
 }

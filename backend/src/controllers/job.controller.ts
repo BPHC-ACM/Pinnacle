@@ -5,7 +5,7 @@ import jobService from '../services/job-service/job.service';
 import { notifyJobApplicants } from '../services/notification-service/job-notifications.helper';
 import type { ApplyRequest } from '../types/application.types';
 import { ValidationError, AuthError, NotFoundError } from '../types/errors.types';
-import type { CreateJobRequest } from '../types/job.types';
+import type { CreateJobRequest, PublicJobFilters } from '../types/job.types';
 import { parsePagination } from '../types/pagination.types';
 
 export async function createJob(req: Request, res: Response): Promise<void> {
@@ -27,7 +27,13 @@ export async function getJob(req: Request, res: Response): Promise<void> {
 
 export async function getJobs(req: Request, res: Response): Promise<void> {
   const params = parsePagination(req.query as Record<string, unknown>);
-  const jobs = await jobService.getJobs(req.query.companyId as string | undefined, params);
+  const filters: PublicJobFilters = {
+    companyId: req.query.companyId as string,
+    search: req.query.q as string,
+    industry: req.query.industry as string,
+    jobType: req.query.jobType as string,
+  };
+  const jobs = await jobService.getJobs(filters, params);
   res.json(jobs);
 }
 

@@ -2,17 +2,13 @@ import type { Request, Response } from 'express';
 import { OAuth2Client } from 'google-auth-library';
 
 import { logger } from '../../config/logger.config';
-import prisma from '../../db/client';
+import { prisma } from '../../db/client';
 import { config } from '../config/env.config';
 import { UserRole } from '../types/user.types';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../utils/jwt.utils';
 
 interface RefreshTokenRequestBody {
   refreshToken: string;
-}
-
-interface GoogleMobileLoginBody {
-  idToken: string;
 }
 
 const oauth2Client = new OAuth2Client(
@@ -141,12 +137,9 @@ export const googleCallback = async (req: Request, res: Response): Promise<void>
 };
 
 // For Google SignIn in flutter app
-export const googleMobileLogin = async (
-  req: Request<object, object, GoogleMobileLoginBody>,
-  res: Response,
-): Promise<void> => {
+export const googleMobileLogin = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { idToken } = req.body;
+    const { idToken } = req.body as { idToken?: string };
 
     if (!idToken) {
       res.status(400).json({ error: 'ID Token is required' });
@@ -161,7 +154,6 @@ export const googleMobileLogin = async (
 
     const payload = ticket.getPayload();
 
-    // FIXED: Used optional chaining (?.)
     if (!payload?.email) {
       res.status(400).json({ error: 'Invalid token payload' });
       return;
@@ -203,14 +195,12 @@ export const googleMobileLogin = async (
     const accessToken = generateAccessToken({
       userId: dbUser.id,
       email: dbUser.email,
-      // FIXED: Cast to UserRole instead of any
       role: dbUser.role as UserRole,
     });
 
     const refreshToken = generateRefreshToken({
       userId: dbUser.id,
       email: dbUser.email,
-      // FIXED: Cast to UserRole instead of any
       role: dbUser.role as UserRole,
     });
 

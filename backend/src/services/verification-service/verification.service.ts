@@ -1,6 +1,5 @@
-import { PrismaClient } from '@pinnacle/types';
+import { PrismaClient, prisma } from '@repo/database';
 
-import prisma from '../../db/client';
 import { ValidationError, NotFoundError } from '../../types/errors.types';
 
 interface VerifyItemArgs {
