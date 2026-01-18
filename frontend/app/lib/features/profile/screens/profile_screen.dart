@@ -128,35 +128,38 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
-    if (pickedFile != null) {
-      try {
-        // Show loading indicator or snackbar if desired
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Uploading image...')),
-        );
+    if (pickedFile == null) return;
 
-        await ref
-            .read(profileProvider.notifier)
-            .updateProfilePicture(File(pickedFile.path));
+    if (!mounted) return;
 
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Profile picture updated successfully'),
-              backgroundColor: AppColors.success,
-            ),
-          );
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Error updating profile picture: $e'),
-              backgroundColor: AppColors.error,
-            ),
-          );
-        }
-      }
+    final messenger = ScaffoldMessenger.of(context);
+
+    try {
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Uploading image...')),
+      );
+
+      await ref
+          .read(profileProvider.notifier)
+          .updateProfilePicture(File(pickedFile.path));
+
+      if (!mounted) return;
+
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('Profile picture updated successfully'),
+          backgroundColor: AppColors.success,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text('Error updating profile picture: $e'),
+          backgroundColor: AppColors.error,
+        ),
+      );
     }
   }
 
@@ -483,9 +486,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(
-              0.08,
-            ), // Fixed deprecation if needed
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 24,
             offset: const Offset(0, 12),
           ),
