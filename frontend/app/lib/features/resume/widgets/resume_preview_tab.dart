@@ -2,9 +2,9 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:printing/printing.dart';
 
-import '../../../core/theme/app_colors.dart';
 import '../providers/resume_builder_provider.dart';
 
 class ResumePreviewTab extends ConsumerWidget {
@@ -13,72 +13,74 @@ class ResumePreviewTab extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(resumeBuilderProvider);
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Column(
       children: [
-        // Status Bar (Sync Status)
         if (state.isSaving || state.isGenerating)
           LinearProgressIndicator(
-            backgroundColor: AppColors.neutral100,
+            backgroundColor: theme.scaffoldBackgroundColor,
             valueColor: AlwaysStoppedAnimation<Color>(
-              state.isSaving ? AppColors.warning : AppColors.primary500,
+              state.isSaving ? colorScheme.error : colorScheme.primary,
             ),
             minHeight: 2,
           ),
 
-        // PDF View
         Expanded(
-          child: state.pdfBytes == null
-              ? _buildLoadingState()
-              : _buildPdfPreview(state.pdfBytes!),
+          child: Container(
+            color: colorScheme.surfaceContainerHighest,
+            child: state.pdfBytes == null
+                ? _buildLoadingState(context)
+                : _buildPdfPreview(context, state.pdfBytes!),
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildLoadingState() {
-    return const Center(
+  Widget _buildLoadingState(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(),
-          SizedBox(height: 16),
+          const CircularProgressIndicator(),
+          const SizedBox(height: 16),
           Text(
             'Generating Preview...',
-            style: TextStyle(color: AppColors.neutral500),
+            style: GoogleFonts.inter(
+              color: colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildPdfPreview(Uint8List bytes) {
-    // PdfPreview from the 'printing' package
+  Widget _buildPdfPreview(BuildContext context, Uint8List bytes) {
+    final colorScheme = Theme.of(context).colorScheme;
     return PdfPreview(
-      // The build callback requires a Future, so we wrap our bytes
       build: (format) => Future.value(bytes),
-      
-      // We disable the built-in actions toolbar to use our own AppBar buttons
-      useActions: false, 
-      
-      // Visual styling to make it look like a document on a background
-      scrollViewDecoration: const BoxDecoration(
-        color: AppColors.neutral100, 
+      useActions: false,
+      scrollViewDecoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest,
       ),
       pdfPreviewPageDecoration: const BoxDecoration(
         color: Colors.white,
         boxShadow: [
           BoxShadow(
             color: Colors.black12,
-            blurRadius: 4,
-            offset: Offset(0, 2),
+            blurRadius: 8,
+            offset: Offset(0, 4),
           ),
         ],
       ),
-      // Use standard scrolling (can zoom/pan)
       canChangeOrientation: false,
       canChangePageFormat: false,
       canDebug: false,
+      loadingWidget: const Center(child: CircularProgressIndicator()),
     );
   }
 }
