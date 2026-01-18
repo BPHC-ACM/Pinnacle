@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
@@ -117,6 +120,42 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             backgroundColor: AppColors.error,
           ),
         );
+      }
+    }
+  }
+
+  Future<void> _pickAndUploadImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      try {
+        // Show loading indicator or snackbar if desired
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Uploading image...')),
+        );
+
+        await ref
+            .read(profileProvider.notifier)
+            .updateProfilePicture(File(pickedFile.path));
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Profile picture updated successfully'),
+              backgroundColor: AppColors.success,
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error updating profile picture: $e'),
+              backgroundColor: AppColors.error,
+            ),
+          );
+        }
       }
     }
   }
@@ -444,7 +483,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
+            color: Colors.black.withOpacity(
+              0.08,
+            ), // Fixed deprecation if needed
             blurRadius: 24,
             offset: const Offset(0, 12),
           ),
@@ -452,37 +493,65 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       ),
       child: Column(
         children: [
-          // Avatar
-          Container(
-            width: 100,
-            height: 100,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: theme.scaffoldBackgroundColor,
-              border: Border.all(
-                color: theme.scaffoldBackgroundColor,
-                width: 4,
+          // Avatar with Edit Button
+          Stack(
+            children: [
+              Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: theme.scaffoldBackgroundColor,
+                  border: Border.all(
+                    color: theme.scaffoldBackgroundColor,
+                    width: 4,
+                  ),
+                  image: profile.picture != null
+                      ? DecorationImage(
+                          image: NetworkImage(profile.picture!),
+                          fit: BoxFit.cover,
+                        )
+                      : null,
+                ),
+                alignment: Alignment.center,
+                child: profile.picture == null
+                    ? Text(
+                        profile.name.isNotEmpty
+                            ? profile.name[0].toUpperCase()
+                            : '?',
+                        style: GoogleFonts.inter(
+                          fontSize: 36,
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.primary,
+                        ),
+                      )
+                    : null,
               ),
-              image: profile.picture != null
-                  ? DecorationImage(
-                      image: NetworkImage(profile.picture!),
-                      fit: BoxFit.cover,
-                    )
-                  : null,
-            ),
-            alignment: Alignment.center,
-            child: profile.picture == null
-                ? Text(
-                    profile.name.isNotEmpty
-                        ? profile.name[0].toUpperCase()
-                        : '?',
-                    style: GoogleFonts.inter(
-                      fontSize: 36,
-                      fontWeight: FontWeight.bold,
+              // Edit Icon Button
+              Positioned(
+                bottom: 0,
+                right: 0,
+                child: InkWell(
+                  onTap: _pickAndUploadImage,
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
                       color: theme.colorScheme.primary,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: theme.cardTheme.color ?? Colors.white,
+                        width: 2,
+                      ),
                     ),
-                  )
-                : null,
+                    child: const Icon(
+                      LucideIcons.camera,
+                      size: 16,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 8),
           Text(

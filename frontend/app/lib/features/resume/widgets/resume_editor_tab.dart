@@ -35,58 +35,6 @@ class ResumeEditorTab extends ConsumerWidget {
           _buildTitleInput(context, state.resumeTitle, notifier),
           const SizedBox(height: 32),
 
-          Text(
-            'Choose Template',
-            style: GoogleFonts.inter(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: colorScheme.onSurface,
-            ),
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            height: 110,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              clipBehavior: Clip.none,
-              children: [
-                _buildTemplateCard(
-                  context,
-                  id: 'modern',
-                  name: 'Modern',
-                  icon: LucideIcons.layoutTemplate,
-                  isSelected: state.selectedTemplate == 'modern',
-                  onTap: () => notifier.updateTemplate('modern'),
-                ),
-                _buildTemplateCard(
-                  context,
-                  id: 'classic',
-                  name: 'Classic',
-                  icon: LucideIcons.fileText,
-                  isSelected: state.selectedTemplate == 'classic',
-                  onTap: () => notifier.updateTemplate('classic'),
-                ),
-                _buildTemplateCard(
-                  context,
-                  id: 'minimal',
-                  name: 'Minimal',
-                  icon: LucideIcons.alignEndVertical,
-                  isSelected: state.selectedTemplate == 'minimal',
-                  onTap: () => notifier.updateTemplate('minimal'),
-                ),
-                _buildTemplateCard(
-                  context,
-                  id: 'professional',
-                  name: 'Pro',
-                  icon: LucideIcons.briefcase,
-                  isSelected: state.selectedTemplate == 'professional',
-                  onTap: () => notifier.updateTemplate('professional'),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 32),
-
           Row(
             children: [
               Expanded(
@@ -118,6 +66,7 @@ class ResumeEditorTab extends ConsumerWidget {
 
           ReorderableListView.builder(
             shrinkWrap: true,
+            primary: false,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: sections.length,
             onReorder: notifier.reorderSections,
@@ -145,76 +94,6 @@ class ResumeEditorTab extends ConsumerWidget {
           ),
           const SizedBox(height: 80),
         ],
-      ),
-    );
-  }
-
-  Widget _buildTemplateCard(
-    BuildContext context, {
-    required String id,
-    required String name,
-    required IconData icon,
-    required bool isSelected,
-    required VoidCallback onTap,
-  }) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        width: 90,
-        margin: const EdgeInsets.only(right: 16),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? colorScheme.primaryContainer.withValues(alpha: 0.5)
-              : theme.cardTheme.color,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isSelected
-                ? colorScheme.primary
-                : colorScheme.outline.withValues(alpha: 0.5),
-            width: isSelected ? 2 : 1,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? colorScheme.primary
-                    : theme.scaffoldBackgroundColor,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                icon,
-                size: 20,
-                color: isSelected
-                    ? colorScheme.onPrimary
-                    : colorScheme.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              name,
-              style: GoogleFonts.inter(
-                fontSize: 12,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                color: isSelected ? colorScheme.primary : colorScheme.onSurface,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -314,7 +193,7 @@ class ResumeEditorTab extends ConsumerWidget {
         trailing: Switch(
           value: section.enabled,
           onChanged: (_) => notifier.toggleSection(section.id),
-          activeColor: colorScheme.primary,
+          activeThumbColor: colorScheme.primary,
         ),
         children: showContent
             ? [

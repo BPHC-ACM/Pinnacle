@@ -88,7 +88,26 @@ class _ResumeBuilderScreenState extends ConsumerState<ResumeBuilderScreen>
                 background: Stack(
                   fit: StackFit.expand,
                   children: [
-                    const PinnacleHeaderBanner(height: 280),
+                    Stack(
+                      children: [
+                        const PinnacleHeaderBanner(height: 280),
+                        Positioned.fill(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.transparent,
+                                  theme.scaffoldBackgroundColor,
+                                ],
+                                stops: const [0, 1],
+                                begin: AlignmentDirectional.topCenter,
+                                end: AlignmentDirectional.bottomCenter,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                     Positioned(
                       top: 80,
                       left: 0,

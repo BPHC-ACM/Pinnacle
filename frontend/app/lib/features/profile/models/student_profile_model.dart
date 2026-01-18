@@ -343,3 +343,21 @@ ProficiencyLevel? _parseProficiency(String? level) {
     return null;
   }
 }
+
+// Extension to fix the display name (e.g. "Intermediate" instead of "ProficiencyLevel.INTERMEDIATE")
+extension ProficiencyLevelExtension on ProficiencyLevel {
+  String get displayName {
+    switch (this) {
+      case ProficiencyLevel.BEGINNER:
+        return 'Beginner';
+      case ProficiencyLevel.INTERMEDIATE:
+        return 'Intermediate';
+      case ProficiencyLevel.ADVANCED:
+        return 'Advanced';
+      case ProficiencyLevel.EXPERT:
+        return 'Expert';
+      case ProficiencyLevel.NATIVE:
+        return 'Native';
+    }
+  }
+}

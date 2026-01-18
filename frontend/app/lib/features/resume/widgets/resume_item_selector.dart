@@ -131,47 +131,45 @@ class ResumeItemSelector extends ConsumerWidget {
       );
     }
 
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
+    return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
-      itemCount: items.length,
-      itemBuilder: (context, index) {
-        final item = items[index];
-        final itemId = (item as dynamic).id;
-        final isSelected = selectedIds.contains(itemId);
+      child: Column(
+        children: items.map((item) {
+          final itemId = (item as dynamic).id;
+          final isSelected = selectedIds.contains(itemId);
 
-        return CheckboxListTile(
-          value: isSelected,
-          onChanged: (_) => onToggle(itemId),
-          activeColor: colorScheme.primary,
-          checkboxShape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(4),
-          ),
-          title: Text(
-            titleBuilder(item),
-            style: GoogleFonts.inter(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: colorScheme.onSurface,
+          return CheckboxListTile(
+            value: isSelected,
+            onChanged: (_) => onToggle(itemId),
+            activeColor: colorScheme.primary,
+            checkboxShape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(4),
             ),
-          ),
-          subtitle: subtitleBuilder != null
-              ? Text(
-                  subtitleBuilder(item),
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                )
-              : null,
-          dense: true,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 4,
-          ),
-        );
-      },
+            title: Text(
+              titleBuilder(item),
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: colorScheme.onSurface,
+              ),
+            ),
+            subtitle: subtitleBuilder != null
+                ? Text(
+                    subtitleBuilder(item),
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  )
+                : null,
+            dense: true,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 4,
+            ),
+          );
+        }).toList(),
+      ),
     );
   }
 }

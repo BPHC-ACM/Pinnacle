@@ -1,3 +1,4 @@
+// lib/features/resume/widgets/resume_preview_tab.dart
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -30,7 +31,7 @@ class ResumePreviewTab extends ConsumerWidget {
         Expanded(
           child: Container(
             color: colorScheme.surfaceContainerHighest,
-            child: state.pdfBytes == null
+            child: (state.isGenerating || state.pdfBytes == null)
                 ? _buildLoadingState(context)
                 : _buildPdfPreview(context, state.pdfBytes!),
           ),
@@ -65,7 +66,7 @@ class ResumePreviewTab extends ConsumerWidget {
       build: (format) => Future.value(bytes),
       useActions: false,
       scrollViewDecoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest,
+        color: colorScheme.surfaceContainer,
       ),
       pdfPreviewPageDecoration: const BoxDecoration(
         color: Colors.white,

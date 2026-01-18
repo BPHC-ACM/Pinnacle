@@ -4,6 +4,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
+import '../../profile/models/student_profile_model.dart';
 import '../models/resume_model.dart';
 
 Future<Uint8List> generateResumePdf(
@@ -32,28 +33,28 @@ Future<Uint8List> generateResumePdf(
 
   // Filter Data Logic (Matching React component)
   final filteredExperiences = data.experiences
-            .where((e) => resumeData.selectedExperiences.contains(e.id))
-            .toList();
+      .where((e) => resumeData.selectedExperiences.contains(e.id))
+      .toList();
 
   final filteredEducation = data.education
-            .where((e) => resumeData.selectedEducation.contains(e.id))
-            .toList();
+      .where((e) => resumeData.selectedEducation.contains(e.id))
+      .toList();
 
   final filteredSkills = data.skills
-            .where((e) => resumeData.selectedSkills.contains(e.id))
-            .toList();
+      .where((e) => resumeData.selectedSkills.contains(e.id))
+      .toList();
 
   final filteredProjects = data.projects
-            .where((e) => resumeData.selectedProjects.contains(e.id))
-            .toList();
+      .where((e) => resumeData.selectedProjects.contains(e.id))
+      .toList();
 
   final filteredCertifications = data.certifications
-            .where((e) => resumeData.selectedCertifications.contains(e.id))
-            .toList();
+      .where((e) => resumeData.selectedCertifications.contains(e.id))
+      .toList();
 
   final filteredLanguages = data.languages
-            .where((e) => resumeData.selectedLanguages.contains(e.id))
-            .toList();
+      .where((e) => resumeData.selectedLanguages.contains(e.id))
+      .toList();
 
   // Sort Sections
   final sortedSections = List<ResumeSection>.from(resumeData.sections)
@@ -87,7 +88,7 @@ Future<Uint8List> generateResumePdf(
   String formatDuration(String startDate, String? endDate, bool current) {
     final start = formatDate(startDate);
     final end = current ? 'Present' : formatDate(endDate);
-    return '$start – $end';
+    return '$start - $end';
   }
 
   // Styles
@@ -169,10 +170,11 @@ Future<Uint8List> generateResumePdf(
                           ),
                           pw.SizedBox(width: 6),
                           pw.Text(
-                            "•",
+                            "|",
                             style: pw.TextStyle(
                               fontSize: 9,
                               color: PdfColors.grey400,
+                              fontBold: pw.Font.courierBold(),
                             ),
                           ),
                         ],
@@ -388,7 +390,7 @@ Future<Uint8List> generateResumePdf(
                             ),
                           ),
                       ],
-                    )
+                    ),
                   ],
                 ),
                 if (proj.tools.isNotEmpty)
@@ -505,7 +507,7 @@ Future<Uint8List> generateResumePdf(
         buildSectionTitle('LANGUAGES'),
         pw.Text(
           filteredLanguages
-              .map((l) => '${l.name} (${l.proficiency})')
+              .map((l) => '${l.name} (${l.proficiency.displayName})')
               .join(', '),
           style: bodyStyle,
         ),
