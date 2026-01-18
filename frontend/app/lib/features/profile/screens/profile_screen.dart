@@ -8,6 +8,7 @@ import '../../auth/providers/auth_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/components/pinnacle_button.dart';
 import '../../../../core/components/pinnacle_header_banner.dart';
+import '../../resume/screens/resume_builder_screen.dart';
 import '../models/student_profile_model.dart';
 import '../providers/profile_provider.dart';
 import '../widgets/verification_badge.dart';
@@ -667,14 +668,36 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ],
       );
     }
-    return SizedBox(
-      width: double.infinity,
-      child: PinnacleButton(
-        label: "Edit Personal Details",
-        variant: ButtonVariant.outline,
-        icon: const Icon(LucideIcons.pencil, size: 16),
-        onPressed: () => _togglePersonalEdit(profile),
-      ),
+
+    // CHANGED: Split into two buttons (Edit Profile & Resume Builder)
+    return Row(
+      children: [
+        Expanded(
+          child: PinnacleButton(
+            label: "Edit Info",
+            variant: ButtonVariant.outline,
+            icon: const Icon(LucideIcons.pencil, size: 16),
+            onPressed: () => _togglePersonalEdit(profile),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: PinnacleButton(
+            label: "Resume",
+            variant: ButtonVariant.primary,
+            icon: const Icon(LucideIcons.fileText, size: 16),
+            onPressed: () {
+              // IMPORTANT: rootNavigator: true ensures the resume builder
+              // covers the bottom navigation bar.
+              Navigator.of(context, rootNavigator: true).push(
+                MaterialPageRoute(
+                  builder: (context) => const ResumeBuilderScreen(),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 
