@@ -49,6 +49,19 @@ class _AddEditItemSheetState extends ConsumerState<AddEditItemSheet> {
     super.dispose();
   }
 
+  /// Helper to format date strings (ISO or other) into YYYY-MM
+  String _formatDateValue(dynamic value) {
+    if (value == null) return '';
+    final str = value.toString();
+    if (str.isEmpty) return '';
+    try {
+      final date = DateTime.parse(str);
+      return "${date.year}-${date.month.toString().padLeft(2, '0')}";
+    } catch (_) {
+      return str;
+    }
+  }
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     _formKey.currentState!.save();
@@ -419,10 +432,10 @@ class _AddEditItemSheetState extends ConsumerState<AddEditItemSheet> {
     bool required = false,
     bool enabled = true,
   }) {
-    // Lazily initialize controller
+    // Lazily initialize controller with Formatted Date
     if (!_dateControllers.containsKey(key)) {
       _dateControllers[key] = TextEditingController(
-        text: _formData[key]?.toString() ?? '',
+        text: _formatDateValue(_formData[key]),
       );
     }
     final controller = _dateControllers[key]!;
@@ -432,7 +445,7 @@ class _AddEditItemSheetState extends ConsumerState<AddEditItemSheet> {
     if (!enabled) {
       controller.clear();
     } else if (_formData[key] != null && controller.text.isEmpty) {
-      controller.text = _formData[key].toString();
+      controller.text = _formatDateValue(_formData[key]);
     }
 
     return Padding(

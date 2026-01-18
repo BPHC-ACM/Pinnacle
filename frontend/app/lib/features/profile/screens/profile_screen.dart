@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
@@ -8,6 +11,7 @@ import '../../auth/providers/auth_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/components/pinnacle_button.dart';
 import '../../../../core/components/pinnacle_header_banner.dart';
+import '../../resume/screens/resume_builder_screen.dart';
 import '../models/student_profile_model.dart';
 import '../providers/profile_provider.dart';
 import '../widgets/verification_badge.dart';
@@ -117,6 +121,45 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
         );
       }
+    }
+  }
+
+  Future<void> _pickAndUploadImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile == null) return;
+
+    if (!mounted) return;
+
+    final messenger = ScaffoldMessenger.of(context);
+
+    try {
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Uploading image...')),
+      );
+
+      await ref
+          .read(profileProvider.notifier)
+          .updateProfilePicture(File(pickedFile.path));
+
+      if (!mounted) return;
+
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('Profile picture updated successfully'),
+          backgroundColor: AppColors.success,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text('Error updating profile picture: $e'),
+          backgroundColor: AppColors.error,
+        ),
+      );
     }
   }
 
@@ -451,37 +494,65 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       ),
       child: Column(
         children: [
-          // Avatar
-          Container(
-            width: 100,
-            height: 100,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: theme.scaffoldBackgroundColor,
-              border: Border.all(
-                color: theme.scaffoldBackgroundColor,
-                width: 4,
+          // Avatar with Edit Button
+          Stack(
+            children: [
+              Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: theme.scaffoldBackgroundColor,
+                  border: Border.all(
+                    color: theme.scaffoldBackgroundColor,
+                    width: 4,
+                  ),
+                  image: profile.picture != null
+                      ? DecorationImage(
+                          image: NetworkImage(profile.picture!),
+                          fit: BoxFit.cover,
+                        )
+                      : null,
+                ),
+                alignment: Alignment.center,
+                child: profile.picture == null
+                    ? Text(
+                        profile.name.isNotEmpty
+                            ? profile.name[0].toUpperCase()
+                            : '?',
+                        style: GoogleFonts.inter(
+                          fontSize: 36,
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.primary,
+                        ),
+                      )
+                    : null,
               ),
-              image: profile.picture != null
-                  ? DecorationImage(
-                      image: NetworkImage(profile.picture!),
-                      fit: BoxFit.cover,
-                    )
-                  : null,
-            ),
-            alignment: Alignment.center,
-            child: profile.picture == null
-                ? Text(
-                    profile.name.isNotEmpty
-                        ? profile.name[0].toUpperCase()
-                        : '?',
-                    style: GoogleFonts.inter(
-                      fontSize: 36,
-                      fontWeight: FontWeight.bold,
+              // Edit Icon Button
+              Positioned(
+                bottom: 0,
+                right: 0,
+                child: InkWell(
+                  onTap: _pickAndUploadImage,
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
                       color: theme.colorScheme.primary,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: theme.cardTheme.color ?? Colors.white,
+                        width: 2,
+                      ),
                     ),
-                  )
-                : null,
+                    child: const Icon(
+                      LucideIcons.camera,
+                      size: 16,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 8),
           Text(
@@ -667,14 +738,36 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ],
       );
     }
-    return SizedBox(
-      width: double.infinity,
-      child: PinnacleButton(
-        label: "Edit Personal Details",
-        variant: ButtonVariant.outline,
-        icon: const Icon(LucideIcons.pencil, size: 16),
-        onPressed: () => _togglePersonalEdit(profile),
-      ),
+
+    // CHANGED: Split into two buttons (Edit Profile & Resume Builder)
+    return Row(
+      children: [
+        Expanded(
+          child: PinnacleButton(
+            label: "Edit Info",
+            variant: ButtonVariant.outline,
+            icon: const Icon(LucideIcons.pencil, size: 16),
+            onPressed: () => _togglePersonalEdit(profile),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: PinnacleButton(
+            label: "Resume",
+            variant: ButtonVariant.primary,
+            icon: const Icon(LucideIcons.fileText, size: 16),
+            onPressed: () {
+              // IMPORTANT: rootNavigator: true ensures the resume builder
+              // covers the bottom navigation bar.
+              Navigator.of(context, rootNavigator: true).push(
+                MaterialPageRoute(
+                  builder: (context) => const ResumeBuilderScreen(),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 
