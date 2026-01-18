@@ -17,6 +17,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { JobDetailPane } from '@/components/job/JobDetailPane';
 import { Sector, ApplicationStatus as AppStatusEnum } from '@repo/types';
 import { JobCardSkeleton } from '@/components/skeletons/JobCardSkeleton';
+import Image from 'next/image';
 
 const SearchIcon = ({ className }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -28,7 +29,7 @@ const SearchIcon = ({ className }: { className?: string }) => (
 interface Job {
   id: string;
   title: string;
-  company: { name: string; id: string; industry?: string };
+  company: { name: string; id: string; industry?: string; logo?: string | null };
   location: string;
   createdAt: string;
   deadline?: string;
@@ -49,10 +50,9 @@ export default function JobsPage() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const router = useRouter();
 
-  // Removed activeTab state
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
 
-  const [sector, setSector] = useState<string>(Sector.ALL_SECTORS);
+  const [sector, setSector] = useState<string>('ALL_SECTORS');
   const [positionType, setPositionType] = useState('All');
   const [status, setStatus] = useState('All');
   const [sortBy, setSortBy] = useState('Created At');
@@ -67,6 +67,16 @@ export default function JobsPage() {
   const [fetchingMore, setFetchingMore] = useState(false);
 
   const observer = useRef<IntersectionObserver | null>(null);
+  const inflightKeyRef = useRef<string | null>(null);
+  const searchQueryRef = useRef('');
+  const sectorRef = useRef('ALL_SECTORS');
+  const positionTypeRef = useRef('All');
+  const sortByRef = useRef('Created At');
+
+  searchQueryRef.current = searchQuery;
+  sectorRef.current = sector;
+  positionTypeRef.current = positionType;
+  sortByRef.current = sortBy;
 
   const fetchApplications = useCallback(async () => {
     try {
@@ -78,58 +88,66 @@ export default function JobsPage() {
     }
   }, []);
 
-  const fetchJobs = useCallback(
-    async (p: number, isNewSearch: boolean = false) => {
+  const fetchJobs = useCallback(async (p: number, isNewSearch: boolean = false) => {
+    try {
+      const params = new URLSearchParams();
+      params.append('page', p.toString());
+      params.append('limit', '20');
+
+      // 3 char limit check
+      const trimmedQuery = searchQueryRef.current.trim();
+      if (trimmedQuery.length >= 3) params.append('q', trimmedQuery);
+
+      if (sectorRef.current !== 'ALL_SECTORS') params.append('industry', sectorRef.current);
+      if (positionTypeRef.current !== 'All') params.append('jobType', positionTypeRef.current);
+
+      const sortConfig: Record<string, { field: string; order: 'asc' | 'desc' }> = {
+        'Created At': { field: 'createdAt', order: 'desc' },
+        Deadline: { field: 'deadline', order: 'asc' },
+        'Company Name': { field: 'companyName', order: 'asc' },
+      };
+
+      const config = sortConfig[sortByRef.current];
+
+      if (config) {
+        params.append('sortBy', config.field);
+        params.append('sortOrder', config.order);
+      }
+
+      const fetchKey = `${params.toString()}|${isNewSearch ? 'new' : 'append'}`;
+      if (inflightKeyRef.current === fetchKey) return;
+      inflightKeyRef.current = fetchKey;
+
       if (isNewSearch) {
         setLoading(true);
       } else {
         setFetchingMore(true);
       }
 
-      try {
-        const params = new URLSearchParams();
-        params.append('page', p.toString());
-        params.append('limit', '20');
+      const response = await api.get(`/jobs?${params.toString()}`);
+      const newJobs = response.data?.data || [];
+      const meta = response.data?.meta;
 
-        if (searchQuery) params.append('q', searchQuery);
-        if (sector !== Sector.ALL_SECTORS) params.append('industry', sector);
-        if (positionType !== 'All') params.append('jobType', positionType);
-
-        const sortMap: Record<string, string> = {
-          'Created At': 'createdAt',
-          Deadline: 'deadline',
-          'Company Name': 'createdAt',
-        };
-        if (sortBy && sortMap[sortBy]) {
-          params.append('sortBy', sortMap[sortBy]);
-        }
-
-        const response = await api.get(`/jobs?${params.toString()}`);
-        const newJobs = response.data?.data || [];
-        const meta = response.data?.meta;
-
-        if (isNewSearch) {
-          setJobs(newJobs);
-        } else {
-          setJobs((prev) => [...prev, ...newJobs]);
-        }
-
-        setHasMore(meta ? meta.page < meta.totalPages : false);
-      } catch (error) {
-        console.error('Failed to fetch jobs:', error);
-      } finally {
-        setLoading(false);
-        setFetchingMore(false);
+      if (isNewSearch) {
+        setJobs(newJobs);
+      } else {
+        setJobs((prev) => [...prev, ...newJobs]);
       }
-    },
-    [searchQuery, sector, positionType, sortBy]
-  );
+
+      setHasMore(meta ? meta.page < meta.totalPages : false);
+    } catch (error) {
+      console.error('Failed to fetch jobs:', error);
+    } finally {
+      inflightKeyRef.current = null;
+      setLoading(false);
+      setFetchingMore(false);
+    }
+  }, []);
 
   const refreshData = useCallback(() => {
     fetchApplications();
   }, [fetchApplications]);
 
-  // 3. Infinite Scroll Observer
   const lastJobElementRef = useCallback(
     (node: HTMLDivElement) => {
       if (loading || fetchingMore) return;
@@ -161,9 +179,24 @@ export default function JobsPage() {
     }
   }, [isAuthenticated, fetchApplications]);
 
-  // Debounced Search
+  //Debounced search with character limit handling
   useEffect(() => {
     if (!isAuthenticated) return;
+
+    const trimmedQuery = searchQuery.trim();
+
+    // If search box is cleared → fetch default jobs
+    if (trimmedQuery.length === 0) {
+      setPage(1);
+      fetchJobs(1, true);
+      return;
+    }
+
+    // Enforce minimum 3 characters
+    if (trimmedQuery.length > 0 && trimmedQuery.length < 3) {
+      return;
+    }
+
     const timeoutId = setTimeout(() => {
       setPage(1);
       fetchJobs(1, true);
@@ -195,7 +228,6 @@ export default function JobsPage() {
     return application.status;
   };
 
-  // Fixed logic to handle text and color safely
   const getDeadlineInfo = (deadline?: string) => {
     if (!deadline) return null;
     const date = new Date(deadline);
@@ -233,7 +265,6 @@ export default function JobsPage() {
 
   const filteredJobs = jobs.filter((job) => {
     const applicationStatus = getApplicationStatus(job.id);
-    // Removed activeTab logic
     if (status !== 'All' && applicationStatus !== status) return false;
     return true;
   });
@@ -252,7 +283,7 @@ export default function JobsPage() {
         }}
       />
 
-      <div className="flex flex-col h-400 border-b max-w-7xl mx-auto w-full">
+      <div className="flex flex-col max-h-300 border-b max-w-7xl px-6 mx-auto w-full">
         <div className="w-full flex-none flex flex-col min-w-0">
           <div className="py-6 pb-0 border-border">
             <h1 className="text-3xl font-bold text-foreground mb-6">Job Profile</h1>
@@ -269,14 +300,13 @@ export default function JobsPage() {
                       <SelectValue placeholder="Select Sector" />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="ALL_SECTORS">All Sectors</SelectItem>
                       {Object.values(Sector).map((s) => (
                         <SelectItem key={s} value={s}>
-                          {s === Sector.ALL_SECTORS
-                            ? 'All Sectors'
-                            : s
-                                .replace(/_/g, ' ')
-                                .toLowerCase()
-                                .replace(/\b\w/g, (l) => l.toUpperCase())}
+                          {s
+                            .replace(/_/g, ' ')
+                            .toLowerCase()
+                            .replace(/\b\w/g, (l) => l.toUpperCase())}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -347,9 +377,14 @@ export default function JobsPage() {
                     className="w-full pl-10 bg-background border-border"
                   />
                 </div>
+                {searchQuery.trim().length > 0 && searchQuery.trim().length < 3 && (
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Type at least 3 characters to search
+                  </p>
+                )}
                 <Button
                   onClick={() => {
-                    setSector(Sector.ALL_SECTORS);
+                    setSector('ALL_SECTORS');
                     setPositionType('All');
                     setStatus('All');
                     setSortBy('Created At');
@@ -366,7 +401,8 @@ export default function JobsPage() {
         </div>
 
         <div className="flex flex-1 w-full overflow-hidden border-t min-h-0">
-          <div className="w-full lg:w-1/3 overflow-y-auto py-6 pr-6 pl-6 md:pl-0 space-y-4 border-r border-border scrollbar-hide">
+          {/* Theme restoration: restored scrollbar-theme and padding */}
+          <div className="w-full lg:w-1/3 overflow-y-auto py-6 pr-6 pl-6 md:pl-0 space-y-4 border-r border-border scrollbar-theme">
             {loading ? (
               Array.from({ length: 5 }).map((_, i) => <JobCardSkeleton key={i} />)
             ) : filteredJobs.length === 0 ? (
@@ -397,10 +433,22 @@ export default function JobsPage() {
                       onClick={() => setSelectedJobId(job.id)}
                     >
                       <div className="flex gap-4">
-                        <div className="w-12 h-12 rounded-md bg-primary-500/10 flex items-center justify-center shrink-0">
-                          <span className="text-lg font-bold text-primary-500">
-                            {job.company?.name?.charAt(0) || '?'}
-                          </span>
+                        <div className="w-12 h-12 rounded-md bg-primary-500/10 flex items-center justify-center shrink-0 overflow-hidden">
+                          <div className="w-12 h-12 bg-white flex items-center justify-center rounded">
+                            {job.company?.logo ? (
+                              <Image
+                                src={job.company.logo}
+                                width={48}
+                                height={48}
+                                alt={job.company.name}
+                                className="w-full h-full object-contain p-1"
+                              />
+                            ) : (
+                              <span className="text-lg font-bold text-primary-500">
+                                {job.company?.name?.charAt(0) || '?'}
+                              </span>
+                            )}
+                          </div>
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="mb-2">

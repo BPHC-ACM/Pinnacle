@@ -13,6 +13,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { api } from '@/lib/api-client';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface Question {
   id: string;
@@ -213,9 +215,20 @@ export function JobDetailPane({
         </div>
 
         <div className="mb-8">
-          <h3 className="text-lg font-semibold text-foreground mb-3">Job Description</h3>
-          <div className="prose prose-sm dark:prose-invert max-w-none text-foreground whitespace-pre-line text-sm leading-relaxed">
-            {job.description || 'No description provided.'}
+          <div className="prose prose-sm dark:prose-invert max-w-none text-foreground">
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={{
+                h1: () => null,
+                h2: () => null,
+                h3: () => null,
+                h4: () => null,
+                h5: () => null,
+                h6: () => null,
+              }}
+            >
+              {job.description || 'No description provided.'}
+            </ReactMarkdown>
           </div>
         </div>
       </div>

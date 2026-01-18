@@ -1,5 +1,5 @@
 import { prisma, Prisma } from '@repo/database';
-import { Job } from '@repo/types';
+import { Job, Sector } from '@repo/types';
 
 import { logger } from '../../config/logger.config';
 import type { Application } from '../../types/application.types';
@@ -11,6 +11,8 @@ import type {
   JobWithStats,
 } from '../../types/job.types';
 import type { PaginationParams, PaginatedResponse } from '../../types/pagination.types';
+
+const ALLOWED_SORT_FIELDS = ['createdAt', 'title', 'deadline', 'updatedAt'];
 
 function mapJobToDto(job: unknown): Job {
   return job as Job;
@@ -52,45 +54,54 @@ export class JobService {
     filters: PublicJobFilters,
     params?: PaginationParams,
   ): Promise<PaginatedResponse<Job>> {
-    const { page = 1, limit = 20, sortBy = 'createdAt', sortOrder = 'desc' } = params ?? {};
-    const { companyId, search, industry, jobType } = filters;
+    try {
+      const { page = 1, limit = 20, sortBy = 'createdAt', sortOrder = 'desc' } = params ?? {};
+      const { companyId, search, industry, jobType } = filters;
 
-    const where: Prisma.JobWhereInput = { deletedAt: null };
+      const where: Prisma.JobWhereInput = { deletedAt: null };
 
-    if (companyId) where.companyId = companyId;
-    if (jobType && jobType !== 'All') where.type = jobType;
+      if (companyId) where.companyId = companyId;
+      if (jobType && jobType !== 'All') where.type = jobType;
 
-    if (industry && industry !== 'ALL_SECTORS') {
-      where.company = { industry };
+      if (industry && industry !== 'ALL_SECTORS') {
+        where.company = {
+          sector: { equals: industry as Sector },
+        };
+      }
+
+      if (search) {
+        where.OR = [
+          { title: { contains: search, mode: 'insensitive' } },
+          { company: { name: { contains: search, mode: 'insensitive' } } },
+        ];
+      }
+
+      const safeSortBy = ALLOWED_SORT_FIELDS.includes(sortBy) ? sortBy : 'createdAt';
+
+      const orderBy = { [safeSortBy]: sortOrder } as Prisma.JobOrderByWithRelationInput;
+
+      const [data, total] = await Promise.all([
+        prisma.job.findMany({
+          where,
+          include: {
+            questions: { orderBy: { order: 'asc' } },
+            company: true,
+          },
+          orderBy,
+          skip: (page - 1) * limit,
+          take: limit,
+        }),
+        prisma.job.count({ where }),
+      ]);
+
+      return {
+        data: data as unknown as Job[],
+        meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+      };
+    } catch (error) {
+      logger.error({ err: error, filters, params }, 'JobService.getJobs failed');
+      throw error;
     }
-
-    if (search) {
-      where.OR = [
-        { title: { contains: search, mode: 'insensitive' } },
-        { company: { name: { contains: search, mode: 'insensitive' } } },
-      ];
-    }
-
-    const orderBy = { [sortBy]: sortOrder } as Prisma.JobOrderByWithRelationInput;
-
-    const [data, total] = await Promise.all([
-      prisma.job.findMany({
-        where,
-        include: {
-          questions: { orderBy: { order: 'asc' } },
-          company: true,
-        },
-        orderBy,
-        skip: (page - 1) * limit,
-        take: limit,
-      }),
-      prisma.job.count({ where }),
-    ]);
-
-    return {
-      data: data as unknown as Job[],
-      meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
-    };
   }
 
   async closeJob(id: string): Promise<Job | null> {
