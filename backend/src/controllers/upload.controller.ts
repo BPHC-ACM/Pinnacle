@@ -4,13 +4,16 @@ import multer from 'multer';
 import { logger } from '@/config/logger.config';
 import { prisma } from '@/db/client';
 import imageStorageService from '@/services/storage-service/image-storage.service';
+import marksheetStorageService from '@/services/marksheet-service/marksheet-storage.service';
+import marksheetService from '@/services/marksheet-service/marksheet.service';
 import type {
   UserWithPicture,
   CompanyWithLogo,
   JobWithDocument,
 } from '@/types/prisma-helpers.types';
+import type { UploadMarkSheetRequest } from '@/types/user-details.types';
 
-// Multer configuration for memory storage
+// Multer configuration for memory storage (5MB limit for images)
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
@@ -18,8 +21,17 @@ const upload = multer({
   },
 });
 
+// Multer configuration for larger files like marksheet screenshots (10MB limit)
+const uploadLargeImage = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB for marksheets
+  },
+});
+
 // Middleware for handling single file upload
 export const uploadSingleImage = upload.single('file');
+export const uploadSingleLargeImage = uploadLargeImage.single('file');
 
 /**
  * @route POST /api/upload/profile-picture
@@ -274,6 +286,74 @@ export const uploadJobDocument = async (req: Request, res: Response): Promise<vo
       res.status(400).json({ error: error.message });
     } else {
       res.status(500).json({ error: 'Failed to upload job document' });
+    }
+  }
+};
+
+/**
+ * @route POST /api/upload/marksheet
+ * @desc Upload term-wise marksheet screenshot/image
+ * @access Private (requires authentication)
+ */
+export const uploadMarksheet = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = (req.user as { id?: string })?.id;
+    if (!userId) {
+      res.status(401).json({ error: 'Authentication required' });
+      return;
+    }
+
+    if (!req.file) {
+      res.status(400).json({ error: 'No file uploaded' });
+      return;
+    }
+
+    // Validate that term and academicYear are provided in the request body
+    const { term, academicYear } = req.body as UploadMarkSheetRequest;
+
+    if (!term || !academicYear) {
+      res.status(400).json({ error: 'Term and academic year are required' });
+      return;
+    }
+
+    const { buffer, originalname, mimetype } = req.file;
+
+    // Validate file type (only images)
+    if (!mimetype.startsWith('image/')) {
+      res.status(400).json({ error: 'Only image files are allowed for marksheet uploads' });
+      return;
+    }
+
+    // Upload to storage
+    const { url } = await marksheetStorageService.uploadMarksheetImage(
+      userId,
+      buffer,
+      originalname,
+      mimetype,
+    );
+
+    // Create or update marksheet record
+    const marksheet = await marksheetService.uploadMarkSheet(userId, url, {
+      term,
+      academicYear,
+      fileName: originalname,
+    });
+
+    logger.info({ userId, marksheetId: marksheet.id, term, academicYear }, 'Marksheet uploaded');
+    res.json({
+      id: marksheet.id,
+      url,
+      term,
+      academicYear,
+      message: 'Marksheet uploaded successfully',
+    });
+  } catch (error: unknown) {
+    logger.error({ err: error }, 'Failed to upload marksheet');
+
+    if (error instanceof Error) {
+      res.status(400).json({ error: error.message });
+    } else {
+      res.status(500).json({ error: 'Failed to upload marksheet' });
     }
   }
 };

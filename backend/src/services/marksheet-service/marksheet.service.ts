@@ -2,6 +2,7 @@ import { logger } from '../../config/logger.config';
 import { prisma } from '../../db/client';
 import { NotFoundError } from '../../types/errors.types';
 import type { MarkSheet, UploadMarkSheetRequest } from '../../types/user-details.types';
+import marksheetStorageService from './marksheet-storage.service';
 
 class MarkSheetService {
   /**
@@ -23,6 +24,12 @@ class MarkSheetService {
       });
 
       if (existing) {
+        // Delete old file from storage if it exists
+        const oldObjectKey = marksheetStorageService.extractObjectKeyFromUrl(existing.fileUrl);
+        if (oldObjectKey) {
+          await marksheetStorageService.deleteMarksheetImage(oldObjectKey);
+        }
+
         // Update existing marksheet
         const updated = await prisma.markSheet.update({
           where: { id: existing.id },
@@ -111,6 +118,12 @@ class MarkSheetService {
 
       if (!markSheet) {
         throw new NotFoundError('Marksheet not found', 'Marksheet not found');
+      }
+
+      // Extract object key from URL and delete from storage
+      const objectKey = marksheetStorageService.extractObjectKeyFromUrl(markSheet.fileUrl);
+      if (objectKey) {
+        await marksheetStorageService.deleteMarksheetImage(objectKey);
       }
 
       await prisma.markSheet.delete({
