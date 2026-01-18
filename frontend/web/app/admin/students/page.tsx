@@ -195,7 +195,7 @@ export default function StudentsPage() {
         title: 'Success',
         description: `Student ${currentlyFrozen ? 'unfrozen' : 'frozen'} successfully`,
       });
-    } catch (error) {
+    } catch {
       toast({
         title: 'Error',
         description: `Failed to ${currentlyFrozen ? 'unfreeze' : 'freeze'} student`,
@@ -221,7 +221,7 @@ export default function StudentsPage() {
         title: 'Success',
         description: 'Student deleted successfully',
       });
-    } catch (error) {
+    } catch {
       toast({
         title: 'Error',
         description: 'Failed to delete student',

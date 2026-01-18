@@ -1,5 +1,5 @@
-import { prisma, Prisma } from '@repo/database';
-import { Job, Sector } from '@repo/types';
+import { prisma, Prisma, Sector as PrismaSector } from '@repo/database';
+import { Job } from '@repo/types';
 
 import { logger } from '../../config/logger.config';
 import type { Application } from '../../types/application.types';
@@ -65,7 +65,9 @@ export class JobService {
 
       if (industry && industry !== 'ALL_SECTORS') {
         where.company = {
-          sector: { equals: industry as Sector },
+          is: {
+            sector: industry as PrismaSector,
+          },
         };
       }
 

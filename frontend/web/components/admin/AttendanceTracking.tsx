@@ -194,7 +194,7 @@ export default function AttendanceTracking() {
 
         <div>
           <Label>Event Type</Label>
-          <Select value={eventType} onValueChange={(value: string) => setEventType(value)}>
+          <Select value={eventType} onValueChange={(value) => setEventType(value as 'OA' | 'PPT' | 'INTERVIEW')}>
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
