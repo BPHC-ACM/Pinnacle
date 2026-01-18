@@ -25,8 +25,8 @@ export function Header() {
   const isActive = (path: string) => pathname === path;
 
   return (
-    <header className="fixed top-0 left-0 right-0 w-full border-b border-border bg-background/90 backdrop-blur-md z-50">
-      <div className="max-w-7xl mx-auto py-4 px-6 flex items-center justify-between">
+    <header className="fixed top-0 left-0 right-0 w-full bg-background z-50" style={{ boxShadow: 'none !important', borderBottom: 'none !important', border: 'none !important' }}>
+      <div className="max-w-7xl mx-auto py-4 px-6 flex items-center justify-between" style={{ borderBottom: 'none !important', border: 'none !important' }}>
         <div className="flex items-center gap-8">
           <div className="cursor-pointer" onClick={handleLogoClick}>
             <Logo size="md" />

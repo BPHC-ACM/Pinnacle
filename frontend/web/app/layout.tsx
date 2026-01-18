@@ -23,11 +23,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning className={inter.variable}>
-      <body className="antialiased font-sans">
+      <body className="antialiased font-sans bg-background text-foreground" style={{ borderTop: 'none', margin: '0', padding: '0' }}>
         <ThemeProvider defaultTheme="dark" storageKey="pinnacle-theme">
           <AuthProvider>
             <Header />
-            <main className="pt-18">{children}</main>
+            <main className="pt-18 bg-background" style={{ borderTop: 'none', borderBottom: 'none', marginTop: '0', paddingTop: '72px' }}>{children}</main>
           </AuthProvider>
         </ThemeProvider>
       </body>

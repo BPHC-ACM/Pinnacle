@@ -108,21 +108,21 @@ export default function ResumePage() {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-gray-600 dark:text-gray-400">Loading...</div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-muted-foreground">Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-white dark:bg-gray-800 shadow">
+      <div className="bg-card">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">My Resumes</h1>
-              <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+              <h1 className="text-3xl font-bold text-card-foreground">My Resumes</h1>
+              <p className="mt-1 text-sm text-muted-foreground">
                 Manage and customize your professional resumes
               </p>
             </div>
@@ -138,11 +138,11 @@ export default function ResumePage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {resumes.length === 0 ? (
           <div className="text-center py-16">
-            <DocumentIcon className="w-16 h-16 mx-auto text-gray-400 dark:text-gray-600 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+            <DocumentIcon className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-lg font-medium text-foreground mb-2">
               No resumes yet
             </h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
+            <p className="text-muted-foreground mb-6">
               Create your first resume to get started
             </p>
             <Button onClick={() => router.push('/resume/builder')}>
@@ -155,23 +155,23 @@ export default function ResumePage() {
             {resumes.map((resume) => (
               <div
                 key={resume.id}
-                className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
+                className="bg-card shadow rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
               >
                 {/* Resume Card Content */}
                 <div className="p-6">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+                      <h3 className="text-lg font-semibold text-foreground mb-1">
                         {resume.title}
                       </h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                      <p className="text-sm text-muted-foreground">
                         Template: {resume.template}
                       </p>
                     </div>
-                    <DocumentIcon className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+                    <DocumentIcon className="w-8 h-8 text-primary" />
                   </div>
 
-                  <div className="text-sm text-gray-500 dark:text-gray-500 mb-4">
+                  <div className="text-sm text-muted-foreground mb-4">
                     <p>Created: {formatDate(resume.createdAt)}</p>
                     <p>Updated: {formatDate(resume.updatedAt)}</p>
                   </div>
@@ -184,7 +184,7 @@ export default function ResumePage() {
                         .map((section) => (
                           <span
                             key={section.id}
-                            className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs rounded-full capitalize"
+                            className="px-2 py-1 bg-primary/10 text-primary text-xs rounded-full capitalize"
                           >
                             {section.type}
                           </span>
@@ -216,7 +216,7 @@ export default function ResumePage() {
                       variant="outline"
                       size="sm"
                       onClick={() => handleDelete(resume.id)}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
+                      className="text-error hover:bg-error/10"
                     >
                       <TrashIcon className="w-4 h-4" />
                     </Button>
