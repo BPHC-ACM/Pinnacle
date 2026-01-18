@@ -3,9 +3,9 @@ import multer from 'multer';
 
 import { logger } from '@/config/logger.config';
 import { prisma } from '@/db/client';
-import imageStorageService from '@/services/storage-service/image-storage.service';
 import marksheetStorageService from '@/services/marksheet-service/marksheet-storage.service';
 import marksheetService from '@/services/marksheet-service/marksheet.service';
+import imageStorageService from '@/services/storage-service/image-storage.service';
 import type {
   UserWithPicture,
   CompanyWithLogo,

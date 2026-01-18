@@ -4,7 +4,6 @@ import './globals.css';
 import { AuthProvider } from '@/contexts/auth-context';
 import { ThemeProvider } from '@/contexts/theme-context';
 import { UserProvider } from '@/contexts/UserContext';
-import { Header } from '@/components/Header';
 import { Toaster } from '@/components/ui/toaster';
 
 const inter = Inter({

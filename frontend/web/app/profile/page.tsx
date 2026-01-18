@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api-client';
 import Image from 'next/image';
-import { generateAndDownloadResume } from '@/services/resume.service';
 import { Header } from '@/components/Header';
 
 // Icon components
