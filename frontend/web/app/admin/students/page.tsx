@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/use-toast';
 import {
   Table,
   TableBody,
@@ -45,6 +46,9 @@ export default function StudentsPage() {
   const [cgpaMax, setCgpaMax] = useState<number>(10);
   const [page, setPage] = useState(1);
   const pageSize = 20;
+  const [frozenStudents, setFrozenStudents] = useState<Set<string>>(new Set());
+  const [deletingStudents, setDeletingStudents] = useState<Set<string>>(new Set());
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchStudents = async () => {
@@ -173,6 +177,63 @@ export default function StudentsPage() {
       LOCKED: 'secondary',
     };
     return <Badge variant={variants[status]}>{status}</Badge>;
+  };
+
+  const handleFreezeStudent = async (studentId: string, currentlyFrozen: boolean) => {
+    try {
+      await adminService.freezeStudent(studentId, !currentlyFrozen);
+      if (currentlyFrozen) {
+        setFrozenStudents((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(studentId);
+          return newSet;
+        });
+      } else {
+        setFrozenStudents((prev) => new Set(prev).add(studentId));
+      }
+      toast({
+        title: 'Success',
+        description: `Student ${currentlyFrozen ? 'unfrozen' : 'frozen'} successfully`,
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: `Failed to ${currentlyFrozen ? 'unfreeze' : 'freeze'} student`,
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleDeleteStudent = async (studentId: string, studentName: string) => {
+    if (
+      !confirm(
+        `Are you sure you want to delete ${studentName}? This action can be reversed by a super admin.`
+      )
+    ) {
+      return;
+    }
+
+    setDeletingStudents((prev) => new Set(prev).add(studentId));
+    try {
+      await adminService.deleteStudent(studentId);
+      setStudents((prev) => prev.filter((s) => s.id !== studentId));
+      toast({
+        title: 'Success',
+        description: 'Student deleted successfully',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to delete student',
+        variant: 'destructive',
+      });
+    } finally {
+      setDeletingStudents((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(studentId);
+        return newSet;
+      });
+    }
   };
 
   if (loading) {
@@ -466,9 +527,15 @@ export default function StudentsPage() {
                         <TableCell>{getProfileBadge(student.profileStatus)}</TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-2">
-                            <Button variant="ghost" size="sm">
+                            <Button
+                              variant={frozenStudents.has(student.id) ? 'default' : 'outline'}
+                              size="sm"
+                              onClick={() =>
+                                handleFreezeStudent(student.id, frozenStudents.has(student.id))
+                              }
+                            >
                               <svg
-                                className="w-4 h-4"
+                                className="w-4 h-4 mr-1"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -477,19 +544,19 @@ export default function StudentsPage() {
                                   strokeLinecap="round"
                                   strokeLinejoin="round"
                                   strokeWidth={2}
-                                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                                />
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
                                 />
                               </svg>
+                              {frozenStudents.has(student.id) ? 'Unfreeze' : 'Freeze'}
                             </Button>
-                            <Button variant="ghost" size="sm">
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => handleDeleteStudent(student.id, student.name)}
+                              disabled={deletingStudents.has(student.id)}
+                            >
                               <svg
-                                className="w-4 h-4"
+                                className="w-4 h-4 mr-1"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -498,14 +565,10 @@ export default function StudentsPage() {
                                   strokeLinecap="round"
                                   strokeLinejoin="round"
                                   strokeWidth={2}
-                                  d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                                 />
                               </svg>
-                            </Button>
-                            <Button variant="ghost" size="sm">
-                              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-                              </svg>
+                              {deletingStudents.has(student.id) ? 'Deleting...' : 'Delete'}
                             </Button>
                           </div>
                         </TableCell>

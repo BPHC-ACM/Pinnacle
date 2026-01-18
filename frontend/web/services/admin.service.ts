@@ -118,4 +118,27 @@ export const adminService = {
     const response = await api.patch(`/admin/verify/${itemType}/${itemId}`, { status });
     return response.data;
   },
+
+  // ==================== STUDENT MANAGEMENT ====================
+  freezeStudent: async (
+    userId: string,
+    isFrozen: boolean,
+    reason?: string
+  ): Promise<{ message: string }> => {
+    const response = await api.post('/admin/students/freeze', { userId, isFrozen, reason });
+    return response.data;
+  },
+
+  deleteStudent: async (userId: string, reason?: string): Promise<{ message: string }> => {
+    const response = await api.delete(`/admin/students/${userId}`, { data: { reason } });
+    return response.data;
+  },
+
+  bulkFreezeStudents: async (
+    userIds: string[],
+    isFrozen: boolean
+  ): Promise<{ message: string; count: number }> => {
+    const response = await api.post('/admin/students/bulk-freeze', { userIds, isFrozen });
+    return response.data;
+  },
 };
