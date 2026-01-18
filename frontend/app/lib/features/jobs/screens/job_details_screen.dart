@@ -92,32 +92,44 @@ class _JobDetailsScreenState extends ConsumerState<JobDetailsScreen> {
           AnimatedBuilder(
             animation: _scrollController,
             builder: (context, child) {
-              // Calculate opacity: 1.0 at top, 0.0 after scrolling 150px
               double offset = 0;
               if (_scrollController.hasClients) {
                 offset = _scrollController.offset;
               }
               final opacity = (1.0 - (offset / 150.0)).clamp(0.0, 1.0);
-
-              return Opacity(
-                opacity: opacity,
-                child: child,
-              );
+              return Opacity(opacity: opacity, child: child);
             },
             child: Stack(
               children: [
-                const PinnacleHeaderBanner(height: 280),
-                // Gradient Overlay: Placed ON TOP to blend bottom edge into background
+                Stack(
+                  children: [
+                    const PinnacleHeaderBanner(height: 280),
+                    Positioned.fill(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.transparent,
+                              theme.scaffoldBackgroundColor,
+                            ],
+                            stops: const [0, 1],
+                            begin: AlignmentDirectional.topCenter,
+                            end: AlignmentDirectional.bottomCenter,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
                 Positioned.fill(
                   child: Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
                           Colors.transparent,
-                          Colors.transparent,
                           theme.scaffoldBackgroundColor,
                         ],
-                        stops: const [0, .6, 1],
+                        stops: const [0, 1],
                         begin: AlignmentDirectional.topCenter,
                         end: AlignmentDirectional.bottomCenter,
                       ),

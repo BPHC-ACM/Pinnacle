@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/api_client.dart';
@@ -40,6 +41,21 @@ class ProfileRepository {
       logger.i("Profile updated successfully");
     } catch (e) {
       logger.e("Update Profile Failed", error: e);
+      rethrow;
+    }
+  }
+
+  Future<void> uploadProfilePicture(File file) async {
+    try {
+      String fileName = file.path.split('/').last;
+      FormData formData = FormData.fromMap({
+        "file": await MultipartFile.fromFile(file.path, filename: fileName),
+      });
+
+      await _apiClient.post('/api/upload/profile-picture', data: formData);
+      logger.i("Profile picture uploaded successfully");
+    } catch (e) {
+      logger.e("Upload Profile Picture Failed", error: e);
       rethrow;
     }
   }

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import '../../../core/utils/logger.dart';
@@ -32,6 +34,16 @@ class ProfileNotifier extends StateNotifier<AsyncValue<StudentProfile>> {
       await loadProfile(); // Refresh to ensure sync
     } catch (e) {
       logger.e("ProfileNotifier: Basic update failed", error: e);
+      rethrow;
+    }
+  }
+
+  Future<void> updateProfilePicture(File file) async {
+    try {
+      await _repository.uploadProfilePicture(file);
+      await loadProfile(); // Refresh profile to show new image
+    } catch (e) {
+      logger.e("ProfileNotifier: Profile picture update failed", error: e);
       rethrow;
     }
   }

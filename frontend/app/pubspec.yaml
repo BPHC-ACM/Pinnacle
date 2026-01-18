@@ -26,6 +26,10 @@ dependencies:
   intl: ^0.20.2
   google_sign_in: ^7.2.0
   logger: ^2.6.2
+  flutter_pdfview: ^1.4.4
+  printing: ^5.14.2
+  pdf: ^3.11.3
+  image_picker: ^1.2.1
 
 flutter:
   uses-material-design: true
