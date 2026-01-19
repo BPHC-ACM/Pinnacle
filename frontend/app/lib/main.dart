@@ -5,7 +5,7 @@ import 'core/theme/app_theme.dart';
 import 'core/router/app_router.dart';
 
 Future<void> main() async {
-  await dotenv.load(fileName: "../../backend/.env");
+  await dotenv.load(fileName: ".env");
 
   runApp(const ProviderScope(child: PinnacleApp()));
 }
