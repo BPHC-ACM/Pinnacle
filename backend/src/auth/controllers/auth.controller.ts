@@ -263,6 +263,7 @@ export const getMe = async (req: Request, res: Response): Promise<void> => {
         name: true,
         picture: true,
         role: true,
+        hasOnboarded: true,
       },
     });
 
