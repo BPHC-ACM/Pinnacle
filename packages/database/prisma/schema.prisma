@@ -24,6 +24,7 @@ model User {
   updatedAt                 DateTime                   @updatedAt
   deletedAt                 DateTime?
   role                      UserRole                   @default(USER)
+  hasOnboarded              Boolean                    @default(false)
   deviceTokens              String[]                   @default([])
   profileStatus             ProfileStatus              @default(DRAFT)
   verificationStatus        VerificationStatus         @default(PENDING)
