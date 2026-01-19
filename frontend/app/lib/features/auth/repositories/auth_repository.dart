@@ -11,12 +11,10 @@ class AuthRepository {
   final Dio _dio = ApiClient().client;
   final StorageService _storage = StorageService();
 
-  static final String _serverClientId = dotenv.env["GOOGLE_CLIENT_ID"] ?? '';
+  // REMOVED: static final variables that read .env too early
+  // static final String _serverClientId = dotenv.env["GOOGLE_CLIENT_ID"] ?? '';
+  // static final String _iosClientId = dotenv.env["IOS_CLIENT_ID"] ?? '';
 
-  // iOS Client ID (Create this in Google Cloud Console)
-  static final String _iosClientId = dotenv.env["IOS_CLIENT_ID"] ?? '';
-
-  // v7 Change: Use the singleton instance
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
 
   AuthRepository() {
@@ -27,11 +25,17 @@ class AuthRepository {
     try {
       logger.d("AuthRepository: Initializing Google Sign In (v7)...");
 
-      // v7 Change: You MUST call initialize() before use.
-      // Pass your configuration here instead of the constructor.
+      // FIX: Read env variables here to ensure dotenv is loaded
+      final String serverClientId = dotenv.env["GOOGLE_CLIENT_ID"] ?? '';
+      final String iosClientId = dotenv.env["IOS_CLIENT_ID"] ?? '';
+
+      if (serverClientId.isEmpty) {
+        logger.e("AuthRepository: GOOGLE_CLIENT_ID is empty! Check .env file.");
+      }
+
       await _googleSignIn.initialize(
-        serverClientId: _serverClientId,
-        clientId: Platform.isIOS ? _iosClientId : null,
+        serverClientId: serverClientId,
+        clientId: Platform.isIOS ? iosClientId : null,
       );
 
       logger.i("AuthRepository: Google Sign In initialized.");
@@ -44,22 +48,18 @@ class AuthRepository {
     logger.d("AuthRepository: loginWithGoogle() called.");
     try {
       // 1. Trigger Google Sign In Flow
-      // v7 Change: signIn() is deprecated/removed in favor of authenticate().
-      // authenticate() throws an exception if cancelled, rather than returning null.
-      final GoogleSignInAccount googleUser = await _googleSignIn.authenticate();
+      final GoogleSignInAccount? googleUser = await _googleSignIn.authenticate();
 
-      // Note: In v7, if the user cancels, it typically throws a PlatformException 
-      // or GoogleSignInException, so the null check below might be redundant 
-      // but good for safety if the behavior varies by platform.
-      // if (googleUser == null) {
-      //   logger.w("AuthRepository: Google Sign In returned null (aborted).");
-      //   return;
-      // }
+      // Check if user is null (just in case)
+      if (googleUser == null) {
+         logger.w("AuthRepository: Google Sign In returned null.");
+         return;
+      }
 
       logger.i("AuthRepository: User selected: ${googleUser.email}");
 
       // 2. Get Authentication Details
-      final GoogleSignInAuthentication googleAuth = googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
       
       final String? idToken = googleAuth.idToken;
 
@@ -91,7 +91,6 @@ class AuthRepository {
         throw Exception("Backend login failed with status ${response.statusCode}");
       }
     } catch (e) {
-      // Catch cancellation errors explicitly if needed
       if (e.toString().contains('canceled') || e.toString().contains('cancelled')) {
         logger.w("AuthRepository: User cancelled login flow.");
         return;
@@ -101,6 +100,7 @@ class AuthRepository {
     }
   }
 
+  // ... rest of the file (getMe, logout) remains the same
   Future<User> getMe() async {
     try {
       final response = await _dio.get('/auth/me');
