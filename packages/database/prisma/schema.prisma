@@ -41,10 +41,24 @@ model User {
   resumes                   Resume[]
   skills                    Skill[]
   eligibleCycles            PlacementCycle[]
+  userDetails               UserDetails?
 
   @@index([email])
   @@index([googleId])
   @@index([deletedAt])
+}
+
+model UserDetails {
+  id                 String   @id @default(uuid())
+  userId             String   @unique
+  name               String
+  branch             String
+  address            String
+  parentName         String
+  parentMobileNumber String
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 }
 
 model Experience {
