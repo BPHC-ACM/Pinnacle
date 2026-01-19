@@ -1,42 +1,56 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import '../utils/logger.dart'; // Import logger
+import '../utils/logger.dart';
 
 class StorageService {
   final _storage = const FlutterSecureStorage();
-  static const _tokenKey = 'auth_token';
+  static const _accessTokenKey = 'auth_token';
+  static const _refreshTokenKey = 'refresh_token';
 
-  // Save Token
+  // --- Access Token ---
+
   Future<void> saveToken(String token) async {
     try {
-      await _storage.write(key: _tokenKey, value: token);
-      logger.d("StorageService: Token saved successfully.");
+      await _storage.write(key: _accessTokenKey, value: token);
+      logger.d("StorageService: Access token saved.");
     } catch (e) {
-      logger.e("StorageService: Failed to save token", error: e);
+      logger.e("StorageService: Failed to save access token", error: e);
       rethrow;
     }
   }
 
-  // Get Token
   Future<String?> getToken() async {
     try {
-      final token = await _storage.read(key: _tokenKey);
-      if (token != null) {
-        // Log that we found a token, but truncate it for security logs
-        final truncated = token.length > 10
-            ? "${token.substring(0, 5)}..."
-            : "***";
-        logger.d("StorageService: Token retrieved ($truncated).");
-      } else {
-        logger.d("StorageService: No token found.");
-      }
+      final token = await _storage.read(key: _accessTokenKey);
       return token;
     } catch (e) {
-      logger.e("StorageService: Failed to read token", error: e);
+      logger.e("StorageService: Failed to read access token", error: e);
       return null;
     }
   }
 
-  // Clear Session
+  // --- Refresh Token ---
+
+  Future<void> saveRefreshToken(String token) async {
+    try {
+      await _storage.write(key: _refreshTokenKey, value: token);
+      logger.d("StorageService: Refresh token saved.");
+    } catch (e) {
+      logger.e("StorageService: Failed to save refresh token", error: e);
+      rethrow;
+    }
+  }
+
+  Future<String?> getRefreshToken() async {
+    try {
+      return await _storage.read(key: _refreshTokenKey);
+    } catch (e) {
+      logger.e("StorageService: Failed to read refresh token", error: e);
+      return null;
+    }
+  }
+
+  // --- Clear Session ---
+
   Future<void> clearAll() async {
     try {
       await _storage.deleteAll();
