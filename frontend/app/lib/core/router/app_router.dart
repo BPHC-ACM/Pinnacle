@@ -45,7 +45,9 @@ final routerProvider = Provider<GoRouter>((ref) {
 
         if (!hasOnboarded) {
           if (!isOnboarding) {
-            logger.i("Router: User pending onboarding. Redirecting to /onboarding");
+            logger.i(
+              "Router: User pending onboarding. Redirecting to /onboarding",
+            );
             return '/onboarding';
           }
           return null;
@@ -71,8 +73,6 @@ final routerProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(path: '/', builder: (context, state) => const SplashScreen()),
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
-      
-      // <--- NEW ROUTE
       GoRoute(
         path: '/onboarding',
         builder: (context, state) => const OnboardingScreen(),

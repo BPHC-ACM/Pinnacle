@@ -266,7 +266,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: GoogleFonts.inter(
-              color: AppColors.neutral400.withOpacity(0.6),
+              color: AppColors.neutral400.withValues(alpha: 0.6),
             ),
             prefixIcon: Icon(icon, size: 20, color: AppColors.neutral400),
             filled: true,
@@ -278,13 +278,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: theme.colorScheme.outline.withOpacity(0.5),
+                color: theme.colorScheme.outline.withValues(alpha: .5),
               ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: theme.colorScheme.outline.withOpacity(0.5),
+                color: theme.colorScheme.outline.withValues(alpha: .5),
               ),
             ),
             focusedBorder: OutlineInputBorder(

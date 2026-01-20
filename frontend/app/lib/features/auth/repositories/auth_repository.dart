@@ -10,11 +10,6 @@ import '../models/user_model.dart';
 class AuthRepository {
   final Dio _dio = ApiClient().client;
   final StorageService _storage = StorageService();
-
-  // REMOVED: static final variables that read .env too early
-  // static final String _serverClientId = dotenv.env["GOOGLE_CLIENT_ID"] ?? '';
-  // static final String _iosClientId = dotenv.env["IOS_CLIENT_ID"] ?? '';
-
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
 
   AuthRepository() {
@@ -48,29 +43,25 @@ class AuthRepository {
     logger.d("AuthRepository: loginWithGoogle() called.");
     try {
       // 1. Trigger Google Sign In Flow
-      final GoogleSignInAccount? googleUser = await _googleSignIn.authenticate();
-
-      // Check if user is null (just in case)
-      if (googleUser == null) {
-         logger.w("AuthRepository: Google Sign In returned null.");
-         return;
-      }
+      final GoogleSignInAccount googleUser = await _googleSignIn.authenticate();
 
       logger.i("AuthRepository: User selected: ${googleUser.email}");
 
       // 2. Get Authentication Details
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-      
+      final GoogleSignInAuthentication googleAuth = googleUser.authentication;
+
       final String? idToken = googleAuth.idToken;
 
       if (idToken == null) {
-        logger.e("AuthRepository: ID Token is NULL. Check scopes and console config.");
+        logger.e(
+          "AuthRepository: ID Token is NULL. Check scopes and console config.",
+        );
         throw Exception("Failed to retrieve ID Token from Google");
       }
 
       // 3. Send ID Token to Backend
       logger.d("AuthRepository: Sending ID token to backend...");
-      
+
       final response = await _dio.post(
         '/auth/google/mobile-login',
         data: {'idToken': idToken},
@@ -85,13 +76,16 @@ class AuthRepository {
           await _storage.saveRefreshToken(refreshToken);
           logger.i("AuthRepository: Login successful. Tokens saved.");
         } else {
-           throw Exception("Backend did not return expected tokens.");
+          throw Exception("Backend did not return expected tokens.");
         }
       } else {
-        throw Exception("Backend login failed with status ${response.statusCode}");
+        throw Exception(
+          "Backend login failed with status ${response.statusCode}",
+        );
       }
     } catch (e) {
-      if (e.toString().contains('canceled') || e.toString().contains('cancelled')) {
+      if (e.toString().contains('canceled') ||
+          e.toString().contains('cancelled')) {
         logger.w("AuthRepository: User cancelled login flow.");
         return;
       }
@@ -114,7 +108,10 @@ class AuthRepository {
   Future<void> logout() async {
     try {
       await _dio.post('/auth/logout').catchError((e) {
-        return Response(requestOptions: RequestOptions(path: ''), statusCode: 200);
+        return Response(
+          requestOptions: RequestOptions(path: ''),
+          statusCode: 200,
+        );
       });
     } finally {
       await _storage.clearAll();
