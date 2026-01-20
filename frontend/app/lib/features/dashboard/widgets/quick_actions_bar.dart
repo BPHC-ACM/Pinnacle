@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import '../../../core/theme/app_colors.dart';
+import '../../../core/components/pinnacle_card.dart';
 
 class QuickActionsBar extends StatelessWidget {
   final VoidCallback? onBuildResume;
@@ -17,23 +16,24 @@ class QuickActionsBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Row(
       children: [
         Expanded(
           child: _QuickActionButton(
             label: "Build Resume",
             icon: LucideIcons.fileText,
-            // Using a distinct color for the primary action
-            color: AppColors.primary500,
+            color: colorScheme.primary,
             onTap: onBuildResume,
           ),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 8),
         Expanded(
           child: _QuickActionButton(
             label: "Explore Jobs",
             icon: LucideIcons.search,
-            color: Colors.orange[700]!,
+            color: colorScheme.tertiary,
             onTap: onViewJobs,
           ),
         ),
@@ -59,34 +59,21 @@ class _QuickActionButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Material(
-      color: Colors.transparent,
+    return PinnacleCard(
+      borderRadius: BorderRadius.circular(22),
+      padding: EdgeInsets.zero,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
+        borderRadius: BorderRadius.circular(24),
+        child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-          decoration: BoxDecoration(
-            color: theme.cardTheme.color,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: theme.colorScheme.outline.withValues(alpha: 0.5),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.02),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                padding: const EdgeInsets.all(10),
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
+                  color: color.withValues(alpha: .1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(icon, color: color, size: 24),
@@ -94,9 +81,8 @@ class _QuickActionButton extends StatelessWidget {
               const SizedBox(height: 12),
               Text(
                 label,
-                style: GoogleFonts.inter(
+                style: theme.textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w600,
-                  fontSize: 14,
                   color: theme.colorScheme.onSurface,
                 ),
                 textAlign: TextAlign.center,

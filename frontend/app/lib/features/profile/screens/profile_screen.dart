@@ -685,7 +685,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 context,
                 _phoneController,
                 "Phone",
-                "+1 234...",
+                "9876543210",
                 icon: LucideIcons.phone,
               ),
             ),
@@ -1229,6 +1229,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       decoration: InputDecoration(
         labelText: l,
         hintText: h,
+        hintStyle: TextStyle(
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+        ),
+        labelStyle: TextStyle(
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+        ),
         prefixIcon: icon != null ? Icon(icon, size: 18) : null,
         filled: true,
         fillColor: theme.scaffoldBackgroundColor,

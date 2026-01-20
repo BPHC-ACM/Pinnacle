@@ -16,7 +16,6 @@ class DashboardRepository {
 
   Future<DashboardStatsModel> getDashboardStats() async {
     try {
-      // FIX: Added '/api' prefix to match backend route
       final response = await _apiClient.get('/api/dashboard/stats');
       return DashboardStatsModel.fromJson(response.data);
     } on DioException catch (e) {
@@ -27,7 +26,6 @@ class DashboardRepository {
 
   Future<ProfileCompletionModel> getProfileCompletion() async {
     try {
-      // FIX: Added '/api' prefix to match backend route
       final response = await _apiClient.get(
         '/api/dashboard/profile-completion',
       );
