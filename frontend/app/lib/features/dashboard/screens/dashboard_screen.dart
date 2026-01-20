@@ -190,7 +190,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                         loading: () => const _DashboardSkeleton(isGrid: false),
                         error: (_, _) => const SizedBox.shrink(),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 24),
 
                       // 4. Stats Overview
                       Padding(
@@ -204,7 +204,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 16),
 
                       statsAsync.when(
                         data: (stats) {
@@ -237,7 +236,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
   }
 }
-
 
 class _EmptyDashboardState extends StatelessWidget {
   final VoidCallback onStart;

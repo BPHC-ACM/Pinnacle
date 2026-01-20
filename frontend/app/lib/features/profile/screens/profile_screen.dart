@@ -466,8 +466,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       onPressed: onTap,
       icon: const Icon(LucideIcons.plus, size: 20),
       style: IconButton.styleFrom(
-        foregroundColor: AppColors.primary500,
-        backgroundColor: AppColors.neutral800,
+        // foregroundColor: AppColors.primary500,
+        // backgroundColor: AppColors.neutral800,
+        foregroundColor: Theme.of(context).colorScheme.primary,
+        backgroundColor: Theme.of(context).colorScheme.outline,
       ),
     );
   }

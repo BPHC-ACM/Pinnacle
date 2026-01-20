@@ -346,13 +346,15 @@ class _JobsScreenState extends ConsumerState<JobsScreen>
                   Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      color: AppColors.neutral100,
+                      color: Theme.of(context).colorScheme.surface,
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
-                      showAll ? LucideIcons.briefcase : LucideIcons.fileCheck,
+                      showAll
+                          ? LucideIcons.briefcase
+                          : LucideIcons.fileExclamationPoint,
                       size: 48,
-                      color: AppColors.neutral300,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -364,7 +366,9 @@ class _JobsScreenState extends ConsumerState<JobsScreen>
                     style: GoogleFonts.inter(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
-                      color: AppColors.neutral600,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withValues(alpha: 0.7),
                     ),
                   ),
                   if (_filters.positionType != 'All' ||
@@ -374,11 +378,12 @@ class _JobsScreenState extends ConsumerState<JobsScreen>
                       child: Text(
                         "Try adjusting your filters",
                         style: GoogleFonts.inter(
-                          color: AppColors.neutral400,
+                          color: Theme.of(context).colorScheme.surface,
                           fontSize: 14,
                         ),
                       ),
                     ),
+                  SizedBox(height: 120),
                 ],
               ),
             ),
