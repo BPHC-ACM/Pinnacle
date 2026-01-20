@@ -4,11 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../features/auth/providers/auth_provider.dart';
 import '../../features/auth/screens/login_screen.dart';
-import '../../features/auth/screens/onboarding_screen.dart'; // <--- Import OnboardingScreen
+import '../../features/auth/screens/onboarding_screen.dart';
 import '../../features/dashboard/screens/dashboard_screen.dart';
 import '../../features/jobs/models/job_model.dart';
 import '../../features/jobs/screens/job_details_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
+import '../../features/resume/screens/resume_builder_screen.dart';
 import '../../features/splash/splash_screen.dart';
 import '../../features/jobs/screens/jobs_screen.dart';
 import '../components/main_nav_scaffold.dart';
@@ -76,6 +77,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/onboarding',
         builder: (context, state) => const OnboardingScreen(),
+      ),
+
+      GoRoute(
+        path: '/resume/builder',
+        builder: (context, state) => const ResumeBuilderScreen(),
       ),
 
       StatefulShellRoute(
