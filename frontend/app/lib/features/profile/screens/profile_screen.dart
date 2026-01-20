@@ -608,8 +608,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ],
           ],
         ),
-        const SizedBox(height: 12),
-        if (profile.bio != null)
+        if (profile.bio == null)
+          Text(
+            'Add your bio',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
+              fontSize: 15,
+              height: 1.6,
+              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+              fontStyle: FontStyle.italic,
+            ),
+          )
+        else ...[
+          const SizedBox(height: 12),
           Text(
             profile.bio!,
             textAlign: TextAlign.center,
@@ -619,6 +630,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               color: theme.colorScheme.onSurfaceVariant,
             ),
           ),
+        ],
         const SizedBox(height: 12),
         Divider(color: theme.colorScheme.outline.withValues(alpha: 0.5)),
         const SizedBox(height: 12),

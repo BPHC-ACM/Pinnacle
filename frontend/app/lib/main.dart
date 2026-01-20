@@ -20,7 +20,7 @@ class PinnacleApp extends ConsumerWidget {
     return MaterialApp.router(
       title: 'Pinnacle',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.darkTheme,
+      theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system,
 

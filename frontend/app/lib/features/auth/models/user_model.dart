@@ -3,6 +3,7 @@ class User {
   final String email;
   final String name;
   final String role; // 'USER' or 'ADMIN'
+  final bool hasOnboarded;
   final String? picture;
   final String? googleId;
   final String? phone;
@@ -18,6 +19,7 @@ class User {
     required this.email,
     required this.name,
     required this.role,
+    this.hasOnboarded = false,
     this.picture,
     this.googleId,
     this.phone,
@@ -35,6 +37,7 @@ class User {
       email: json['email'] as String,
       name: json['name'] as String,
       role: json['role'] as String,
+      hasOnboarded: json['hasOnboarded'] as bool? ?? false,
       picture: json['picture'] as String?,
       googleId: json['googleId'] as String?,
       phone: json['phone'] as String?,
@@ -53,6 +56,7 @@ class User {
       'email': email,
       'name': name,
       'role': role,
+      'hasOnboarded': hasOnboarded,
       'picture': picture,
       'googleId': googleId,
       'phone': phone,

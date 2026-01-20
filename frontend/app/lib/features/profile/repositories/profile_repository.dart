@@ -35,6 +35,16 @@ class ProfileRepository {
     }
   }
 
+  Future<void> submitUserDetails(Map<String, dynamic> data) async {
+    try {
+      await _apiClient.put('/api/user-details', data: data);
+      logger.i("User details submitted successfully (Onboarding complete)");
+    } catch (e) {
+      logger.e("Submit User Details Failed", error: e);
+      rethrow;
+    }
+  }
+
   Future<void> updateProfile(Map<String, dynamic> data) async {
     try {
       await _apiClient.patch('/api/user-details/profile', data: data);

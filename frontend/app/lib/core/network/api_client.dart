@@ -139,4 +139,12 @@ class ApiClient {
   }) async {
     return _dio.delete(path, data: data, queryParameters: queryParameters);
   }
+
+  Future<Response> put(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+  }) async {
+    return _dio.put(path, data: data, queryParameters: queryParameters);
+  }
 }
