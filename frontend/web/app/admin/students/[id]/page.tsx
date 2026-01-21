@@ -97,7 +97,7 @@ export default function StudentProfilePage() {
     const fetchProfile = async () => {
       setLoading(true);
       try {
-        const response = await api.get(`/api/admin/students/${studentId}/profile`);
+        const response = await api.get(`/admin/students/${studentId}/profile`);
         setProfile(response.data);
       } catch (error) {
         console.error('Error fetching student profile:', error);

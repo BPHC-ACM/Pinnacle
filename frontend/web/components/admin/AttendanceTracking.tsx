@@ -55,7 +55,7 @@ export default function AttendanceTracking() {
 
   const fetchJobs = useCallback(async () => {
     try {
-      const response = await api.get('/api/jobs?limit=100');
+      const response = await api.get('/jobs?limit=100');
       setJobs(response.data.data || []);
     } catch {
       toast({

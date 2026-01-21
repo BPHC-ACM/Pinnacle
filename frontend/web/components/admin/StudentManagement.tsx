@@ -72,7 +72,7 @@ export default function StudentManagement() {
   const toggleFreeze = async (userId: string, currentStatus: boolean) => {
     setLoading(true);
     try {
-      await api.post('/api/admin/students/freeze', {
+      await api.post('/admin/students/freeze', {
         userId,
         isFrozen: !currentStatus,
       });

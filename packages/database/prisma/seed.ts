@@ -123,7 +123,7 @@ async function main(): Promise<void> {
           parentRelation: faker.helpers.arrayElement(['Father', 'Mother', 'Guardian']),
         },
       });
-    })
+    }),
   );
 
   // 3. Add Experiences for each user
@@ -191,14 +191,14 @@ async function main(): Promise<void> {
         category: 'Programming Languages',
         items: faker.helpers.arrayElements(
           ['JavaScript', 'TypeScript', 'Python', 'Java', 'C++', 'Go', 'Rust'],
-          { min: 3, max: 5 }
+          { min: 3, max: 5 },
         ),
       },
       {
         category: 'Frameworks & Libraries',
         items: faker.helpers.arrayElements(
           ['React', 'Node.js', 'Express', 'Next.js', 'Django', 'Spring Boot', 'FastAPI'],
-          { min: 2, max: 4 }
+          { min: 2, max: 4 },
         ),
       },
       {
@@ -212,7 +212,7 @@ async function main(): Promise<void> {
         category: 'Tools & Technologies',
         items: faker.helpers.arrayElements(
           ['Docker', 'Git', 'AWS', 'Azure', 'Kubernetes', 'CI/CD'],
-          { min: 2, max: 4 }
+          { min: 2, max: 4 },
         ),
       },
     ];
@@ -242,7 +242,7 @@ async function main(): Promise<void> {
           domain: faker.commerce.department(),
           tools: faker.helpers.arrayElements(
             ['React', 'Node.js', 'TypeScript', 'PostgreSQL', 'Docker', 'AWS'],
-            { min: 3, max: 5 }
+            { min: 3, max: 5 },
           ),
           referenceUrl: faker.helpers.maybe(() => faker.internet.url(), { probability: 0.5 }),
           // github: `https://github.com/${user.name
@@ -367,7 +367,7 @@ async function main(): Promise<void> {
           linkedin: `https://linkedin.com/company/${faker.lorem.word()}`,
         },
       });
-    })
+    }),
   );
 
   // 11. Create Jobs
