@@ -390,13 +390,15 @@ export default function StudentProfilePage() {
                     <h3 className="font-semibold">{skill.category}</h3>
                     {skill.proficiency && <Badge variant="secondary">{skill.proficiency}</Badge>}
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    {skill.items.map((item, idx) => (
-                      <Badge key={idx} variant="outline">
-                        {item}
-                      </Badge>
-                    ))}
-                  </div>
+                  {skill.items && skill.items.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {skill.items.map((item, idx) => (
+                        <Badge key={idx} variant="outline">
+                          {item}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -415,13 +417,15 @@ export default function StudentProfilePage() {
               {profile.projects.map((project) => (
                 <div key={project.id} className="border-l-2 border-primary pl-4">
                   <h3 className="font-semibold text-lg mb-2">{project.name}</h3>
-                  <div className="flex flex-wrap gap-2 mb-2">
-                    {project.technologies.map((tech, idx) => (
-                      <Badge key={idx} variant="secondary">
-                        {tech}
-                      </Badge>
-                    ))}
-                  </div>
+                  {project.technologies && project.technologies.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {project.technologies.map((tech, idx) => (
+                        <Badge key={idx} variant="secondary">
+                          {tech}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
                   <div className="flex gap-4 mb-2 text-sm">
                     {project.url && (
                       <a
