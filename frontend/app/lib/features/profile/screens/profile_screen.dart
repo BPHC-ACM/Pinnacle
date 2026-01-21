@@ -466,8 +466,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       onPressed: onTap,
       icon: const Icon(LucideIcons.plus, size: 20),
       style: IconButton.styleFrom(
-        foregroundColor: AppColors.primary500,
-        backgroundColor: AppColors.neutral800,
+        // foregroundColor: AppColors.primary500,
+        // backgroundColor: AppColors.neutral800,
+        foregroundColor: Theme.of(context).colorScheme.primary,
+        backgroundColor: Theme.of(context).colorScheme.outline,
       ),
     );
   }
@@ -608,8 +610,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ],
           ],
         ),
-        const SizedBox(height: 12),
-        if (profile.bio != null)
+        if (profile.bio == null)
+          Text(
+            'Add your bio',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
+              fontSize: 15,
+              height: 1.6,
+              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+              fontStyle: FontStyle.italic,
+            ),
+          )
+        else ...[
+          const SizedBox(height: 12),
           Text(
             profile.bio!,
             textAlign: TextAlign.center,
@@ -619,6 +632,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               color: theme.colorScheme.onSurfaceVariant,
             ),
           ),
+        ],
         const SizedBox(height: 12),
         Divider(color: theme.colorScheme.outline.withValues(alpha: 0.5)),
         const SizedBox(height: 12),
@@ -673,7 +687,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 context,
                 _phoneController,
                 "Phone",
-                "+1 234...",
+                "9876543210",
                 icon: LucideIcons.phone,
               ),
             ),
@@ -1217,6 +1231,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       decoration: InputDecoration(
         labelText: l,
         hintText: h,
+        hintStyle: TextStyle(
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+        ),
+        labelStyle: TextStyle(
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+        ),
         prefixIcon: icon != null ? Icon(icon, size: 18) : null,
         filled: true,
         fillColor: theme.scaffoldBackgroundColor,
