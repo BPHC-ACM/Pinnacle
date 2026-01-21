@@ -1144,7 +1144,7 @@ paths:
                         id: { type: string }
                         email: { type: string }
                         name: { type: string }
-                        role: 
+                        role:
                           type: string
                           enum: [USER, ADMIN, SUPER_ADMIN, JPT, SPT]
                         picture: { type: string }

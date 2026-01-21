@@ -1,4 +1,4 @@
-import { prisma, Sector } from '@repo/database'; // Import Sector from Prisma
+import { prisma, Sector, PrismaClient } from '@repo/database'; // Import Sector from Prisma
 
 import { NotFoundError, ForbiddenError } from '../../types/errors.types';
 import type { PaginationParams, PaginatedResponse } from '../../types/pagination.types';
@@ -545,43 +545,50 @@ export class UserService {
 
   // User Details
   async getUserDetails(userId: string): Promise<UserDetails | null> {
-    return (await prisma.userDetails.findUnique({
+    const details = await prisma.userDetails.findUnique({
       where: { userId },
-    })) as unknown as UserDetails | null;
+    });
+    return details as unknown as UserDetails | null;
   }
 
   async createUserDetails(userId: string, data: CreateUserDetailsRequest): Promise<UserDetails> {
-    return await prisma.$transaction(async (tx) => {
-      const user = await tx.user.findUnique({
-        where: { id: userId },
-        select: { hasOnboarded: true },
-      });
+    const result = await prisma.$transaction(
+      async (
+        tx: Omit<PrismaClient, '$connect' | '$disconnect' | '$on' | '$transaction' | '$extends'>,
+      ) => {
+        const user = await tx.user.findUnique({
+          where: { id: userId },
+          select: { hasOnboarded: true },
+        });
 
-      if (!user) {
-        throw new NotFoundError(`User with ID ${userId} not found`, 'User not found');
-      }
+        if (!user) {
+          throw new NotFoundError(`User with ID ${userId} not found`, 'User not found');
+        }
 
-      if (user.hasOnboarded) {
-        throw new ForbiddenError(
-          `User ${userId} has already onboarded`,
-          'User has already onboarded',
-        );
-      }
+        if (user.hasOnboarded) {
+          throw new ForbiddenError(
+            `User ${userId} has already onboarded`,
+            'User has already onboarded',
+          );
+        }
 
-      const userDetails = await tx.userDetails.create({
-        data: {
-          ...data,
-          userId,
-        },
-      });
+        const userDetails = await tx.userDetails.create({
+          data: {
+            ...data,
+            userId,
+          },
+        });
 
-      await tx.user.update({
-        where: { id: userId },
-        data: { hasOnboarded: true },
-      });
+        await tx.user.update({
+          where: { id: userId },
+          data: { hasOnboarded: true },
+        });
 
-      return userDetails as unknown as UserDetails;
-    });
+        return userDetails;
+      },
+    );
+
+    return result as unknown as UserDetails;
   }
 }
 

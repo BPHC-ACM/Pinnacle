@@ -1,9 +1,9 @@
 import type { Request, Response } from 'express';
 
+import { logger } from '../config/logger.config';
 import { prisma } from '../db/client';
 import { AuthError, NotFoundError, ValidationError } from '../types/errors.types';
 import { UserRole } from '../types/user-details.types';
-import { logger } from '../config/logger.config';
 
 /**
  * Get admin ID from request
@@ -76,7 +76,11 @@ export async function grantRole(req: Request, res: Response): Promise<void> {
       user: updatedUser,
     });
   } catch (error) {
-    if (error instanceof AuthError || error instanceof ValidationError || error instanceof NotFoundError) {
+    if (
+      error instanceof AuthError ||
+      error instanceof ValidationError ||
+      error instanceof NotFoundError
+    ) {
       throw error;
     }
     logger.error({ err: error }, 'Error granting role');
@@ -108,7 +112,7 @@ export async function revokeRole(req: Request, res: Response): Promise<void> {
     }
 
     // Prevent revoking SUPER_ADMIN role
-    if (user.role === UserRole.SUPER_ADMIN) {
+    if (user.role === (UserRole.SUPER_ADMIN as string)) {
       throw new ValidationError('Cannot revoke SUPER_ADMIN role', 'Invalid operation');
     }
 
@@ -140,7 +144,11 @@ export async function revokeRole(req: Request, res: Response): Promise<void> {
       user: updatedUser,
     });
   } catch (error) {
-    if (error instanceof AuthError || error instanceof ValidationError || error instanceof NotFoundError) {
+    if (
+      error instanceof AuthError ||
+      error instanceof ValidationError ||
+      error instanceof NotFoundError
+    ) {
       throw error;
     }
     logger.error({ err: error }, 'Error revoking role');
@@ -152,7 +160,7 @@ export async function revokeRole(req: Request, res: Response): Promise<void> {
  * Get all users with admin roles (SPT, JPT, ADMIN)
  * @route GET /api/admin/roles
  */
-export async function getAdminUsers(req: Request, res: Response): Promise<void> {
+export async function getAdminUsers(_req: Request, res: Response): Promise<void> {
   try {
     const adminUsers = await prisma.user.findMany({
       where: {
@@ -173,10 +181,7 @@ export async function getAdminUsers(req: Request, res: Response): Promise<void> 
         createdAt: true,
         updatedAt: true,
       },
-      orderBy: [
-        { role: 'asc' },
-        { name: 'asc' },
-      ],
+      orderBy: [{ role: 'asc' }, { name: 'asc' }],
     });
 
     res.json({

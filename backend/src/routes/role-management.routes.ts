@@ -1,4 +1,5 @@
 import { Router, type RequestHandler } from 'express';
+import { z } from 'zod';
 
 import { authenticateToken } from '@/auth/middleware/auth.middleware';
 import {
@@ -9,7 +10,6 @@ import {
 } from '@/controllers/role-management.controller';
 import { requireSPT } from '@/middleware/role.middleware';
 import { validateBody } from '@/middleware/validate.middleware';
-import { z } from 'zod';
 
 const router = Router();
 
@@ -19,8 +19,8 @@ router.use(authenticateToken as RequestHandler);
 // Schema validation
 const grantRoleSchema = z.object({
   userId: z.string().uuid('Invalid user ID'),
-  role: z.enum(['ADMIN', 'JPT', 'SPT'], {
-    errorMap: () => ({ message: 'Role must be ADMIN, JPT, or SPT' }),
+  role: z.enum(['ADMIN', 'JPT', 'SPT']).refine((val) => ['ADMIN', 'JPT', 'SPT'].includes(val), {
+    message: 'Role must be ADMIN, JPT, or SPT',
   }),
 });
 
@@ -37,19 +37,9 @@ router.get('/', requireSPT as RequestHandler, getAdminUsers);
 router.get('/search', requireSPT as RequestHandler, searchUsers);
 
 // POST /api/admin/roles/grant - Grant a role to a user (SPT only)
-router.post(
-  '/grant',
-  requireSPT as RequestHandler,
-  validateBody(grantRoleSchema) as RequestHandler,
-  grantRole,
-);
+router.post('/grant', requireSPT as RequestHandler, validateBody(grantRoleSchema), grantRole);
 
 // POST /api/admin/roles/revoke - Revoke a role from a user (SPT only)
-router.post(
-  '/revoke',
-  requireSPT as RequestHandler,
-  validateBody(revokeRoleSchema) as RequestHandler,
-  revokeRole,
-);
+router.post('/revoke', requireSPT as RequestHandler, validateBody(revokeRoleSchema), revokeRole);
 
 export default router;
