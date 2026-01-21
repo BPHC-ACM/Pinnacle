@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 
 import adminStudentService from '../services/admin-student-service/admin-student.service';
 import markSheetService from '../services/marksheet-service/marksheet.service';
+import userService from '../services/user-service/user.service';
 import { AuthError } from '../types/errors.types';
 import type { FreezeStudentRequest } from '../types/user-details.types';
 
@@ -93,4 +94,21 @@ export async function getStudentMarkSheets(req: Request, res: Response): Promise
     return;
   }
   res.json(await markSheetService.getMarkSheetsForUser(userId));
+}
+
+/**
+ * Get complete profile for a specific student (admin only)
+ */
+export async function getStudentProfile(req: Request, res: Response): Promise<void> {
+  const { userId } = req.params;
+  if (!userId) {
+    res.status(400).json({ error: 'User ID is required' });
+    return;
+  }
+  const profile = await userService.getUserProfile(userId);
+  if (!profile) {
+    res.status(404).json({ error: 'Student profile not found' });
+    return;
+  }
+  res.json(profile);
 }

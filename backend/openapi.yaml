@@ -1120,6 +1120,80 @@ paths:
         '404':
           description: 'Item not found'
 
+  # Admin Student Management
+  /api/admin/students/{userId}/profile:
+    get:
+      summary: 'Get student complete profile'
+      description: 'Admin only - retrieve the complete profile of any student including personal info, experiences, education, skills, projects, certifications, and languages'
+      tags: [Admin, Students]
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: 'The ID of the student whose profile to retrieve'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 'Student profile retrieved successfully'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  email:
+                    type: string
+                  name:
+                    type: string
+                  picture:
+                    type: string
+                  phone:
+                    type: string
+                  location:
+                    type: string
+                  linkedin:
+                    type: string
+                  github:
+                    type: string
+                  website:
+                    type: string
+                  bio:
+                    type: string
+                  title:
+                    type: string
+                  summary:
+                    type: string
+                  experiences:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Experience'
+                  education:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Education'
+                  skills:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Skill'
+                  projects:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Project'
+                  certifications:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Certification'
+                  languages:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Language'
+        '400':
+          description: 'User ID is required'
+        '404':
+          description: 'Student profile not found'
+
   # Role Management (SPT Only)
   /api/admin/roles:
     get:

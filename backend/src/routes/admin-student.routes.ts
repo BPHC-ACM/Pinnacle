@@ -34,4 +34,7 @@ router.post('/students/:userId/restore', requireSuperAdmin, adminStudentControll
 // GET /api/admin/students/:userId/marksheets - Get student's marksheets
 router.get('/students/:userId/marksheets', adminStudentController.getStudentMarkSheets);
 
+// GET /api/admin/students/:userId/profile - Get student's complete profile
+router.get('/students/:userId/profile', adminStudentController.getStudentProfile);
+
 export default router;

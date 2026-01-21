@@ -438,7 +438,7 @@ export default function StudentsPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => router.push('/dev-admin/notifications')}
+                      onClick={() => router.push('/admin/notifications')}
                     >
                       Send Notification
                     </Button>
@@ -507,7 +507,7 @@ export default function StudentsPage() {
                             </div>
                             <div>
                               <button
-                                onClick={() => router.push(`/dev-admin/students/${student.id}`)}
+                                onClick={() => router.push(`/admin/students/${student.id}`)}
                                 className="font-medium hover:text-primary hover:underline text-left"
                               >
                                 {student.name}
