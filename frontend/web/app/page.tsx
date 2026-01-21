@@ -49,22 +49,21 @@ const UsersIcon = ({ className }: { className?: string }) => (
 );
 
 export default function Home() {
-  const { isLoading: authLoading, isAuthenticated } = useAuth();
+  const { isLoading: authLoading, isAuthenticated, user } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
+    // If authenticated, redirect based on onboarding status
     if (!authLoading && isAuthenticated) {
-      router.push('/dashboard');
+      if (user && !user.hasOnboarded) {
+        console.log('Landing page - user not onboarded, redirecting to onboarding');
+        router.push('/onboarding');
+      } else {
+        console.log('Landing page - user is authenticated, redirecting to dashboard');
+        router.push('/dashboard');
+      }
     }
-  }, [authLoading, isAuthenticated, router]);
-
-  useEffect(() => {
-    // If authenticated, redirect to dashboard
-    if (!authLoading && isAuthenticated) {
-      console.log('Landing page - user is authenticated, redirecting to dashboard');
-      router.push('/dashboard');
-    }
-  }, [authLoading, isAuthenticated, router]);
+  }, [authLoading, isAuthenticated, user, router]);
 
   // Show loading while checking auth
   if (authLoading) {

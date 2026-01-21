@@ -1,318 +1,248 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { useToast } from '@/components/ui/use-toast';
-import { api } from '@/lib/api';
 
-interface OnboardingData {
-  // Basic Info
-  name: string;
-  studentId: string;
-  branch: string;
-  currentYear: number;
-  phone: string;
+// Validation Schema
+const onboardingSchema = z.object({
+  name: z.string().min(2, 'Name must be at least 2 characters'),
+  branch: z.string().min(2, 'Branch is required'),
+  address: z.string().min(5, 'Address must be at least 5 characters'),
+  parentName: z.string().min(2, 'Parent name is required'),
+  parentMobileNumber: z
+    .string()
+    .length(10, 'Mobile number must be exactly 10 digits')
+    .regex(/^\d+$/, 'Mobile number must contain only digits'),
+});
 
-  // Parent Details
-  parentName: string;
-  parentEmail: string;
-  parentPhone: string;
-  parentRelation: string;
-}
-
-const BRANCHES = [
-  'Computer Science',
-  'Electronics and Communication',
-  'Electrical and Electronics',
-  'Mechanical',
-  'Civil',
-  'Chemical',
-  'Biotechnology',
-  'Mathematics',
-  'Physics',
-  'Chemistry',
-  'Economics',
-];
-
-const PARENT_RELATIONS = ['Father', 'Mother', 'Guardian', 'Other'];
+type OnboardingFormValues = z.infer<typeof onboardingSchema>;
 
 export default function OnboardingPage() {
+  const { user, isAuthenticated, isLoading, refreshUser } = useAuth();
   const router = useRouter();
-  const { toast } = useToast();
-  const [step, setStep] = useState(1);
-  const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [formData, setFormData] = useState<OnboardingData>({
-    name: '',
-    studentId: '',
-    branch: '',
-    currentYear: 1,
-    phone: '',
-    parentName: '',
-    parentEmail: '',
-    parentPhone: '',
-    parentRelation: '',
+  // Form setup
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm<OnboardingFormValues>({
+    resolver: zodResolver(onboardingSchema),
+    defaultValues: {
+      name: '',
+      branch: '',
+      address: '',
+      parentName: '',
+      parentMobileNumber: '',
+    },
   });
 
-  const updateField = (field: keyof OnboardingData, value: string | number) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const validateStep1 = () => {
-    if (!formData.name || !formData.studentId || !formData.branch || !formData.currentYear) {
-      toast({
-        title: 'Validation Error',
-        description: 'Please fill all required fields',
-        variant: 'destructive',
-      });
-      return false;
+  // Pre-fill name from auth user if available
+  useEffect(() => {
+    if (user?.name) {
+      setValue('name', user.name);
     }
-    return true;
-  };
+  }, [user, setValue]);
 
-  const validateStep2 = () => {
-    if (
-      !formData.parentName ||
-      !formData.parentEmail ||
-      !formData.parentPhone ||
-      !formData.parentRelation
-    ) {
-      toast({
-        title: 'Validation Error',
-        description: 'Please fill all parent details',
-        variant: 'destructive',
-      });
-      return false;
+  // Auth and Onboarding checks
+  useEffect(() => {
+    if (!isLoading) {
+      if (!isAuthenticated) {
+        router.push('/');
+      } else if (user?.hasOnboarded) {
+        router.push('/dashboard');
+      }
     }
+  }, [isLoading, isAuthenticated, user, router]);
 
-    // Validate email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.parentEmail)) {
-      toast({
-        title: 'Validation Error',
-        description: 'Please enter a valid parent email',
-        variant: 'destructive',
-      });
-      return false;
-    }
-
-    return true;
-  };
-
-  const handleNext = () => {
-    if (step === 1 && validateStep1()) {
-      setStep(2);
-    }
-  };
-
-  const handleBack = () => {
-    if (step > 1) {
-      setStep(step - 1);
-    }
-  };
-
-  const handleSubmit = async () => {
-    if (!validateStep2()) return;
-
-    setLoading(true);
+  const onSubmit = async (data: OnboardingFormValues) => {
+    setIsSubmitting(true);
     try {
-      // Update user profile with basic info
-      await api.patch('/api/user-details/profile', {
-        name: formData.name,
-        studentId: formData.studentId,
-        branch: formData.branch,
-        currentYear: formData.currentYear,
-        phone: formData.phone,
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+      const token = localStorage.getItem('token');
+
+      const response = await fetch(`${apiUrl}/api/user-details`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(data),
       });
 
-      // Update parent details
-      await api.patch('/api/user-details/parent-details', {
-        parentName: formData.parentName,
-        parentEmail: formData.parentEmail,
-        parentPhone: formData.parentPhone,
-        parentRelation: formData.parentRelation,
-      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to submit onboarding details');
+      }
 
-      toast({
-        title: 'Success',
-        description: 'Profile completed successfully!',
-      });
-
-      // Redirect to dashboard
+      // Refresh user context to update hasOnboarded status
+      await refreshUser();
+      
       router.push('/dashboard');
-    } catch (error: unknown) {
-      const err = error as { response?: { data?: { error?: string } } };
-      toast({
-        title: 'Error',
-        description: err.response?.data?.error || 'Failed to complete onboarding',
-        variant: 'destructive',
-      });
+    } catch (error) {
+      console.error('Onboarding error:', error);
+      alert('Failed to save details. Please try again.');
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
+
+  if (isLoading || !isAuthenticated || user?.hasOnboarded) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-pulse flex flex-col items-center">
+          <div className="h-12 w-12 rounded-full bg-primary/20 mb-4"></div>
+          <div className="h-4 w-32 bg-primary/20 rounded"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-      <Card className="w-full max-w-2xl">
-        <CardHeader>
-          <CardTitle>Complete Your Profile</CardTitle>
-          <CardDescription>
-            Step {step} of 2: {step === 1 ? 'Personal Information' : 'Parent/Guardian Details'}
+    <div className="min-h-screen flex items-center justify-center p-4 bg-background relative overflow-hidden">
+      {/* Background Decor */}
+      <div
+        className="absolute top-0 left-0 w-full h-full opacity-30 pointer-events-none"
+        style={{
+          backgroundImage:
+            'radial-gradient(circle at 50% 0%, hsl(var(--primary)) 0%, transparent 50%)',
+        }}
+      />
+
+      <Card className="w-full max-w-lg shadow-2xl border-border/50 backdrop-blur-sm bg-card/95 relative z-10">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-3xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
+            Welcome to Pinnacle
+          </CardTitle>
+          <CardDescription className="text-center text-lg">
+            Let&apos;s get your profile set up to start your journey
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {step === 1 && (
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="name">Full Name *</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => updateField('name', e.target.value)}
-                  placeholder="Enter your full name"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="studentId">Student ID / Roll Number *</Label>
-                <Input
-                  id="studentId"
-                  value={formData.studentId}
-                  onChange={(e) => updateField('studentId', e.target.value)}
-                  placeholder="e.g., 2021A7PS0001G"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="branch">Branch *</Label>
-                <Select
-                  value={formData.branch}
-                  onValueChange={(value) => updateField('branch', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select your branch" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {BRANCHES.map((branch) => (
-                      <SelectItem key={branch} value={branch}>
-                        {branch}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="currentYear">Current Year *</Label>
-                <Select
-                  value={formData.currentYear.toString()}
-                  onValueChange={(value) => updateField('currentYear', parseInt(value))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select your year" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1">1st Year</SelectItem>
-                    <SelectItem value="2">2nd Year</SelectItem>
-                    <SelectItem value="3">3rd Year</SelectItem>
-                    <SelectItem value="4">4th Year</SelectItem>
-                    <SelectItem value="5">5th Year</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="phone">Phone Number</Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) => updateField('phone', e.target.value)}
-                  placeholder="+91 98765 43210"
-                />
-              </div>
-
-              <div className="flex justify-end">
-                <Button onClick={handleNext}>Next</Button>
-              </div>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <div className="space-y-2">
+              <label
+                htmlFor="name"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Full Name
+              </label>
+              <Input
+                id="name"
+                placeholder="John Doe"
+                {...register('name')}
+                className={errors.name ? 'border-destructive focus-visible:ring-destructive' : ''}
+              />
+              {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
             </div>
-          )}
 
-          {step === 2 && (
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="parentName">Parent/Guardian Name *</Label>
+            <div className="space-y-2">
+              <label
+                htmlFor="branch"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Branch / Department
+              </label>
+              <Input
+                id="branch"
+                placeholder="Computer Science & Engineering"
+                {...register('branch')}
+                className={errors.branch ? 'border-destructive focus-visible:ring-destructive' : ''}
+              />
+              {errors.branch && <p className="text-xs text-destructive">{errors.branch.message}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <label
+                htmlFor="address"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Current Address
+              </label>
+              <Input
+                id="address"
+                placeholder="Hostel Block A, Room 101"
+                {...register('address')}
+                className={
+                  errors.address ? 'border-destructive focus-visible:ring-destructive' : ''
+                }
+              />
+              {errors.address && (
+                <p className="text-xs text-destructive">{errors.address.message}</p>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label
+                  htmlFor="parentName"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Parent&apos;s Name
+                </label>
                 <Input
                   id="parentName"
-                  value={formData.parentName}
-                  onChange={(e) => updateField('parentName', e.target.value)}
-                  placeholder="Enter parent/guardian name"
+                  placeholder="Jane Doe"
+                  {...register('parentName')}
+                  className={
+                    errors.parentName ? 'border-destructive focus-visible:ring-destructive' : ''
+                  }
                 />
+                {errors.parentName && (
+                  <p className="text-xs text-destructive">{errors.parentName.message}</p>
+                )}
               </div>
 
-              <div>
-                <Label htmlFor="parentRelation">Relation *</Label>
-                <Select
-                  value={formData.parentRelation}
-                  onValueChange={(value) => updateField('parentRelation', value)}
+              <div className="space-y-2">
+                <label
+                  htmlFor="parentMobileNumber"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select relation" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {PARENT_RELATIONS.map((relation) => (
-                      <SelectItem key={relation} value={relation}>
-                        {relation}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="parentEmail">Parent/Guardian Email *</Label>
+                  Parent&apos;s Mobile
+                </label>
                 <Input
-                  id="parentEmail"
-                  type="email"
-                  value={formData.parentEmail}
-                  onChange={(e) => updateField('parentEmail', e.target.value)}
-                  placeholder="parent@example.com"
+                  id="parentMobileNumber"
+                  placeholder="9876543210"
+                  maxLength={10}
+                  {...register('parentMobileNumber')}
+                  className={
+                    errors.parentMobileNumber
+                      ? 'border-destructive focus-visible:ring-destructive'
+                      : ''
+                  }
                 />
-              </div>
-
-              <div>
-                <Label htmlFor="parentPhone">Parent/Guardian Phone *</Label>
-                <Input
-                  id="parentPhone"
-                  type="tel"
-                  value={formData.parentPhone}
-                  onChange={(e) => updateField('parentPhone', e.target.value)}
-                  placeholder="+91 98765 43210"
-                />
-              </div>
-
-              <div className="flex justify-between">
-                <Button variant="outline" onClick={handleBack}>
-                  Back
-                </Button>
-                <Button onClick={handleSubmit} disabled={loading}>
-                  {loading ? 'Completing...' : 'Complete Profile'}
-                </Button>
+                {errors.parentMobileNumber && (
+                  <p className="text-xs text-destructive">{errors.parentMobileNumber.message}</p>
+                )}
               </div>
             </div>
-          )}
+
+            <div className="pt-4">
+              <Button
+                type="submit"
+                className="w-full text-lg h-12 font-semibold shadow-lg hover:shadow-primary/25 transition-all"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <div className="flex items-center gap-2">
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                    Saving...
+                  </div>
+                ) : (
+                  'Complete Profile'
+                )}
+              </Button>
+            </div>
+          </form>
         </CardContent>
       </Card>
     </div>

@@ -20,6 +20,7 @@ export interface User {
   summary?: string;
   createdAt: string;
   updatedAt: string;
+  hasOnboarded: boolean;
 }
 
 export interface AuthResponse {

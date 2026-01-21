@@ -18,12 +18,21 @@ import {
   updateProjectSchema,
   updateSkillSchema,
   updateUserProfileSchema,
+  createUserDetailsSchema,
 } from '../types/user-details.types';
 
 const router = express.Router();
 
 // All routes require authentication
 router.use(authenticateToken);
+
+// USER DETAILS (Personal Info) ROUTES
+
+// GET /api/user-details - Get user details
+router.get('/', userDetailsController.getUserDetails);
+
+// PUT /api/user-details - Add user details
+router.put('/', validateBody(createUserDetailsSchema), userDetailsController.createUserDetails);
 
 // USER PROFILE ROUTES
 

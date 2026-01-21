@@ -43,10 +43,11 @@ jobs:
       - name: Get Dependencies
         run: flutter pub get
 
-      # 1. Check Formatting
+      - name: Create .env file
+        run: echo "API_KEY=dummy" > .env
+
       - name: Check Formatting
         run: dart format --output=none --set-exit-if-changed .
 
-      # 2. Check for Linting Errors (Static Analysis)
       - name: Analyze
         run: flutter analyze

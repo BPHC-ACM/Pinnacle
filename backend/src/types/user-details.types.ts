@@ -773,6 +773,35 @@ export const updateExtracurricularSchema = z.object({
   order: z.number().int().min(0).optional(),
 });
 
+// ========== USER DETAILS TYPES (Personal Info) ==========
+export interface UserDetails {
+  id: string;
+  userId: string;
+  name: string;
+  branch: string;
+  address: string;
+  parentName: string;
+  parentMobileNumber: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CreateUserDetailsRequest {
+  name: string;
+  branch: string;
+  address: string;
+  parentName: string;
+  parentMobileNumber: string;
+}
+
+export const createUserDetailsSchema = z.object({
+  name: z.string().min(1).max(255),
+  branch: z.string().min(1).max(255),
+  address: z.string().min(1).max(1000),
+  parentName: z.string().min(1).max(255),
+  parentMobileNumber: z.string().min(10).max(15),
+});
+
 // ========== MARKSHEET TYPES ==========
 export interface MarkSheet {
   id: string;

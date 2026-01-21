@@ -1,14 +1,15 @@
+import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/storage/storage_service.dart';
-import '../../../core/utils/logger.dart'; // Import logger
+import '../../../core/utils/logger.dart';
 import '../models/user_model.dart';
 
 class AuthRepository {
   final Dio _dio = ApiClient().client;
   final StorageService _storage = StorageService();
-
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
 
   AuthRepository() {
@@ -16,17 +17,23 @@ class AuthRepository {
   }
 
   Future<void> _initGoogleSignIn() async {
-    logger.d("AuthRepository: Initializing Google Sign In...");
     try {
-      const String clientId =
-          '785529750770-7uipd15ri97e7jmuni87f7ukpsbud5tn.apps.googleusercontent.com';
+      logger.d("AuthRepository: Initializing Google Sign In (v7)...");
 
-      logger.d("AuthRepository: Using Server Client ID: $clientId");
+      // FIX: Read env variables here to ensure dotenv is loaded
+      final String serverClientId = dotenv.env["GOOGLE_CLIENT_ID"] ?? '';
+      final String iosClientId = dotenv.env["IOS_CLIENT_ID"] ?? '';
+
+      if (serverClientId.isEmpty) {
+        logger.e("AuthRepository: GOOGLE_CLIENT_ID is empty! Check .env file.");
+      }
 
       await _googleSignIn.initialize(
-        serverClientId: clientId,
+        serverClientId: serverClientId,
+        clientId: Platform.isIOS ? iosClientId : null,
       );
-      logger.i("AuthRepository: Google Sign In initialized successfully.");
+
+      logger.i("AuthRepository: Google Sign In initialized.");
     } catch (e) {
       logger.e("AuthRepository: Error initializing Google Sign In", error: e);
     }
@@ -35,56 +42,50 @@ class AuthRepository {
   Future<void> loginWithGoogle() async {
     logger.d("AuthRepository: loginWithGoogle() called.");
     try {
-      logger.d("AuthRepository: Starting authentication flow...");
-
+      // 1. Trigger Google Sign In Flow
       final GoogleSignInAccount googleUser = await _googleSignIn.authenticate();
 
       logger.i("AuthRepository: User selected: ${googleUser.email}");
 
+      // 2. Get Authentication Details
       final GoogleSignInAuthentication googleAuth = googleUser.authentication;
-      logger.d("AuthRepository: Authentication details obtained.");
 
       final String? idToken = googleAuth.idToken;
 
-      if (idToken != null) {
-        logger.d(
-          "AuthRepository: ID Token obtained (starts with): ${idToken.substring(0, 10)}...",
-        );
-        logger.d(
-          "AuthRepository: Sending ID token to backend /auth/google/mobile-login...",
-        );
-
-        final response = await _dio.post(
-          '/auth/google/mobile-login',
-          data: {
-            'idToken': idToken,
-          },
-        );
-
-        logger.d(
-          "AuthRepository: Backend response status: ${response.statusCode}",
-        );
-
-        if (response.statusCode == 200 || response.statusCode == 201) {
-          final accessToken = response.data['accessToken'];
-          logger.i("AuthRepository: Access Token received.");
-          await _storage.saveToken(accessToken);
-          logger.d("AuthRepository: Token saved to storage.");
-        } else {
-          logger.e("AuthRepository: Backend returned error: ${response.data}");
-          throw Exception(
-            "Backend login failed with status ${response.statusCode}",
-          );
-        }
-      } else {
+      if (idToken == null) {
         logger.e(
-          "AuthRepository: ID Token is NULL! Check serverClientId configuration.",
+          "AuthRepository: ID Token is NULL. Check scopes and console config.",
         );
         throw Exception("Failed to retrieve ID Token from Google");
       }
+
+      // 3. Send ID Token to Backend
+      logger.d("AuthRepository: Sending ID token to backend...");
+
+      final response = await _dio.post(
+        '/auth/google/mobile-login',
+        data: {'idToken': idToken},
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final accessToken = response.data['accessToken'];
+        final refreshToken = response.data['refreshToken'];
+
+        if (accessToken != null && refreshToken != null) {
+          await _storage.saveToken(accessToken);
+          await _storage.saveRefreshToken(refreshToken);
+          logger.i("AuthRepository: Login successful. Tokens saved.");
+        } else {
+          throw Exception("Backend did not return expected tokens.");
+        }
+      } else {
+        throw Exception(
+          "Backend login failed with status ${response.statusCode}",
+        );
+      }
     } catch (e) {
-      if (e is GoogleSignInException &&
-          e.code == GoogleSignInExceptionCode.canceled) {
+      if (e.toString().contains('canceled') ||
+          e.toString().contains('cancelled')) {
         logger.w("AuthRepository: User cancelled login flow.");
         return;
       }
@@ -93,11 +94,10 @@ class AuthRepository {
     }
   }
 
+  // ... rest of the file (getMe, logout) remains the same
   Future<User> getMe() async {
-    logger.d("AuthRepository: getMe() called.");
     try {
       final response = await _dio.get('/auth/me');
-      logger.d("AuthRepository: getMe response received.");
       return User.fromJson(response.data['user']);
     } catch (e) {
       logger.e("AuthRepository: getMe failed", error: e);
@@ -106,14 +106,17 @@ class AuthRepository {
   }
 
   Future<void> logout() async {
-    logger.d("AuthRepository: logout() called.");
     try {
-      await _dio.post('/auth/logout');
-    } catch (e) {
-      logger.w("AuthRepository: Logout network error (ignored)", error: e);
+      await _dio.post('/auth/logout').catchError((e) {
+        return Response(
+          requestOptions: RequestOptions(path: ''),
+          statusCode: 200,
+        );
+      });
     } finally {
       await _storage.clearAll();
-      logger.i("AuthRepository: Storage cleared.");
+      await _googleSignIn.signOut();
+      logger.i("AuthRepository: Session cleared.");
     }
   }
 }

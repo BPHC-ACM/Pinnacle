@@ -10,7 +10,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: () => void;
   logout: () => void;
-  refreshUser: () => Promise<void>;
+  refreshUser: () => Promise<User | undefined>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -99,6 +99,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const userData = data.user;
       setUser(userData);
       localStorage.setItem('user', JSON.stringify(userData));
+      return userData;
     } catch (error) {
       console.error('Failed to fetch user:', error);
       // Clear invalid tokens

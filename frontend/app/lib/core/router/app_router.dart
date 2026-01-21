@@ -4,14 +4,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../features/auth/providers/auth_provider.dart';
 import '../../features/auth/screens/login_screen.dart';
+import '../../features/auth/screens/onboarding_screen.dart';
 import '../../features/dashboard/screens/dashboard_screen.dart';
 import '../../features/jobs/models/job_model.dart';
 import '../../features/jobs/screens/job_details_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
+import '../../features/resume/screens/resume_builder_screen.dart';
 import '../../features/splash/splash_screen.dart';
 import '../../features/jobs/screens/jobs_screen.dart';
 import '../components/main_nav_scaffold.dart';
-import '../utils/logger.dart'; // Import logger
+import '../utils/logger.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authProvider);
@@ -25,12 +27,13 @@ final routerProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final isLoggingIn = state.uri.path == '/login';
       final isSplash = state.uri.path == '/';
+      final isOnboarding = state.uri.path == '/onboarding';
 
-      // Log the redirect check
-      // logger.t (Trace) is good here to avoid spamming Info logs during navigation
       logger.t(
         "Router: Check -> Path: ${state.uri.path}, "
-        "Auth: ${authState.isAuthenticated}, Loading: ${authState.isLoading}",
+        "Auth: ${authState.isAuthenticated}, "
+        "Onboarded: ${authState.user?.hasOnboarded}, "
+        "Loading: ${authState.isLoading}",
       );
 
       if (authState.isLoading) {
@@ -39,8 +42,20 @@ final routerProvider = Provider<GoRouter>((ref) {
       }
 
       if (authState.isAuthenticated) {
-        if (isLoggingIn || isSplash) {
-          logger.i("Router: User authenticated. Redirecting to /dashboard");
+        final hasOnboarded = authState.user?.hasOnboarded ?? false;
+
+        if (!hasOnboarded) {
+          if (!isOnboarding) {
+            logger.i(
+              "Router: User pending onboarding. Redirecting to /onboarding",
+            );
+            return '/onboarding';
+          }
+          return null;
+        }
+
+        if (isLoggingIn || isSplash || isOnboarding) {
+          logger.i("Router: User fully authorized. Redirecting to /dashboard");
           return '/dashboard';
         }
       } else {
@@ -59,6 +74,15 @@ final routerProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(path: '/', builder: (context, state) => const SplashScreen()),
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
+      GoRoute(
+        path: '/onboarding',
+        builder: (context, state) => const OnboardingScreen(),
+      ),
+
+      GoRoute(
+        path: '/resume/builder',
+        builder: (context, state) => const ResumeBuilderScreen(),
+      ),
 
       StatefulShellRoute(
         branches: [

@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import '../../../core/storage/storage_service.dart';
 import '../../../core/utils/logger.dart'; // Import logger
+import '../../profile/repositories/profile_repository.dart';
 import '../models/user_model.dart';
 import '../repositories/auth_repository.dart';
 
@@ -35,9 +36,10 @@ class AuthState {
 
 class AuthNotifier extends StateNotifier<AuthState> {
   final AuthRepository _repository;
+  final ProfileRepository _profileRepository;
   final StorageService _storage;
 
-  AuthNotifier(this._repository, this._storage)
+  AuthNotifier(this._repository, this._profileRepository, this._storage)
     : super(AuthState(isLoading: true)) {
     logger.d("AuthNotifier: Initialized");
     checkAuthStatus();
@@ -87,6 +89,33 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
+  Future<void> completeOnboarding(Map<String, dynamic> data) async {
+    logger.i("AuthNotifier: Submitting onboarding details...");
+    try {
+      await _profileRepository.submitUserDetails(data);
+
+      if (state.user != null) {
+        final updatedUser = User(
+          id: state.user!.id,
+          email: state.user!.email,
+          name: data['name'] ?? state.user!.name,
+          role: state.user!.role,
+          hasOnboarded: true,
+          picture: state.user!.picture,
+          googleId: state.user!.googleId,
+        );
+
+        state = state.copyWith(user: updatedUser);
+        logger.i("AuthNotifier: Local user state updated (Onboarded).");
+      }
+
+      await checkAuthStatus();
+    } catch (e) {
+      logger.e("AuthNotifier: Onboarding submission failed", error: e);
+      rethrow;
+    }
+  }
+
   Future<void> logout() async {
     logger.i("AuthNotifier: Logout requested.");
     state = state.copyWith(isLoading: true);
@@ -103,6 +132,7 @@ final authRepositoryProvider = Provider((ref) => AuthRepository());
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   return AuthNotifier(
     ref.watch(authRepositoryProvider),
+    ref.watch(profileRepositoryProvider),
     StorageService(),
   );
 });

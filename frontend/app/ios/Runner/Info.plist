@@ -4,16 +4,15 @@
 	<dict>
 		<key>CFBundleURLTypes</key>
 		<array>
-			<dict>
-				<key>CFBundleTypeRole</key>
-				<string>Editor</string>
-				<key>CFBundleURLName</key>
-				<string>pinnacle</string>
-				<key>CFBundleURLSchemes</key>
-				<array>
-					<string>pinnacle</string>
-				</array>
-			</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+			<string>pinnacle</string>
+			<string>com.googleusercontent.apps.555950774193-gj2jk3mlgdnvpba63mlql71isisll190</string>
+			</array>
+		</dict>
 		</array>
 		<key>CFBundleDevelopmentRegion</key>
 		<string>$(DEVELOPMENT_LANGUAGE)</string>

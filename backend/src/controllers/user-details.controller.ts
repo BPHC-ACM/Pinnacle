@@ -19,6 +19,7 @@ import type {
   CreateLanguageRequest,
   UpdateLanguageRequest,
   UpdateParentDetailsRequest,
+  CreateUserDetailsRequest,
 } from '../types/user-details.types';
 
 const getUserId = (req: Request): string => {
@@ -213,6 +214,24 @@ export async function deleteLanguage(req: Request, res: Response): Promise<void>
   const id = getParamId(req);
   await userService.deleteLanguage(userId, id);
   res.status(204).send();
+}
+
+// ========== USER DETAILS ==========
+
+export async function getUserDetails(req: Request, res: Response): Promise<void> {
+  const userId = getUserId(req);
+  const details = await userService.getUserDetails(userId);
+  if (!details) {
+    throw new NotFoundError(`User details not found for user ${userId}`, 'User details not found');
+  }
+  res.json(details);
+}
+
+export async function createUserDetails(req: Request, res: Response): Promise<void> {
+  const userId = getUserId(req);
+  res
+    .status(201)
+    .json(await userService.createUserDetails(userId, req.body as CreateUserDetailsRequest));
 }
 
 // ========== PARENT DETAILS ==========
