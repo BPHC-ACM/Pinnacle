@@ -25,9 +25,15 @@ function CallbackContent() {
 
       console.log('Calling refreshUser...');
       refreshUser()
-        .then(() => {
-          console.log('refreshUser succeeded! Redirecting to dashboard...');
-          setTimeout(() => router.push('/dashboard'), 500);
+        .then((userData) => {
+          console.log('refreshUser succeeded!', userData);
+          if (userData && !userData.hasOnboarded) {
+            console.log('User not onboarded, redirecting to /onboarding');
+            setTimeout(() => router.push('/onboarding'), 500);
+          } else {
+            console.log('User onboarded, redirecting to /dashboard');
+            setTimeout(() => router.push('/dashboard'), 500);
+          }
         })
         .catch((error) => {
           console.error('Auth callback error:', error);
