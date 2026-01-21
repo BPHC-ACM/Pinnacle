@@ -16,8 +16,7 @@ class PinnacleCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       shape: RoundedRectangleBorder(
-        borderRadius:
-            borderRadius ?? BorderRadius.circular(16),
+        borderRadius: borderRadius ?? BorderRadius.circular(16),
       ),
       clipBehavior: Clip.antiAlias, // IMPORTANT for InkWell
       child: Padding(
