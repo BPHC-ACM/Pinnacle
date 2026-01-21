@@ -1120,6 +1120,234 @@ paths:
         '404':
           description: 'Item not found'
 
+  # Role Management (SPT Only)
+  /api/admin/roles:
+    get:
+      summary: 'Get all admin users'
+      description: 'SPT only - get all users with admin roles (SUPER_ADMIN, SPT, JPT, ADMIN)'
+      tags: [Admin, RoleManagement]
+      responses:
+        '200':
+          description: 'List of admin users'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                  users:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id: { type: string }
+                        email: { type: string }
+                        name: { type: string }
+                        role: 
+                          type: string
+                          enum: [USER, ADMIN, SUPER_ADMIN, JPT, SPT]
+                        picture: { type: string }
+                        studentId: { type: string }
+                        branch: { type: string }
+                        currentYear: { type: integer }
+                        createdAt: { type: string, format: date-time }
+                        updatedAt: { type: string, format: date-time }
+
+  /api/admin/roles/search:
+    get:
+      summary: 'Search for users to grant roles'
+      description: 'SPT only - search for users by name, email, or student ID'
+      tags: [Admin, RoleManagement]
+      parameters:
+        - name: q
+          in: query
+          required: true
+          description: 'Search query'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 'Search results'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count: { type: integer }
+                  users:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id: { type: string }
+                        email: { type: string }
+                        name: { type: string }
+                        role: { type: string }
+                        picture: { type: string }
+                        studentId: { type: string }
+                        branch: { type: string }
+                        currentYear: { type: integer }
+
+  /api/admin/roles/grant:
+    post:
+      summary: 'Grant admin role to a user'
+      description: 'SPT only - grant SPT, JPT, or ADMIN role to a user'
+      tags: [Admin, RoleManagement]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - userId
+                - role
+              properties:
+                userId:
+                  type: string
+                  format: uuid
+                  description: 'ID of the user to grant role to'
+                role:
+                  type: string
+                  enum: [ADMIN, JPT, SPT]
+                  description: 'Role to grant (SPT, JPT, or ADMIN)'
+      responses:
+        '200':
+          description: 'Role granted successfully'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  user:
+                    type: object
+                    properties:
+                      id: { type: string }
+                      email: { type: string }
+                      name: { type: string }
+                      role: { type: string }
+                      updatedAt: { type: string, format: date-time }
+
+  /api/admin/roles/revoke:
+    post:
+      summary: 'Revoke admin role from a user'
+      description: 'SPT only - revoke role and revert user to USER role'
+      tags: [Admin, RoleManagement]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - userId
+              properties:
+                userId:
+                  type: string
+                  format: uuid
+                  description: 'ID of the user to revoke role from'
+      responses:
+        '200':
+          description: 'Role revoked successfully'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  user:
+                    type: object
+                    properties:
+                      id: { type: string }
+                      email: { type: string }
+                      name: { type: string }
+                      role: { type: string }
+                      updatedAt: { type: string, format: date-time }
+
+  # Attendance Management (JPT and Admin access)
+  /api/jobs/{jobId}/attendance:
+    post:
+      summary: 'Mark attendance for a student'
+      description: 'JPT/Admin only - mark attendance for OA, PPT, or INTERVIEW events'
+      tags: [Jobs, Attendance]
+      parameters: [{ $ref: '#/components/parameters/jobId' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - userId
+                - eventType
+                - attended
+              properties:
+                userId:
+                  type: string
+                  format: uuid
+                eventType:
+                  type: string
+                  enum: [OA, PPT, INTERVIEW]
+                  description: 'Type of event (OA - Online Assessment, PPT - Pre-Placement Talk, INTERVIEW)'
+                attended:
+                  type: boolean
+                remarks:
+                  type: string
+                  maxLength: 500
+      responses:
+        '201':
+          description: 'Attendance marked successfully'
+    get:
+      summary: 'Get attendance records for a job'
+      description: 'Admin only - retrieve all attendance records for a job'
+      tags: [Jobs, Attendance]
+      parameters: [{ $ref: '#/components/parameters/jobId' }]
+      responses:
+        '200':
+          description: 'Attendance records retrieved'
+
+  /api/jobs/{jobId}/attendance/bulk:
+    post:
+      summary: 'Bulk mark attendance'
+      description: 'JPT/Admin only - mark attendance for multiple students at once'
+      tags: [Jobs, Attendance]
+      parameters: [{ $ref: '#/components/parameters/jobId' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - attendanceRecords
+              properties:
+                attendanceRecords:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - userId
+                      - attended
+                    properties:
+                      userId: { type: string, format: uuid }
+                      attended: { type: boolean }
+                      remarks: { type: string, maxLength: 500 }
+      responses:
+        '201':
+          description: 'Bulk attendance marked successfully'
+
+  /api/jobs/{jobId}/attendance/stats:
+    get:
+      summary: 'Get attendance statistics for a job'
+      description: 'Admin only - get attendance statistics for a job'
+      tags: [Jobs, Attendance]
+      parameters: [{ $ref: '#/components/parameters/jobId' }]
+      responses:
+        '200':
+          description: 'Attendance statistics retrieved'
+
   # Upload / CDN
   /api/upload/profile-picture:
     post:

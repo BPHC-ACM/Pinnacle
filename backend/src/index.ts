@@ -22,6 +22,7 @@ import companyRoutes from './routes/company.routes';
 import dashboardRoutes from './routes/dashboard.routes';
 import jobRoutes from './routes/job.routes';
 import notificationRoutes from './routes/notification.routes';
+import roleManagementRoutes from './routes/role-management.routes';
 import uploadRoutes from './routes/upload.routes';
 import userDetailsRoutes from './routes/user-details.routes';
 import resumeRoutes from './services/resume-service/routes/resume.routes';
@@ -91,6 +92,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/admin', adminStudentRoutes);
+app.use('/api/admin/roles', roleManagementRoutes);
 app.use('/api/announcements', announcementRoutes);
 
 // API Documentation endpoint (via Swagger UI)
