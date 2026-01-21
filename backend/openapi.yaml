@@ -83,6 +83,50 @@ components:
         current: { type: boolean }
         description: { type: string }
         order: { type: integer }
+    JobEligibility:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        jobId:
+          type: string
+          format: uuid
+        minCgpa:
+          type: number
+          nullable: true
+          minimum: 0
+          maximum: 10
+        maxActiveBacklogs:
+          type: integer
+          nullable: true
+          minimum: 0
+        maxTotalBacklogs:
+          type: integer
+          nullable: true
+          minimum: 0
+        allowedBranches:
+          type: array
+          items:
+            type: string
+          default: []
+        allowedYears:
+          type: array
+          items:
+            type: integer
+            minimum: 1
+            maximum: 5
+          default: []
+        customCriteria:
+          type: object
+          nullable: true
+          additionalProperties: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
 
     UserDetails:
       type: object
@@ -122,13 +166,36 @@ paths:
 
   # Auth
   /auth/google/login:
-    get: { summary: 'Initiate Google OAuth Login', tags: [Auth], security: [] }
+    get:
+      {
+        summary: 'Initiate Google OAuth Login',
+        tags: [Auth],
+        security: [],
+        responses: { '200': { description: 'Success' } },
+      }
   /auth/google/callback:
-    get: { summary: 'Google OAuth Callback', tags: [Auth], security: [] }
+    get:
+      {
+        summary: 'Google OAuth Callback',
+        tags: [Auth],
+        security: [],
+        responses: { '200': { description: 'Success' } },
+      }
   /auth/refresh:
-    post: { summary: 'Refresh Access Token', tags: [Auth], security: [] }
+    post:
+      {
+        summary: 'Refresh Access Token',
+        tags: [Auth],
+        security: [],
+        responses: { '200': { description: 'Success' } },
+      }
   /auth/me:
-    get: { summary: 'Get Current Authenticated User', tags: [Auth] }
+    get:
+      {
+        summary: 'Get Current Authenticated User',
+        tags: [Auth],
+        responses: { '200': { description: 'Success' } },
+      }
 
   # User Details (Student Profile)
   /api/user-details:
@@ -164,159 +231,278 @@ paths:
           description: 'User has already onboarded'
 
   /api/user-details/profile:
-    get: { summary: "Get user's core profile", tags: [UserDetails] }
-    patch: { summary: "Update user's core profile", tags: [UserDetails] }
+    get:
+      {
+        summary: "Get user's core profile",
+        tags: [UserDetails],
+        responses: { '200': { description: 'Success' } },
+      }
+    patch:
+      {
+        summary: "Update user's core profile",
+        tags: [UserDetails],
+        responses: { '200': { description: 'Success' } },
+      }
   /api/user-details/experiences:
-    get: { summary: 'Get all experiences', tags: [UserDetails] }
-    post: { summary: 'Create an experience', tags: [UserDetails] }
+    get:
+      {
+        summary: 'Get all experiences',
+        tags: [UserDetails],
+        responses: { '200': { description: 'Success' } },
+      }
+    post:
+      {
+        summary: 'Create an experience',
+        tags: [UserDetails],
+        responses: { '200': { description: 'Success' } },
+      }
   /api/user-details/experiences/{id}:
     patch:
       {
         summary: 'Update an experience',
         tags: [UserDetails],
         parameters: [{ $ref: '#/components/parameters/id' }],
+        responses: { '200': { description: 'Success' } },
       }
     delete:
       {
         summary: 'Delete an experience',
         tags: [UserDetails],
         parameters: [{ $ref: '#/components/parameters/id' }],
+        responses: { '200': { description: 'Success' } },
       }
   /api/user-details/education:
-    get: { summary: 'Get all education entries', tags: [UserDetails] }
-    post: { summary: 'Create an education entry', tags: [UserDetails] }
+    get:
+      {
+        summary: 'Get all education entries',
+        tags: [UserDetails],
+        responses: { '200': { description: 'Success' } },
+      }
+    post:
+      {
+        summary: 'Create an education entry',
+        tags: [UserDetails],
+        responses: { '200': { description: 'Success' } },
+      }
   /api/user-details/education/{id}:
     patch:
       {
         summary: 'Update an education entry',
         tags: [UserDetails],
         parameters: [{ $ref: '#/components/parameters/id' }],
+        responses: { '200': { description: 'Success' } },
       }
     delete:
       {
         summary: 'Delete an education entry',
         tags: [UserDetails],
         parameters: [{ $ref: '#/components/parameters/id' }],
+        responses: { '200': { description: 'Success' } },
       }
   /api/user-details/skills:
-    get: { summary: 'Get all skills', tags: [UserDetails] }
-    post: { summary: 'Create a skill entry', tags: [UserDetails] }
+    get:
+      {
+        summary: 'Get all skills',
+        tags: [UserDetails],
+        responses: { '200': { description: 'Success' } },
+      }
+    post:
+      {
+        summary: 'Create a skill entry',
+        tags: [UserDetails],
+        responses: { '200': { description: 'Success' } },
+      }
   /api/user-details/skills/{id}:
     patch:
       {
         summary: 'Update a skill entry',
         tags: [UserDetails],
         parameters: [{ $ref: '#/components/parameters/id' }],
+        responses: { '200': { description: 'Success' } },
       }
     delete:
       {
         summary: 'Delete a skill entry',
         tags: [UserDetails],
         parameters: [{ $ref: '#/components/parameters/id' }],
+        responses: { '200': { description: 'Success' } },
       }
   /api/user-details/projects:
-    get: { summary: 'Get all projects', tags: [UserDetails] }
-    post: { summary: 'Create a project entry', tags: [UserDetails] }
+    get:
+      {
+        summary: 'Get all projects',
+        tags: [UserDetails],
+        responses: { '200': { description: 'Success' } },
+      }
+    post:
+      {
+        summary: 'Create a project entry',
+        tags: [UserDetails],
+        responses: { '200': { description: 'Success' } },
+      }
   /api/user-details/projects/{id}:
     patch:
       {
         summary: 'Update a project entry',
         tags: [UserDetails],
         parameters: [{ $ref: '#/components/parameters/id' }],
+        responses: { '200': { description: 'Success' } },
       }
     delete:
       {
         summary: 'Delete a project entry',
         tags: [UserDetails],
         parameters: [{ $ref: '#/components/parameters/id' }],
+        responses: { '200': { description: 'Success' } },
       }
   /api/user-details/certifications:
-    get: { summary: 'Get all certifications', tags: [UserDetails] }
-    post: { summary: 'Create a certification entry', tags: [UserDetails] }
+    get:
+      {
+        summary: 'Get all certifications',
+        tags: [UserDetails],
+        responses: { '200': { description: 'Success' } },
+      }
+    post:
+      {
+        summary: 'Create a certification entry',
+        tags: [UserDetails],
+        responses: { '200': { description: 'Success' } },
+      }
   /api/user-details/certifications/{id}:
     patch:
       {
         summary: 'Update a certification entry',
         tags: [UserDetails],
         parameters: [{ $ref: '#/components/parameters/id' }],
+        responses: { '200': { description: 'Success' } },
       }
     delete:
       {
         summary: 'Delete a certification entry',
         tags: [UserDetails],
         parameters: [{ $ref: '#/components/parameters/id' }],
+        responses: { '200': { description: 'Success' } },
       }
   /api/user-details/accomplishments:
-    get: { summary: 'Get all accomplishments', tags: [UserDetails] }
-    post: { summary: 'Create an accomplishment', tags: [UserDetails] }
+    get:
+      {
+        summary: 'Get all accomplishments',
+        tags: [UserDetails],
+        responses: { '200': { description: 'Success' } },
+      }
+    post:
+      {
+        summary: 'Create an accomplishment',
+        tags: [UserDetails],
+        responses: { '200': { description: 'Success' } },
+      }
   /api/user-details/accomplishments/{id}:
     patch:
       {
         summary: 'Update an accomplishment',
         tags: [UserDetails],
         parameters: [{ $ref: '#/components/parameters/id' }],
+        responses: { '200': { description: 'Success' } },
       }
     delete:
       {
         summary: 'Delete an accomplishment',
         tags: [UserDetails],
         parameters: [{ $ref: '#/components/parameters/id' }],
+        responses: { '200': { description: 'Success' } },
       }
   /api/user-details/extracurriculars:
-    get: { summary: 'Get all positions of responsibility', tags: [UserDetails] }
-    post: { summary: 'Create a position of responsibility', tags: [UserDetails] }
+    get:
+      {
+        summary: 'Get all positions of responsibility',
+        tags: [UserDetails],
+        responses: { '200': { description: 'Success' } },
+      }
+    post:
+      {
+        summary: 'Create a position of responsibility',
+        tags: [UserDetails],
+        responses: { '200': { description: 'Success' } },
+      }
   /api/user-details/extracurriculars/{id}:
     patch:
       {
         summary: 'Update a position of responsibility',
         tags: [UserDetails],
         parameters: [{ $ref: '#/components/parameters/id' }],
+        responses: { '200': { description: 'Success' } },
       }
     delete:
       {
         summary: 'Delete a position of responsibility',
         tags: [UserDetails],
         parameters: [{ $ref: '#/components/parameters/id' }],
+        responses: { '200': { description: 'Success' } },
       }
   /api/user-details/languages:
-    get: { summary: 'Get all languages', tags: [UserDetails] }
-    post: { summary: 'Create a language entry', tags: [UserDetails] }
+    get:
+      {
+        summary: 'Get all languages',
+        tags: [UserDetails],
+        responses: { '200': { description: 'Success' } },
+      }
+    post:
+      {
+        summary: 'Create a language entry',
+        tags: [UserDetails],
+        responses: { '200': { description: 'Success' } },
+      }
   /api/user-details/languages/{id}:
     patch:
       {
         summary: 'Update a language entry',
         tags: [UserDetails],
         parameters: [{ $ref: '#/components/parameters/id' }],
+        responses: { '200': { description: 'Success' } },
       }
     delete:
       {
         summary: 'Delete a language entry',
         tags: [UserDetails],
         parameters: [{ $ref: '#/components/parameters/id' }],
+        responses: { '200': { description: 'Success' } },
       }
 
   # Company & Job Management (Admin)
   /api/companies:
-    get: { summary: 'Get all companies', tags: [Company] }
-    post: { summary: 'Create a company (Admin Only)', tags: [Company] }
+    get:
+      {
+        summary: 'Get all companies',
+        tags: [Company],
+        responses: { '200': { description: 'Success' } },
+      }
+    post:
+      {
+        summary: 'Create a company (Admin Only)',
+        tags: [Company],
+        responses: { '200': { description: 'Success' } },
+      }
   /api/companies/{id}:
     get:
       {
         summary: 'Get company by ID',
         tags: [Company],
         parameters: [{ $ref: '#/components/parameters/id' }],
+        responses: { '200': { description: 'Success' } },
       }
     patch:
       {
         summary: 'Update a company (Admin Only)',
         tags: [Company],
         parameters: [{ $ref: '#/components/parameters/id' }],
+        responses: { '200': { description: 'Success' } },
       }
     delete:
       {
         summary: 'Delete a company (Admin Only)',
         tags: [Company],
         parameters: [{ $ref: '#/components/parameters/id' }],
+        responses: { '200': { description: 'Success' } },
       }
   /api/companies/search:
     get:
@@ -327,6 +513,9 @@ paths:
           in: query
           required: true
           schema: { type: string }
+      responses:
+        '200':
+          description: 'Success'
 
   # Jobs Management
   /api/jobs:
@@ -366,6 +555,9 @@ paths:
           description: Filter by company ID
           schema:
             type: string
+      responses:
+        '200':
+          description: 'Success'
     post:
       summary: 'Create a new job posting'
       description: 'Admin only - create a new job posting'
@@ -394,6 +586,9 @@ paths:
                     properties:
                       question: { type: string }
                       required: { type: boolean }
+      responses:
+        '201':
+          description: 'Job created successfully'
   /api/jobs/{id}:
     get:
       summary: 'Get a single job by ID'
@@ -401,23 +596,117 @@ paths:
       tags: [Jobs]
       security: [] # Public endpoint
       parameters: [{ $ref: '#/components/parameters/id' }]
+      responses:
+        '200':
+          description: 'Success'
   /api/jobs/{id}/close:
     patch:
       summary: 'Close a job posting'
       description: 'Admin only - close/deactivate a job posting'
       tags: [Jobs]
       parameters: [{ $ref: '#/components/parameters/id' }]
+      responses:
+        '200':
+          description: 'Success'
   /api/jobs/{jobId}/applications:
     post:
       summary: 'Apply to a job'
       description: 'Authenticated users can submit an application to a job'
       tags: [Jobs]
       parameters: [{ $ref: '#/components/parameters/jobId' }]
+      responses:
+        '201':
+          description: 'Application submitted successfully'
     get:
       summary: 'Get all applications for a job'
       description: 'Admin only - view all applicants for a specific job'
       tags: [Jobs]
       parameters: [{ $ref: '#/components/parameters/jobId' }]
+      responses:
+        '200':
+          description: 'Success'
+
+  # Job Eligibility
+  /api/jobs/{jobId}/eligibility:
+    post:
+      summary: 'Create or update eligibility criteria for a job'
+      description: 'Admin only - set eligibility requirements (CGPA, backlogs, branches, years)'
+      tags: [Jobs, Eligibility]
+      parameters: [{ $ref: '#/components/parameters/jobId' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                minCgpa:
+                  type: number
+                  minimum: 0
+                  maximum: 10
+                  example: 7.5
+                maxActiveBacklogs:
+                  type: integer
+                  minimum: 0
+                  example: 0
+                maxTotalBacklogs:
+                  type: integer
+                  minimum: 0
+                  example: 2
+                allowedBranches:
+                  type: array
+                  items:
+                    type: string
+                  example: ['Computer Science', 'Electronics and Communication']
+                allowedYears:
+                  type: array
+                  items:
+                    type: integer
+                    minimum: 1
+                    maximum: 5
+                  example: [3, 4]
+                customCriteria:
+                  type: object
+                  additionalProperties: true
+      responses:
+        '201':
+          description: Eligibility criteria created/updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobEligibility'
+    get:
+      summary: 'Get eligibility criteria for a job'
+      description: 'Get the eligibility requirements for a specific job'
+      tags: [Jobs, Eligibility]
+      parameters: [{ $ref: '#/components/parameters/jobId' }]
+      responses:
+        '200':
+          description: Eligibility criteria retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobEligibility'
+        '404':
+          description: No eligibility criteria set for this job
+
+  /api/jobs/{jobId}/check-eligibility:
+    get:
+      summary: 'Check if current user is eligible for a job'
+      description: 'Returns whether the authenticated user meets the eligibility requirements'
+      tags: [Jobs, Eligibility]
+      parameters: [{ $ref: '#/components/parameters/jobId' }]
+      responses:
+        '200':
+          description: Eligibility check completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  isEligible:
+                    type: boolean
+                    example: true
 
   # Applications Management
   /api/applications:
@@ -425,54 +714,92 @@ paths:
       summary: 'Get my applications'
       description: 'Get all applications submitted by the current user'
       tags: [Applications]
+      responses:
+        '200':
+          description: 'Success'
   /api/applications/{id}/status:
     patch:
       summary: "Update an application's status"
       description: 'Admin only - update the status of an application (e.g., accepted, rejected)'
       tags: [Applications]
       parameters: [{ $ref: '#/components/parameters/id' }]
+      responses:
+        '200':
+          description: 'Success'
   /api/applications/{id}/withdraw:
     post:
       summary: 'Withdraw an application'
       description: 'Users can withdraw their own application'
       tags: [Applications]
       parameters: [{ $ref: '#/components/parameters/id' }]
+      responses:
+        '200':
+          description: 'Success'
 
   # Resume
   /api/resume/preview:
-    get: { summary: 'Get user data for resume preview', tags: [Resume] }
+    get:
+      {
+        summary: 'Get user data for resume preview',
+        tags: [Resume],
+        responses: { '200': { description: 'Success' } },
+      }
   /api/resume/templates:
-    get: { summary: 'Get available resume templates', tags: [Resume] }
+    get:
+      {
+        summary: 'Get available resume templates',
+        tags: [Resume],
+        responses: { '200': { description: 'Success' } },
+      }
   /api/resume/saved:
-    get: { summary: 'Get all saved resumes', tags: [Resume] }
-    post: { summary: 'Create a new saved resume', tags: [Resume] }
+    get:
+      {
+        summary: 'Get all saved resumes',
+        tags: [Resume],
+        responses: { '200': { description: 'Success' } },
+      }
+    post:
+      {
+        summary: 'Create a new saved resume',
+        tags: [Resume],
+        responses: { '200': { description: 'Success' } },
+      }
   /api/resume/saved/{id}:
     get:
       {
         summary: 'Get a specific saved resume',
         tags: [Resume],
         parameters: [{ $ref: '#/components/parameters/id' }],
+        responses: { '200': { description: 'Success' } },
       }
     patch:
       {
         summary: 'Update a saved resume',
         tags: [Resume],
         parameters: [{ $ref: '#/components/parameters/id' }],
+        responses: { '200': { description: 'Success' } },
       }
     delete:
       {
         summary: 'Delete a saved resume',
         tags: [Resume],
         parameters: [{ $ref: '#/components/parameters/id' }],
+        responses: { '200': { description: 'Success' } },
       }
   /api/resume/generate:
-    post: { summary: 'Generate PDF for authenticated user', tags: [Resume] }
+    post:
+      {
+        summary: 'Generate PDF for authenticated user',
+        tags: [Resume],
+        responses: { '200': { description: 'Success' } },
+      }
   /api/resume/generate/{userId}:
     post:
       {
         summary: 'Generate PDF for a specific user (Admin Only)',
         tags: [Resume],
         parameters: [{ name: userId, in: path, required: true, schema: { type: string } }],
+        responses: { '200': { description: 'Success' } },
       }
 
   /api/resume/download/{resumeId}:
@@ -490,6 +817,9 @@ paths:
             schema: { type: string },
           },
         ]
+      responses:
+        '200':
+          description: 'Success'
 
   /api/resume/file-info/{resumeId}:
     get:
@@ -506,6 +836,9 @@ paths:
             schema: { type: string },
           },
         ]
+      responses:
+        '200':
+          description: 'Success'
 
   /api/resume/file/{resumeId}:
     delete:
@@ -522,14 +855,32 @@ paths:
             schema: { type: string },
           },
         ]
+      responses:
+        '200':
+          description: 'Success'
 
   # Dashboard
   /api/dashboard:
-    get: { summary: 'Get all user data in one request', tags: [Dashboard] }
+    get:
+      {
+        summary: 'Get all user data in one request',
+        tags: [Dashboard],
+        responses: { '200': { description: 'Success' } },
+      }
   /api/dashboard/stats:
-    get: { summary: 'Get user statistics', tags: [Dashboard] }
+    get:
+      {
+        summary: 'Get user statistics',
+        tags: [Dashboard],
+        responses: { '200': { description: 'Success' } },
+      }
   /api/dashboard/profile-completion:
-    get: { summary: 'Get profile completion percentage', tags: [Dashboard] }
+    get:
+      {
+        summary: 'Get profile completion percentage',
+        tags: [Dashboard],
+        responses: { '200': { description: 'Success' } },
+      }
 
   # Admin Management
   /api/admin/dashboard:
@@ -537,6 +888,9 @@ paths:
       summary: 'Get admin dashboard statistics'
       description: 'Admin only - get overall platform statistics'
       tags: [Admin]
+      responses:
+        '200':
+          description: 'Success'
 
   /api/admin/jobs:
     get:
@@ -570,6 +924,9 @@ paths:
           in: query
           description: Filter by creation date (end)
           schema: { type: string, format: date-time }
+      responses:
+        '200':
+          description: 'Success'
 
   /api/admin/jobs/{id}:
     get:
@@ -577,16 +934,25 @@ paths:
       description: 'Admin only - get detailed job information'
       tags: [Admin]
       parameters: [{ $ref: '#/components/parameters/id' }]
+      responses:
+        '200':
+          description: 'Success'
     patch:
       summary: 'Update job details (Admin)'
       description: 'Admin only - update job information'
       tags: [Admin]
       parameters: [{ $ref: '#/components/parameters/id' }]
+      responses:
+        '200':
+          description: 'Success'
     delete:
       summary: 'Delete job (Admin)'
       description: 'Admin only - soft delete a job posting'
       tags: [Admin]
       parameters: [{ $ref: '#/components/parameters/id' }]
+      responses:
+        '200':
+          description: 'Success'
 
   /api/admin/jobs/{id}/reopen:
     patch:
@@ -594,6 +960,9 @@ paths:
       description: 'Admin only - reopen a closed job posting'
       tags: [Admin]
       parameters: [{ $ref: '#/components/parameters/id' }]
+      responses:
+        '200':
+          description: 'Success'
 
   /api/admin/jobs/{id}/export:
     get:
@@ -601,6 +970,9 @@ paths:
       description: 'Admin only - export all applications for a job'
       tags: [Admin]
       parameters: [{ $ref: '#/components/parameters/id' }]
+      responses:
+        '200':
+          description: 'Success'
 
   /api/admin/jobs/{jobId}/applications:
     get:
@@ -608,6 +980,9 @@ paths:
       description: 'Admin only - get all applications for a specific job'
       tags: [Admin]
       parameters: [{ $ref: '#/components/parameters/jobId' }]
+      responses:
+        '200':
+          description: 'Success'
 
   /api/admin/applications:
     get:
@@ -645,6 +1020,9 @@ paths:
           in: query
           description: Filter by application date (end)
           schema: { type: string, format: date-time }
+      responses:
+        '200':
+          description: 'Success'
 
   /api/admin/applications/{id}:
     get:
@@ -652,11 +1030,17 @@ paths:
       description: 'Admin only - get detailed application information'
       tags: [Admin]
       parameters: [{ $ref: '#/components/parameters/id' }]
+      responses:
+        '200':
+          description: 'Success'
     delete:
       summary: 'Delete application (Admin)'
       description: 'Admin only - delete an application'
       tags: [Admin]
       parameters: [{ $ref: '#/components/parameters/id' }]
+      responses:
+        '200':
+          description: 'Success'
 
   /api/admin/applications/{id}/status:
     patch:
@@ -664,6 +1048,9 @@ paths:
       description: 'Admin only - update the status of an application'
       tags: [Admin]
       parameters: [{ $ref: '#/components/parameters/id' }]
+      responses:
+        '200':
+          description: 'Success'
 
   /api/admin/applications/{id}/profile:
     get:
@@ -671,12 +1058,18 @@ paths:
       description: 'Admin only - get full profile of an applicant'
       tags: [Admin]
       parameters: [{ $ref: '#/components/parameters/id' }]
+      responses:
+        '200':
+          description: 'Success'
 
   /api/admin/applications/bulk-status:
     post:
       summary: 'Bulk update application status (Admin)'
       description: 'Admin only - update status of multiple applications at once'
       tags: [Admin]
+      responses:
+        '200':
+          description: 'Success'
 
   /api/admin/verify/{itemType}/{itemId}:
     patch:
