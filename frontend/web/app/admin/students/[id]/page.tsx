@@ -357,9 +357,7 @@ export default function StudentProfilePage() {
                         {formatDate(edu.startDate)} -{' '}
                         {edu.endDate ? formatDate(edu.endDate) : 'Present'}
                       </Badge>
-                      {edu.gpa && (
-                        <p className="text-sm font-semibold mt-1">GPA: {edu.gpa}</p>
-                      )}
+                      {edu.gpa && <p className="text-sm font-semibold mt-1">GPA: {edu.gpa}</p>}
                     </div>
                   </div>
                   {edu.achievements && edu.achievements.length > 0 && (
@@ -390,9 +388,7 @@ export default function StudentProfilePage() {
                 <div key={skill.id}>
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="font-semibold">{skill.category}</h3>
-                    {skill.proficiency && (
-                      <Badge variant="secondary">{skill.proficiency}</Badge>
-                    )}
+                    {skill.proficiency && <Badge variant="secondary">{skill.proficiency}</Badge>}
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {skill.items.map((item, idx) => (
@@ -520,4 +516,3 @@ export default function StudentProfilePage() {
     </div>
   );
 }
-

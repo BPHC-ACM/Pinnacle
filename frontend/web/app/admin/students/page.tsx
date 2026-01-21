@@ -157,7 +157,7 @@ export default function StudentsPage() {
   // Toggle individual
   const toggleSelect = (id: string) => {
     setSelectedStudents((prev) =>
-      prev.includes(id) ? prev.filter((sid) => sid !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((sid) => sid !== id) : [...prev, id],
     );
   };
 
@@ -207,7 +207,7 @@ export default function StudentsPage() {
   const handleDeleteStudent = async (studentId: string, studentName: string) => {
     if (
       !confirm(
-        `Are you sure you want to delete ${studentName}? This action can be reversed by a super admin.`
+        `Are you sure you want to delete ${studentName}? This action can be reversed by a super admin.`,
       )
     ) {
       return;
