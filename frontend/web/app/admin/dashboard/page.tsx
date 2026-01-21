@@ -30,7 +30,7 @@ export default function AdminDashboardPage() {
 
   const fetchStats = useCallback(async () => {
     try {
-      const response = await api.get('/api/admin/dashboard/stats');
+      const response = await api.get('/admin/dashboard');
       setStats(response.data);
     } catch {
       toast({
