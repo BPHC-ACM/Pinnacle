@@ -148,7 +148,13 @@ export const requireAnyRole = (roles: UserRole[]) => {
 export const restrictJPTAttendance = (req: Request, res: Response, next: NextFunction): void => {
   try {
     const userRole = req.user?.role;
-    const eventType = req.body?.eventType || req.query?.eventType;
+    // Type guard and safe access for req.body.eventType
+    const bodyEventType =
+      req.body && typeof req.body === 'object' && 'eventType' in req.body
+        ? // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          (req.body.eventType as string | undefined)
+        : undefined;
+    const eventType = bodyEventType ?? (req.query?.eventType as string | undefined);
 
     // SPT and SUPER_ADMIN have full access
     if ([UserRole.SUPER_ADMIN, UserRole.SPT].includes(userRole as UserRole)) {
@@ -157,7 +163,8 @@ export const restrictJPTAttendance = (req: Request, res: Response, next: NextFun
     }
 
     // JPT can only access OA and PPT attendance
-    if (userRole === UserRole.JPT) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
+    if (userRole === (UserRole.JPT as string)) {
       if (!eventType || !['OA', 'PPT'].includes(eventType)) {
         logger.warn(
           { userId: req.user?.id, role: userRole, eventType, path: req.path },

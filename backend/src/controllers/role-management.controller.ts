@@ -53,6 +53,7 @@ export async function grantRole(req: Request, res: Response): Promise<void> {
     }
 
     // Check if user already has an active admin role
+
     const existingActiveRole = await prisma.adminRole.findFirst({
       where: {
         userId,
@@ -66,6 +67,7 @@ export async function grantRole(req: Request, res: Response): Promise<void> {
     }
 
     // Use a transaction to update both User and AdminRole tables
+
     const result = await prisma.$transaction(async (tx) => {
       // Update user role in User table
       const updatedUser = await tx.user.update({
@@ -81,6 +83,7 @@ export async function grantRole(req: Request, res: Response): Promise<void> {
       });
 
       // Create AdminRole record to track who granted the role and when
+
       const adminRole = await tx.adminRole.create({
         data: {
           userId,
@@ -116,7 +119,9 @@ export async function grantRole(req: Request, res: Response): Promise<void> {
 
     res.json({
       message: `Role ${role} granted successfully to ${user.name}`,
+
       user: result.updatedUser,
+
       adminRole: result.adminRole,
     });
   } catch (error) {
@@ -161,6 +166,7 @@ export async function revokeRole(req: Request, res: Response): Promise<void> {
     }
 
     // Use a transaction to update both User and AdminRole tables
+
     const result = await prisma.$transaction(async (tx) => {
       // Revert to USER role
       const updatedUser = await tx.user.update({
@@ -176,6 +182,7 @@ export async function revokeRole(req: Request, res: Response): Promise<void> {
       });
 
       // Mark all active admin roles as revoked
+
       await tx.adminRole.updateMany({
         where: {
           userId,
@@ -185,7 +192,7 @@ export async function revokeRole(req: Request, res: Response): Promise<void> {
           isActive: false,
           revokedAt: new Date(),
           revokedBy: adminId,
-          remarks: remarks || 'Role revoked by SPT',
+          remarks: remarks ?? 'Role revoked by SPT',
         },
       });
 
@@ -205,6 +212,7 @@ export async function revokeRole(req: Request, res: Response): Promise<void> {
 
     res.json({
       message: `Role revoked successfully for ${user.name}. User is now a regular USER`,
+
       user: result.updatedUser,
     });
   } catch (error) {
@@ -352,6 +360,7 @@ export async function getAdminRoleHistory(req: Request, res: Response): Promise<
 
     res.json({
       count: history.length,
+
       history,
     });
   } catch (error) {
