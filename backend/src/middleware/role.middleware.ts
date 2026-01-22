@@ -145,11 +145,7 @@ export const requireAnyRole = (roles: UserRole[]) => {
  * Middleware to check if JPT is accessing allowed attendance types (OA and PPT only)
  * SPT and SUPER_ADMIN have unrestricted access
  */
-export const restrictJPTAttendance = (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-): void => {
+export const restrictJPTAttendance = (req: Request, res: Response, next: NextFunction): void => {
   try {
     const userRole = req.user?.role;
     const eventType = req.body?.eventType || req.query?.eventType;

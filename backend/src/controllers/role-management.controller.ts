@@ -62,10 +62,7 @@ export async function grantRole(req: Request, res: Response): Promise<void> {
     });
 
     if (existingActiveRole) {
-      throw new ValidationError(
-        `User already has an active ${role} role`,
-        'Role already assigned',
-      );
+      throw new ValidationError(`User already has an active ${role} role`, 'Role already assigned');
     }
 
     // Use a transaction to update both User and AdminRole tables
