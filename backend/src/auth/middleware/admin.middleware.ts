@@ -16,8 +16,8 @@ export const isAdmin = (req: Request, res: Response, next: NextFunction): void =
       return;
     }
 
-    // Check if user has admin role
-    if (req.user.role !== UserRole.ADMIN) {
+    // Check if user has admin role (JPT or SPT)
+    if (![UserRole.JPT, UserRole.SPT].includes(req.user.role)) {
       logger.warn(
         {
           userId: req.user.id,

@@ -87,7 +87,7 @@ export default function RoleManagement() {
   const [grantDialogOpen, setGrantDialogOpen] = useState(false);
   const [revokeDialogOpen, setRevokeDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
-  const [selectedRole, setSelectedRole] = useState<'SPT' | 'JPT' | 'ADMIN'>('JPT');
+  const [selectedRole, setSelectedRole] = useState<'SPT' | 'JPT'>('JPT');
   const [remarks, setRemarks] = useState('');
 
   const fetchAdminUsers = useCallback(async () => {
@@ -219,14 +219,10 @@ export default function RoleManagement() {
 
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
-      case 'SUPER_ADMIN':
-        return 'bg-red-500 hover:bg-red-600';
       case 'SPT':
-        return 'bg-blue-500 hover:bg-blue-600';
-      case 'JPT':
-        return 'bg-green-500 hover:bg-green-600';
-      case 'ADMIN':
         return 'bg-purple-500 hover:bg-purple-600';
+      case 'JPT':
+        return 'bg-blue-500 hover:bg-blue-600';
       default:
         return 'bg-gray-500 hover:bg-gray-600';
     }
@@ -273,7 +269,7 @@ export default function RoleManagement() {
                       <Badge className={getRoleBadgeColor(user.role)}>{user.role}</Badge>
                     </TableCell>
                     <TableCell>
-                      {user.role !== 'SUPER_ADMIN' && (
+                      {user.role !== 'SPT' && (
                         <Button
                           variant="destructive"
                           size="sm"
@@ -339,7 +335,7 @@ export default function RoleManagement() {
                             setSelectedUser(user);
                             setGrantDialogOpen(true);
                           }}
-                          disabled={['SUPER_ADMIN', 'SPT', 'JPT', 'ADMIN'].includes(user.role)}
+                          disabled={['SPT', 'JPT'].includes(user.role)}
                         >
                           <UserPlus className="h-4 w-4 mr-1" />
                           Grant Role
@@ -418,17 +414,18 @@ export default function RoleManagement() {
               <Label>Select Role</Label>
               <Select
                 value={selectedRole}
-                onValueChange={(value) => setSelectedRole(value as 'SPT' | 'JPT' | 'ADMIN')}
+                onValueChange={(value) => setSelectedRole(value as 'SPT' | 'JPT')}
               >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="SPT">SPT (Student Placement Team) - Full Access</SelectItem>
-                  <SelectItem value="JPT">
-                    JPT (Job Placement Team) - Limited to OA/PPT
+                  <SelectItem value="SPT">
+                    SPT (Senior Placement Team) - Full Administrative Control
                   </SelectItem>
-                  <SelectItem value="ADMIN">ADMIN - Standard Admin Access</SelectItem>
+                  <SelectItem value="JPT">
+                    JPT (Junior Placement Team) - Attendance Management Only
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>

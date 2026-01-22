@@ -274,8 +274,8 @@ export const generateResume = async (req: Request, res: Response): Promise<void>
       return;
     }
 
-    // Authorization: Users can only generate their own resume, admins can generate any
-    if (userId !== authenticatedUserId && String(req.user?.role) !== 'ADMIN') {
+    // Authorization: Users can only generate their own resume, admins (JPT/SPT) can generate any
+    if (userId !== authenticatedUserId && !['JPT', 'SPT'].includes(String(req.user?.role))) {
       res.status(403).json({
         error: 'Forbidden: You can only generate your own resume',
       });

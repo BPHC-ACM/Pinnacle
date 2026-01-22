@@ -2,10 +2,8 @@ import { z } from 'zod';
 
 export enum UserRole {
   USER = 'USER',
-  ADMIN = 'ADMIN',
-  SUPER_ADMIN = 'SUPER_ADMIN',
-  JPT = 'JPT',
-  SPT = 'SPT',
+  JPT = 'JPT', // Junior Placement Team - Attendance management only
+  SPT = 'SPT', // Senior Placement Team - Full administrative control
 }
 
 export enum Sector {

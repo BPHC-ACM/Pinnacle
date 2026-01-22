@@ -1198,7 +1198,7 @@ paths:
   /api/admin/roles:
     get:
       summary: 'Get all admin users'
-      description: 'SPT only - get all users with admin roles (SUPER_ADMIN, SPT, JPT, ADMIN)'
+      description: 'SPT only - get all users with admin roles (SPT, JPT)'
       tags: [Admin, RoleManagement]
       responses:
         '200':
@@ -1220,7 +1220,7 @@ paths:
                         name: { type: string }
                         role:
                           type: string
-                          enum: [USER, ADMIN, SUPER_ADMIN, JPT, SPT]
+                          enum: [USER, JPT, SPT]
                         picture: { type: string }
                         studentId: { type: string }
                         branch: { type: string }
@@ -1266,7 +1266,7 @@ paths:
   /api/admin/roles/grant:
     post:
       summary: 'Grant admin role to a user'
-      description: 'SPT only - grant SPT, JPT, or ADMIN role to a user'
+      description: 'SPT only - grant SPT or JPT role to a user'
       tags: [Admin, RoleManagement]
       requestBody:
         required: true
@@ -1284,8 +1284,8 @@ paths:
                   description: 'ID of the user to grant role to'
                 role:
                   type: string
-                  enum: [ADMIN, JPT, SPT]
-                  description: 'Role to grant (SPT, JPT, or ADMIN)'
+                  enum: [JPT, SPT]
+                  description: 'Role to grant (JPT - Junior/Attendance only, SPT - Senior/Full admin)'
       responses:
         '200':
           description: 'Role granted successfully'

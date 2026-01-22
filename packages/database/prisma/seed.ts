@@ -64,18 +64,18 @@ async function main(): Promise<void> {
     },
   });
 
-  // 1. Create Admin User
-  console.log('Creating admin user...');
+  // 1. Create SPT User (Senior Admin)
+  console.log('Creating SPT admin user...');
   await prisma.user.create({
     data: {
       email: 'admin@gmail.com',
-      name: 'Admin User',
+      name: 'Senior Admin User',
       googleId: 'dev-admin-google-id',
-      role: UserRole.ADMIN,
+      role: UserRole.SPT,
       phone: faker.phone.number(),
       location: faker.location.city() + ', ' + faker.location.country(),
-      bio: 'System administrator for Placement Portal',
-      title: 'System Administrator',
+      bio: 'Senior Placement Team - Full administrative control',
+      title: 'SPT Coordinator',
       summary: 'Managing the placement portal and ensuring smooth operations.',
     },
   });

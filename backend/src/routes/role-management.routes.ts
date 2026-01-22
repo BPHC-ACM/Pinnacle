@@ -20,8 +20,8 @@ router.use(authenticateToken as RequestHandler);
 // Schema validation
 const grantRoleSchema = z.object({
   userId: z.string().uuid('Invalid user ID'),
-  role: z.enum(['ADMIN', 'JPT', 'SPT']).refine((val) => ['ADMIN', 'JPT', 'SPT'].includes(val), {
-    message: 'Role must be ADMIN, JPT, or SPT',
+  role: z.enum(['JPT', 'SPT']).refine((val) => ['JPT', 'SPT'].includes(val), {
+    message: 'Role must be JPT or SPT',
   }),
   remarks: z.string().optional(),
 });

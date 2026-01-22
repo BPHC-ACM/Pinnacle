@@ -103,7 +103,7 @@ import { UserRole } from '@/types/auth.types';
 function AdminPanel() {
   const { user } = useAuth();
 
-  if (user?.role !== UserRole.ADMIN) {
+  if (![UserRole.JPT, UserRole.SPT].includes(user?.role as UserRole)) {
     return <div>Access denied</div>;
   }
 

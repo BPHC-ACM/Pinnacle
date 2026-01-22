@@ -551,10 +551,8 @@ model AttendanceRecord {
 
 enum UserRole {
   USER
-  ADMIN
-  SUPER_ADMIN
-  JPT       // Job Placement Team
-  SPT       // Student Placement Team
+  JPT       // Junior Placement Team - Attendance management only
+  SPT       // Senior Placement Team - Full administrative control
 }
 
 enum VerificationStatus {

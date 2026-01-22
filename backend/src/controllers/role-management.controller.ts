@@ -34,12 +34,9 @@ export async function grantRole(req: Request, res: Response): Promise<void> {
       throw new ValidationError('User ID and role are required', 'Invalid request');
     }
 
-    // Only allow granting SPT, JPT, or ADMIN roles
-    if (![UserRole.SPT, UserRole.JPT, UserRole.ADMIN].includes(role)) {
-      throw new ValidationError(
-        'Invalid role. Can only grant SPT, JPT, or ADMIN roles',
-        'Invalid role',
-      );
+    // Only allow granting SPT or JPT roles
+    if (![UserRole.SPT, UserRole.JPT].includes(role)) {
+      throw new ValidationError('Invalid role. Can only grant SPT or JPT roles', 'Invalid role');
     }
 
     // Find the user
@@ -160,9 +157,12 @@ export async function revokeRole(req: Request, res: Response): Promise<void> {
       throw new NotFoundError(`User with ID ${userId} not found`, 'User not found');
     }
 
-    // Prevent revoking SUPER_ADMIN role
-    if (user.role === (UserRole.SUPER_ADMIN as string)) {
-      throw new ValidationError('Cannot revoke SUPER_ADMIN role', 'Invalid operation');
+    // Prevent revoking SPT role (requires explicit confirmation)
+    if (user.role === (UserRole.SPT as string)) {
+      throw new ValidationError(
+        'Cannot revoke SPT role without explicit confirmation',
+        'Invalid operation',
+      );
     }
 
     // Use a transaction to update both User and AdminRole tables
@@ -229,7 +229,7 @@ export async function revokeRole(req: Request, res: Response): Promise<void> {
 }
 
 /**
- * Get all users with admin roles (SPT, JPT, ADMIN)
+ * Get all users with admin roles (SPT, JPT)
  * @route GET /api/admin/roles
  */
 export async function getAdminUsers(_req: Request, res: Response): Promise<void> {
@@ -237,7 +237,7 @@ export async function getAdminUsers(_req: Request, res: Response): Promise<void>
     const adminUsers = await prisma.user.findMany({
       where: {
         role: {
-          in: [UserRole.SUPER_ADMIN, UserRole.SPT, UserRole.JPT, UserRole.ADMIN],
+          in: [UserRole.SPT, UserRole.JPT],
         },
         deletedAt: null,
       },

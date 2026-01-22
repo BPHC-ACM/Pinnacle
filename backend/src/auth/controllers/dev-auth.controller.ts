@@ -38,19 +38,19 @@ export const devLogin = async (req: Request, res: Response): Promise<void> => {
         dbUser = await prisma.user.create({
           data: {
             email: 'admin@gmail.com',
-            name: 'Admin User',
+            name: 'SPT Admin User',
             googleId: 'dev-admin-google-id',
-            role: 'ADMIN',
+            role: 'SPT',
             phone: '+1234567890',
-            bio: 'Test admin account for development',
-            title: 'System Administrator',
+            bio: 'Senior Placement Team - Full administrative control',
+            title: 'SPT Coordinator',
           },
         });
-      } else if (dbUser.role !== 'ADMIN') {
-        // Update role to ADMIN if user exists but isn't admin
+      } else if (!['SPT', 'JPT'].includes(dbUser.role)) {
+        // Update role to SPT if user exists but isn't an admin
         dbUser = await prisma.user.update({
           where: { id: dbUser.id },
-          data: { role: 'ADMIN' },
+          data: { role: 'SPT' },
         });
       }
 

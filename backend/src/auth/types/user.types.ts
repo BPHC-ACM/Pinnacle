@@ -1,6 +1,7 @@
 export enum UserRole {
   USER = 'USER',
-  ADMIN = 'ADMIN',
+  JPT = 'JPT', // Junior Placement Team - Attendance management only
+  SPT = 'SPT', // Senior Placement Team - Full administrative control
 }
 
 export interface User {

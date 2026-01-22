@@ -57,7 +57,7 @@ export default function AttendanceTracking() {
 
   // Check if user is JPT (restricted to OA and PPT only)
   const isJPT = user?.role === 'JPT';
-  const canAccessInterview = ['SUPER_ADMIN', 'SPT'].includes(user?.role || '');
+  const canAccessInterview = ['SPT'].includes(user?.role || '');
 
   const fetchJobs = useCallback(async () => {
     try {

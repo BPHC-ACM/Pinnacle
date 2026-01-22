@@ -50,11 +50,11 @@ export default function AdminDashboardPage() {
   const userRole = user?.role as UserRole;
 
   // Check if user has required permissions
-  const canManageStudents = ['SUPER_ADMIN', 'ADMIN'].includes(userRole);
-  const canTrackAttendance = ['SUPER_ADMIN', 'JPT', 'SPT'].includes(userRole);
-  const canManageEligibility = ['SUPER_ADMIN', 'ADMIN'].includes(userRole);
-  const canScheduleJobs = ['SUPER_ADMIN', 'ADMIN'].includes(userRole);
-  const canManageRoles = ['SUPER_ADMIN', 'SPT'].includes(userRole); // Only SPT can manage roles
+  const canManageStudents = ['SPT'].includes(userRole);
+  const canTrackAttendance = ['JPT', 'SPT'].includes(userRole);
+  const canManageEligibility = ['SPT'].includes(userRole);
+  const canScheduleJobs = ['SPT'].includes(userRole);
+  const canManageRoles = ['SPT'].includes(userRole); // Only SPT can manage roles
 
   if (loading) {
     return (
@@ -188,7 +188,7 @@ export default function AdminDashboardPage() {
               <CardHeader>
                 <CardTitle>Role Management</CardTitle>
                 <CardDescription>
-                  Grant and revoke admin roles (SPT, JPT, ADMIN) with full audit trail
+                  Grant and revoke admin roles (SPT, JPT) with full audit trail
                 </CardDescription>
               </CardHeader>
               <CardContent>

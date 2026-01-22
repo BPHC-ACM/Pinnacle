@@ -208,7 +208,7 @@ export default function StudentsPage() {
   const handleDeleteStudent = async (studentId: string, studentName: string) => {
     if (
       !confirm(
-        `Are you sure you want to delete ${studentName}? This action can be reversed by a super admin.`,
+        `Are you sure you want to delete ${studentName}? This action can be reversed by an SPT admin.`,
       )
     ) {
       return;
