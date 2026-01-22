@@ -55,6 +55,13 @@ export class UserService {
         summary: true,
         createdAt: true,
         updatedAt: true,
+        parentName: true,
+        parentEmail: true,
+        parentPhone: true,
+        parentRelation: true,
+        markSheets: {
+          orderBy: { term: 'asc' },
+        },
         experiences: {
           where: { deletedAt: null },
           orderBy: { order: 'asc' },

@@ -180,6 +180,19 @@ class AdminStudentService {
             createdAt: true,
             updatedAt: true,
             deletedAt: true,
+            applications: {
+              select: {
+                status: true,
+              },
+            },
+            education: {
+              select: {
+                gpa: true,
+                degree: true,
+              },
+              take: 1,
+              orderBy: { startDate: 'desc' },
+            },
           },
           skip: (page - 1) * limit,
           take: limit,

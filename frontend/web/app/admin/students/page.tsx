@@ -15,21 +15,21 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { adminService } from '@/services/admin.service';
-import type { PlacementStatus, ProfileStatus, ApplicationWithDetails } from '@/types/admin.types';
+import type { PlacementStatus, ProfileStatus, StudentUser } from '@/types/admin.types';
 
 interface Student {
   id: string;
   name: string;
   email: string;
+  rollNumber: string;
   batch: number;
   department: string;
   cgpa: number;
   placementStatus: PlacementStatus;
   profileStatus: ProfileStatus;
-  appliedJobs: number;
-  shortlisted: number;
-  interviewed: number;
-  offered: number;
+  parentName?: string;
+  parentPhone?: string;
+  isFrozen: boolean;
 }
 
 export default function StudentsPage() {
@@ -54,47 +54,48 @@ export default function StudentsPage() {
     const fetchStudents = async () => {
       try {
         setLoading(true);
-        const response = await adminService.getAllApplications({}, { page: 1, limit: 1000 });
+        const response = await adminService.getStudents({ page: 1, limit: 1000 });
 
-        // Extract unique students from applications
-        const studentMap = new Map<string, Student>();
-        response.data.forEach((app: ApplicationWithDetails) => {
-          const userId = app.user?.id || app.userId;
-          if (!studentMap.has(userId)) {
-            studentMap.set(userId, {
-              id: userId,
-              name: app.user?.name || 'N/A',
-              email: app.user?.email || 'N/A',
-              batch: 2024, // Default, you may want to extract from user profile
-              department: 'CSE', // Default, you may want to extract from user profile
-              cgpa: 0, // Default, you may want to extract from user profile
-              placementStatus: 'PLACED' as PlacementStatus,
-              profileStatus: 'COMPLETE' as ProfileStatus,
-              appliedJobs: 0,
-              shortlisted: 0,
-              interviewed: 0,
-              offered: 0,
-            });
-          }
+        const mappedStudents: Student[] = response.students.map((u: StudentUser) => {
+          // Derive placement status
+          const isPlaced = u.applications?.some((app) => app.status === 'HIRED');
 
-          const student = studentMap.get(userId)!;
-          student.appliedJobs++;
+          // Map profile status
+          let pStatus: ProfileStatus = 'INCOMPLETE';
+          if (u.profileStatus === 'VERIFIED') pStatus = 'COMPLETE';
+          if (u.profileStatus === 'SUBMITTED_FOR_REVIEW') pStatus = 'LOCKED';
 
-          if (app.status === 'SHORTLISTED') student.shortlisted++;
-          if (app.status === 'INTERVIEWING') student.interviewed++;
-          if (app.status === 'HIRED') student.offered++;
+          return {
+            id: u.id,
+            name: u.name || 'N/A',
+            email: u.email,
+            rollNumber: u.studentId || 'N/A',
+            batch: u.currentYear || 0,
+            department: u.branch || 'N/A',
+            cgpa: u.education?.[0]?.gpa ? parseFloat(u.education[0].gpa) : 0,
+            placementStatus: isPlaced ? 'PLACED' : 'UNPLACED',
+            profileStatus: pStatus,
+            parentName: u.parentName || undefined,
+            parentPhone: u.parentPhone || undefined,
+            isFrozen: u.isFrozen,
+          };
         });
 
-        setStudents(Array.from(studentMap.values()));
+        setStudents(mappedStudents);
       } catch (error) {
         console.error('Error fetching students:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to fetch students',
+          variant: 'destructive',
+        });
       } finally {
         setLoading(false);
       }
     };
 
     fetchStudents();
-  }, []);
+  }, [toast]);
 
   // Get unique values for filters
   const batches = Array.from(new Set(students.map((s) => s.batch))).sort((a, b) => b - a);
@@ -482,6 +483,7 @@ export default function StudentsPage() {
                       <TableHead>Department</TableHead>
                       <TableHead>Batch</TableHead>
                       <TableHead>CGPA</TableHead>
+                      <TableHead>Parent Info</TableHead>
                       <TableHead>Placement</TableHead>
                       <TableHead>Profile</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
@@ -522,6 +524,14 @@ export default function StudentsPage() {
                           <span className={student.cgpa >= 8 ? 'font-semibold text-green-600' : ''}>
                             {student.cgpa.toFixed(2)}
                           </span>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-col text-xs">
+                            <span>{student.parentName || '-'}</span>
+                            <span className="text-muted-foreground">
+                              {student.parentPhone || '-'}
+                            </span>
+                          </div>
                         </TableCell>
                         <TableCell>{getPlacementBadge(student.placementStatus)}</TableCell>
                         <TableCell>{getProfileBadge(student.profileStatus)}</TableCell>

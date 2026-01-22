@@ -20,12 +20,10 @@ export interface Job {
   pptDate?: Date;
   pptVenue?: string;
   pptInstructions?: string;
-  interviewStartDate?: Date;
-  interviewEndDate?: Date;
+  interviewDate?: Date;
   interviewVenue?: string;
   interviewInstructions?: string;
-  offerDate?: Date;
-  joiningDate?: Date;
+  selectionStatus?: 'PENDING' | 'ACCEPTED' | 'REJECTED';
   createdAt: Date;
   updatedAt: Date;
 }
@@ -131,12 +129,10 @@ export interface UpdateJobScheduleRequest {
   pptDate?: Date;
   pptVenue?: string;
   pptInstructions?: string;
-  interviewStartDate?: Date;
-  interviewEndDate?: Date;
+  interviewDate?: Date;
   interviewVenue?: string;
   interviewInstructions?: string;
-  offerDate?: Date;
-  joiningDate?: Date;
+  selectionStatus?: 'PENDING' | 'ACCEPTED' | 'REJECTED';
 }
 
 export const updateJobScheduleSchema = z.object({
@@ -146,12 +142,10 @@ export const updateJobScheduleSchema = z.object({
   pptDate: z.coerce.date().optional(),
   pptVenue: z.string().max(500).optional(),
   pptInstructions: z.string().max(2000).optional(),
-  interviewStartDate: z.coerce.date().optional(),
-  interviewEndDate: z.coerce.date().optional(),
+  interviewDate: z.coerce.date().optional(),
   interviewVenue: z.string().max(500).optional(),
   interviewInstructions: z.string().max(2000).optional(),
-  offerDate: z.coerce.date().optional(),
-  joiningDate: z.coerce.date().optional(),
+  selectionStatus: z.enum(['PENDING', 'ACCEPTED', 'REJECTED']).optional(),
 });
 
 // ========== JOB ELIGIBILITY TYPES ==========

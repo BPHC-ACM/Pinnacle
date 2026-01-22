@@ -75,12 +75,10 @@ export interface Job {
   pptDate?: string;
   pptVenue?: string;
   pptInstructions?: string;
-  interviewStartDate?: string;
-  interviewEndDate?: string;
+  interviewDate?: string;
   interviewVenue?: string;
   interviewInstructions?: string;
-  offerDate?: string;
-  joiningDate?: string;
+  selectionStatus?: 'PENDING' | 'ACCEPTED' | 'REJECTED';
   createdAt: string; // Dates are strings over JSON
   updatedAt: string;
   company?: Company; // Often resolved in API responses

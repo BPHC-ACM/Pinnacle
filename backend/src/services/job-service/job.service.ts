@@ -1,5 +1,4 @@
 import { prisma, Prisma, Sector as PrismaSector } from '@repo/database';
-import { Job } from '@repo/types';
 
 import { logger } from '../../config/logger.config';
 import type { Application } from '../../types/application.types';
@@ -9,6 +8,7 @@ import type {
   PublicJobFilters,
   UpdateJobRequest,
   JobWithStats,
+  Job,
 } from '../../types/job.types';
 import type { PaginationParams, PaginatedResponse } from '../../types/pagination.types';
 
@@ -292,12 +292,10 @@ export class JobService {
         pptDate: data.pptDate,
         pptVenue: data.pptVenue,
         pptInstructions: data.pptInstructions,
-        interviewStartDate: data.interviewStartDate,
-        interviewEndDate: data.interviewEndDate,
+        interviewDate: data.interviewDate,
         interviewVenue: data.interviewVenue,
         interviewInstructions: data.interviewInstructions,
-        offerDate: data.offerDate,
-        joiningDate: data.joiningDate,
+        selectionStatus: data.selectionStatus,
       },
       include: { questions: true, company: true },
     });

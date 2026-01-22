@@ -356,13 +356,10 @@ model Job {
   pptVenue            String?             // PPT venue
   pptInstructions     String?             // PPT instructions
   
-  interviewStartDate  DateTime?           // Interview start date
-  interviewEndDate    DateTime?           // Interview end date
+  interviewDate       DateTime?           // Interview date
   interviewVenue      String?             // Interview venue/platform
   interviewInstructions String?           // Interview instructions
-  
-  offerDate           DateTime?           // Offer rollout date
-  joiningDate         DateTime?           // Expected joining date
+  selectionStatus     String?             @default("PENDING") // PENDING, ACCEPTED, REJECTED
   
   createdAt           DateTime            @default(now())
   updatedAt           DateTime            @updatedAt

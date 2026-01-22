@@ -28,6 +28,19 @@ interface UserProfile {
   projects?: Project[];
   certifications?: Certification[];
   languages?: Language[];
+  parentName?: string;
+  parentEmail?: string;
+  parentPhone?: string;
+  parentRelation?: string;
+  markSheets?: MarkSheet[];
+}
+
+interface MarkSheet {
+  id: string;
+  term: string;
+  academicYear: string;
+  fileName: string;
+  fileUrl: string;
 }
 
 interface Experience {
@@ -163,7 +176,7 @@ export default function StudentProfilePage() {
         <CardHeader>
           <CardTitle>Personal Information</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
           <div className="flex items-start gap-6">
             {profile.picture ? (
               <Image
@@ -285,6 +298,64 @@ export default function StudentProfilePage() {
             <div className="pt-4 border-t">
               <h3 className="font-semibold mb-2">Bio</h3>
               <p className="text-muted-foreground">{profile.bio}</p>
+            </div>
+          )}
+
+          {/* Parent Details */}
+          {(profile.parentName || profile.parentEmail || profile.parentPhone) && (
+            <div className="pt-4 border-t">
+              <h3 className="font-semibold mb-4">Parent / Guardian Details</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="text-muted-foreground block mb-1">Name</span>
+                  <span className="font-medium">{profile.parentName || '-'}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground block mb-1">Relation</span>
+                  <span className="font-medium">{profile.parentRelation || '-'}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground block mb-1">Email</span>
+                  <span className="font-medium">{profile.parentEmail || '-'}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground block mb-1">Phone</span>
+                  <span className="font-medium">{profile.parentPhone || '-'}</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Mark Sheets */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Mark Sheets</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {!profile.markSheets || profile.markSheets.length === 0 ? (
+            <p className="text-muted-foreground text-sm">No mark sheets uploaded.</p>
+          ) : (
+            <div className="space-y-4">
+              {profile.markSheets.map((sheet) => (
+                <div
+                  key={sheet.id}
+                  className="flex items-center justify-between p-4 border rounded-lg"
+                >
+                  <div>
+                    <h3 className="font-semibold">{sheet.term}</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Academic Year: {sheet.academicYear}
+                    </p>
+                  </div>
+                  <Button variant="outline" size="sm" asChild>
+                    <a href={sheet.fileUrl} target="_blank" rel="noopener noreferrer">
+                      Download PDF
+                    </a>
+                  </Button>
+                </div>
+              ))}
             </div>
           )}
         </CardContent>

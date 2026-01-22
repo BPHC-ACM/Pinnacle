@@ -123,12 +123,10 @@ export async function getJobSchedule(req: Request, res: Response): Promise<void>
     pptDate: job.pptDate,
     pptVenue: job.pptVenue,
     pptInstructions: job.pptInstructions,
-    interviewStartDate: job.interviewStartDate,
-    interviewEndDate: job.interviewEndDate,
+    interviewDate: job.interviewDate,
     interviewVenue: job.interviewVenue,
     interviewInstructions: job.interviewInstructions,
-    offerDate: job.offerDate,
-    joiningDate: job.joiningDate,
+    selectionStatus: job.selectionStatus,
   });
 }
 

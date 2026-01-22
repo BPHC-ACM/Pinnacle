@@ -10,6 +10,8 @@ import type {
   UpdateJobRequest,
   BulkStatusUpdateRequest,
   ApplicationStatus,
+  StudentUser,
+  StudentFilters,
 } from '@/types/admin.types';
 
 export const adminService = {
@@ -22,7 +24,7 @@ export const adminService = {
   // ==================== JOBS MANAGEMENT ====================
   getAllJobs: async (
     filters?: AdminJobFilters,
-    params?: PaginationParams
+    params?: PaginationParams,
   ): Promise<PaginatedResponse<JobWithStats>> => {
     const response = await api.get('/admin/jobs', {
       params: { ...filters, ...params },
@@ -37,6 +39,14 @@ export const adminService = {
 
   updateJob: async (id: string, data: UpdateJobRequest): Promise<JobWithStats> => {
     const response = await api.patch(`/admin/jobs/${id}`, data);
+    return response.data;
+  },
+
+  updateJobSchedule: async (
+    id: string,
+    data: import('@/types/admin.types').UpdateJobScheduleRequest,
+  ): Promise<JobWithStats> => {
+    const response = await api.patch(`/jobs/${id}/schedule`, data);
     return response.data;
   },
 
@@ -62,7 +72,7 @@ export const adminService = {
 
   getJobApplications: async (
     jobId: string,
-    params?: PaginationParams
+    params?: PaginationParams,
   ): Promise<PaginatedResponse<ApplicationWithDetails>> => {
     const response = await api.get(`/admin/jobs/${jobId}/applications`, {
       params,
@@ -73,7 +83,7 @@ export const adminService = {
   // ==================== APPLICATIONS MANAGEMENT ====================
   getAllApplications: async (
     filters?: AdminApplicationFilters,
-    params?: PaginationParams
+    params?: PaginationParams,
   ): Promise<PaginatedResponse<ApplicationWithDetails>> => {
     const response = await api.get('/admin/applications', {
       params: { ...filters, ...params },
@@ -88,21 +98,21 @@ export const adminService = {
 
   updateApplicationStatus: async (
     id: string,
-    status: ApplicationStatus
+    status: ApplicationStatus,
   ): Promise<ApplicationWithDetails> => {
     const response = await api.patch(`/admin/applications/${id}/status`, { status });
     return response.data;
   },
 
   bulkUpdateApplicationStatus: async (
-    data: BulkStatusUpdateRequest
+    data: BulkStatusUpdateRequest,
   ): Promise<{ updated: number; failed: string[] }> => {
     const response = await api.post('/admin/applications/bulk-status', data);
     return response.data;
   },
 
   deleteApplication: async (
-    id: string
+    id: string,
   ): Promise<{ message: string; application: ApplicationWithDetails }> => {
     const response = await api.delete(`/admin/applications/${id}`);
     return response.data;
@@ -120,10 +130,24 @@ export const adminService = {
   },
 
   // ==================== STUDENT MANAGEMENT ====================
+  getStudents: async (
+    filters?: StudentFilters & PaginationParams,
+  ): Promise<{
+    students: StudentUser[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> => {
+    const response = await api.get('/admin/students', { params: filters });
+    return response.data;
+  },
+
+  // ==================== STUDENT MANAGEMENT ====================
   freezeStudent: async (
     userId: string,
     isFrozen: boolean,
-    reason?: string
+    reason?: string,
   ): Promise<{ message: string }> => {
     const response = await api.post('/admin/students/freeze', { userId, isFrozen, reason });
     return response.data;
@@ -136,7 +160,7 @@ export const adminService = {
 
   bulkFreezeStudents: async (
     userIds: string[],
-    isFrozen: boolean
+    isFrozen: boolean,
   ): Promise<{ message: string; count: number }> => {
     const response = await api.post('/admin/students/bulk-freeze', { userIds, isFrozen });
     return response.data;

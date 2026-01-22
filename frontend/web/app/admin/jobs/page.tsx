@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/table';
 import { adminService } from '@/services/admin.service';
 import type { JobWithStats, JobStatus } from '@/types/admin.types';
+import { EditJobDialog } from './_components/EditJobDialog';
 
 export default function AdminJobsPage() {
   const router = useRouter();
@@ -93,6 +94,9 @@ export default function AdminJobsPage() {
     const config = variants[status];
     return <Badge variant={config.variant}>{config.label}</Badge>;
   };
+
+  const [editJob, setEditJob] = useState<JobWithStats | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   return (
     <div className="space-y-6">
@@ -173,6 +177,16 @@ export default function AdminJobsPage() {
                         <div className="flex justify-end gap-2">
                           <Button
                             size="sm"
+                            variant="default"
+                            onClick={() => {
+                              setEditJob(job);
+                              setEditDialogOpen(true);
+                            }}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            size="sm"
                             variant="outline"
                             onClick={() => router.push(`/admin/jobs/${job.id}/applications`)}
                           >
@@ -237,6 +251,18 @@ export default function AdminJobsPage() {
           )}
         </CardContent>
       </Card>
+
+      {editJob && (
+        <EditJobDialog
+          job={editJob}
+          open={editDialogOpen}
+          onOpenChange={setEditDialogOpen}
+          onSuccess={() => {
+            setEditDialogOpen(false);
+            fetchJobs();
+          }}
+        />
+      )}
     </div>
   );
 }
