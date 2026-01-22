@@ -14,6 +14,7 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/components/ui/use-toast';
 import { api } from '@/lib/api-client';
+import { useAuth } from '@/contexts/auth-context';
 import {
   Table,
   TableBody,
@@ -44,6 +45,7 @@ interface AttendanceRecord {
 
 export default function AttendanceTracking() {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [selectedJob, setSelectedJob] = useState<string>('');
   const [eventType, setEventType] = useState<'OA' | 'PPT' | 'INTERVIEW'>('OA');
@@ -52,6 +54,10 @@ export default function AttendanceTracking() {
     new Map(),
   );
   const [loading, setLoading] = useState(false);
+
+  // Check if user is JPT (restricted to OA and PPT only)
+  const isJPT = user?.role === 'JPT';
+  const canAccessInterview = ['SUPER_ADMIN', 'SPT'].includes(user?.role || '');
 
   const fetchJobs = useCallback(async () => {
     try {
@@ -204,9 +210,14 @@ export default function AttendanceTracking() {
             <SelectContent>
               <SelectItem value="OA">Online Assessment</SelectItem>
               <SelectItem value="PPT">Pre-Placement Talk</SelectItem>
-              <SelectItem value="INTERVIEW">Interview</SelectItem>
+              {canAccessInterview && <SelectItem value="INTERVIEW">Interview</SelectItem>}
             </SelectContent>
           </Select>
+          {isJPT && (
+            <p className="text-sm text-muted-foreground mt-1">
+              JPT can only manage OA and PPT attendance
+            </p>
+          )}
         </div>
 
         <div className="flex items-end gap-2">

@@ -13,6 +13,7 @@ import StudentManagement from '@/components/admin/StudentManagement';
 import AttendanceTracking from '@/components/admin/AttendanceTracking';
 import JobEligibilityManager from '@/components/admin/JobEligibilityManager';
 import JobScheduling from '@/components/admin/JobScheduling';
+import RoleManagement from '@/components/admin/RoleManagement';
 
 interface DashboardStats {
   totalStudents: number;
@@ -50,9 +51,10 @@ export default function AdminDashboardPage() {
 
   // Check if user has required permissions
   const canManageStudents = ['SUPER_ADMIN', 'ADMIN'].includes(userRole);
-  const canTrackAttendance = ['SUPER_ADMIN', 'JPT'].includes(userRole);
+  const canTrackAttendance = ['SUPER_ADMIN', 'JPT', 'SPT'].includes(userRole);
   const canManageEligibility = ['SUPER_ADMIN', 'ADMIN'].includes(userRole);
   const canScheduleJobs = ['SUPER_ADMIN', 'ADMIN'].includes(userRole);
+  const canManageRoles = ['SUPER_ADMIN', 'SPT'].includes(userRole); // Only SPT can manage roles
 
   if (loading) {
     return (
@@ -119,6 +121,7 @@ export default function AdminDashboardPage() {
           {canManageStudents && <TabsTrigger value="students">Student Management</TabsTrigger>}
           {canManageEligibility && <TabsTrigger value="eligibility">Eligibility</TabsTrigger>}
           {canScheduleJobs && <TabsTrigger value="scheduling">Job Scheduling</TabsTrigger>}
+          {canManageRoles && <TabsTrigger value="roles">Role Management</TabsTrigger>}
         </TabsList>
 
         {canTrackAttendance && (
@@ -174,6 +177,22 @@ export default function AdminDashboardPage() {
               </CardHeader>
               <CardContent>
                 <JobScheduling />
+              </CardContent>
+            </Card>
+          </TabsContent>
+        )}
+
+        {canManageRoles && (
+          <TabsContent value="roles">
+            <Card>
+              <CardHeader>
+                <CardTitle>Role Management</CardTitle>
+                <CardDescription>
+                  Grant and revoke admin roles (SPT, JPT, ADMIN) with full audit trail
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <RoleManagement />
               </CardContent>
             </Card>
           </TabsContent>
