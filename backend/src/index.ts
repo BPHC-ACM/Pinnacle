@@ -22,10 +22,10 @@ import companyRoutes from './routes/company.routes';
 import dashboardRoutes from './routes/dashboard.routes';
 import jobRoutes from './routes/job.routes';
 import notificationRoutes from './routes/notification.routes';
+import resumeRoutes from './routes/resume.routes';
 import roleManagementRoutes from './routes/role-management.routes';
 import uploadRoutes from './routes/upload.routes';
 import userDetailsRoutes from './routes/user-details.routes';
-import resumeRoutes from './services/resume-service/routes/resume.routes';
 import { initializeStorage } from './services/storage-service/storage-init';
 
 // Load environment variables

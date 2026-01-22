@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { User } from '@/types/auth.types';
+import { api } from '@/lib/api-client';
 
 interface AuthContextType {
   user: User | null;
@@ -11,6 +12,7 @@ interface AuthContextType {
   login: () => void;
   logout: () => void;
   refreshUser: () => Promise<User | undefined>;
+  setUser: (user: User | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -20,29 +22,54 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  useEffect(() => {
-    // Check if token exists and fetch user data
-    const token = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
+  const refreshUser = async () => {
+    try {
+      const token = localStorage.getItem('token');
 
-    if (token && storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (error) {
-        console.error('Failed to parse stored user:', error);
-        localStorage.clear();
+      if (!token) {
+        setUser(null);
+        return undefined;
       }
+
+      // Using user-details/profile to get full user data including extended fields
+      const response = await api.get('/user-details/profile');
+      const userData = response.data;
+
+      setUser(userData);
+      localStorage.setItem('user', JSON.stringify(userData));
+      return userData;
+    } catch (error) {
+      console.error('Failed to fetch user:', error);
+      // Clear invalid tokens
+      localStorage.removeItem('token');
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('user');
+      setUser(null);
+      // Optional: Redirect or let the route guard handle it
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    // Initial load
+    const token = localStorage.getItem('token');
+
+    if (token) {
+      refreshUser();
+    } else {
+      setIsLoading(false);
+    }
   }, []);
 
   const login = async () => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-
       // 1. Fetch the JSON from your backend
-      const response = await fetch(`${apiUrl}/auth/google/login`);
-      const data = await response.json();
+      // Using api client here, assuming unauthenticated requests are allowed for this endpoint
+      // Adjust endpoint if it requires full URL or specific handling, but api-client has baseURL
+      // However, auth/google/login might return a redirect URL.
+      const response = await api.get('/auth/google/login');
+      const data = response.data;
 
       // 2. Redirect the browser to the URL provided in the JSON
       if (data.authUrl) {
@@ -57,56 +84,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-      const token = localStorage.getItem('token');
-
-      await fetch(`${apiUrl}/auth/logout`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      await api.post('/auth/logout');
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
       localStorage.removeItem('token');
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
       localStorage.removeItem('user');
       setUser(null);
       router.push('/');
-    }
-  };
-
-  const refreshUser = async () => {
-    try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-      const token = localStorage.getItem('token');
-
-      if (!token) {
-        throw new Error('No token found');
-      }
-
-      const response = await fetch(`${apiUrl}/auth/me`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch user');
-      }
-
-      const data = await response.json();
-      const userData = data.user;
-      setUser(userData);
-      localStorage.setItem('user', JSON.stringify(userData));
-      return userData;
-    } catch (error) {
-      console.error('Failed to fetch user:', error);
-      // Clear invalid tokens
-      localStorage.clear();
-      setUser(null);
-      // Redirect to home page
-      window.location.href = '/';
     }
   };
 
@@ -119,6 +106,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         login,
         logout,
         refreshUser,
+        setUser,
       }}
     >
       {children}

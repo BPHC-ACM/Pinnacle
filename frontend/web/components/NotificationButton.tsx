@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { Bell, ListChecks } from 'lucide-react';
-import { notificationService } from '@/services/notification-service';
+import { notificationService } from '@/services/notifications';
 import { Button } from '@/components/ui/button';
 import type { Notification } from '@/types/notification.types';
 import { formatDistanceToNow } from 'date-fns';

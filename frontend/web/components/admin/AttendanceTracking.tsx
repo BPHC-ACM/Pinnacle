@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/components/ui/use-toast';
-import { api } from '@/lib/api';
+import { api } from '@/lib/api-client';
 import {
   Table,
   TableBody,
@@ -49,7 +49,7 @@ export default function AttendanceTracking() {
   const [eventType, setEventType] = useState<'OA' | 'PPT' | 'INTERVIEW'>('OA');
   const [students, setStudents] = useState<Student[]>([]);
   const [attendanceRecords, setAttendanceRecords] = useState<Map<string, AttendanceRecord>>(
-    new Map()
+    new Map(),
   );
   const [loading, setLoading] = useState(false);
 
@@ -81,7 +81,7 @@ export default function AttendanceTracking() {
               branch: app.user.branch || 'N/A',
             });
           }
-        }
+        },
       );
       setStudents(Array.from(uniqueStudents.values()));
     } catch {

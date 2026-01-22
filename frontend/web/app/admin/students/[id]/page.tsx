@@ -5,8 +5,9 @@ import { useParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { api } from '@/lib/api';
+import { api } from '@/lib/api-client';
 import { useToast } from '@/components/ui/use-toast';
+import Image from 'next/image';
 
 interface UserProfile {
   id: string;
@@ -165,7 +166,7 @@ export default function StudentProfilePage() {
         <CardContent className="space-y-4">
           <div className="flex items-start gap-6">
             {profile.picture ? (
-              <img
+              <Image
                 src={profile.picture}
                 alt={profile.name}
                 className="h-24 w-24 rounded-full object-cover"

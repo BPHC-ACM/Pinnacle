@@ -1,14 +1,14 @@
 import { Request, Response } from 'express';
 
-import { logger } from '../../../config/logger.config';
-import type { PaginatedResponse } from '../../../types/pagination.types';
-import { parsePagination } from '../../../types/pagination.types';
-import type { CreateResumeRequest, UpdateResumeRequest } from '../../../types/resume.types';
-import type { Experience, Education, Skill, Project } from '../../../types/user-details.types';
-import { UserService } from '../../user-service/user.service';
-import resumeService from '../resume.service';
-import { ResumeStorageService } from '../storage/resume-storage.service';
-import { generateResumePDF } from '../utils/pdf.utils';
+import { logger } from '../config/logger.config';
+import { generateResumePDF } from '../services/resume-service/pdf.utils';
+import { ResumeStorageService } from '../services/resume-service/resume-storage.service';
+import resumeService from '../services/resume-service/resume.service';
+import { UserService } from '../services/user-service/user.service';
+import type { PaginatedResponse } from '../types/pagination.types';
+import { parsePagination } from '../types/pagination.types';
+import type { CreateResumeRequest, UpdateResumeRequest } from '../types/resume.types';
+import type { Experience, Education, Skill, Project } from '../types/user-details.types';
 
 const userService = new UserService();
 const resumeStorageService = new ResumeStorageService();

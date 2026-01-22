@@ -3,7 +3,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/contexts/auth-context';
 import { ThemeProvider } from '@/contexts/theme-context';
-import { UserProvider } from '@/contexts/UserContext';
+
 import { Toaster } from '@/components/ui/toaster';
 
 const inter = Inter({
@@ -27,10 +27,8 @@ export default function RootLayout({
       <body className="antialiased font-sans">
         <ThemeProvider defaultTheme="dark" storageKey="pinnacle-theme">
           <AuthProvider>
-            <UserProvider>
-              <main>{children}</main>
-              <Toaster />
-            </UserProvider>
+            <main>{children}</main>
+            <Toaster />
           </AuthProvider>
         </ThemeProvider>
       </body>

@@ -4,16 +4,15 @@ import { useEffect, useState, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/use-toast';
-import { api } from '@/lib/api';
-import { useUser } from '@/contexts/UserContext';
+import { api } from '@/lib/api-client';
+import { useAuth } from '@/contexts/auth-context';
+import { UserRole } from '@/types/auth.types';
 
 // Import sub-components
 import StudentManagement from '@/components/admin/StudentManagement';
 import AttendanceTracking from '@/components/admin/AttendanceTracking';
 import JobEligibilityManager from '@/components/admin/JobEligibilityManager';
 import JobScheduling from '@/components/admin/JobScheduling';
-
-type UserRole = 'USER' | 'ADMIN' | 'SUPER_ADMIN' | 'JPT' | 'SPT';
 
 interface DashboardStats {
   totalStudents: number;
@@ -23,7 +22,7 @@ interface DashboardStats {
 }
 
 export default function AdminDashboardPage() {
-  const { user } = useUser();
+  const { user } = useAuth();
   const { toast } = useToast();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);

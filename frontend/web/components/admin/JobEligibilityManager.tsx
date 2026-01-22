@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/components/ui/use-toast';
-import { api } from '@/lib/api';
+import { api } from '@/lib/api-client';
 
 interface Job {
   id: string;
