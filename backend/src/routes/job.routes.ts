@@ -23,7 +23,7 @@ import {
   getJobAttendance,
   getAttendanceStats,
 } from '../controllers/job.controller';
-import { requireJPT, requireAdmin } from '../middleware/role.middleware';
+import { requireJPT, requireAdmin, restrictJPTAttendance } from '../middleware/role.middleware';
 import { validateBody } from '../middleware/validate.middleware';
 import {
   createJobSchema,
@@ -69,11 +69,12 @@ router.post(
 router.get('/:jobId/eligibility', authenticateToken, getJobEligibility);
 router.get('/:jobId/check-eligibility', authenticateToken, checkEligibility);
 
-// Attendance routes (JPT and admin access)
+// Attendance routes (JPT restricted to OA and PPT only, SPT has full access)
 router.post(
   '/:jobId/attendance',
   authenticateToken,
   requireJPT,
+  restrictJPTAttendance,
   validateBody(markAttendanceSchema),
   markAttendance,
 );
@@ -81,6 +82,7 @@ router.post(
   '/:jobId/attendance/bulk',
   authenticateToken,
   requireJPT,
+  restrictJPTAttendance,
   validateBody(bulkMarkAttendanceSchema),
   bulkMarkAttendance,
 );
