@@ -23,7 +23,11 @@ const getAdminId = (req: Request): string => {
 export async function grantRole(req: Request, res: Response): Promise<void> {
   try {
     const adminId = getAdminId(req);
-    const { userId, role } = req.body as { userId: string; role: UserRole };
+    const { userId, role, remarks } = req.body as {
+      userId: string;
+      role: UserRole;
+      remarks?: string;
+    };
 
     // Validate role
     if (!userId || !role) {
@@ -48,17 +52,58 @@ export async function grantRole(req: Request, res: Response): Promise<void> {
       throw new NotFoundError(`User with ID ${userId} not found`, 'User not found');
     }
 
-    // Update user role
-    const updatedUser = await prisma.user.update({
-      where: { id: userId },
-      data: { role },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        updatedAt: true,
+    // Check if user already has an active admin role
+    const existingActiveRole = await prisma.adminRole.findFirst({
+      where: {
+        userId,
+        role,
+        isActive: true,
       },
+    });
+
+    if (existingActiveRole) {
+      throw new ValidationError(
+        `User already has an active ${role} role`,
+        'Role already assigned',
+      );
+    }
+
+    // Use a transaction to update both User and AdminRole tables
+    const result = await prisma.$transaction(async (tx) => {
+      // Update user role in User table
+      const updatedUser = await tx.user.update({
+        where: { id: userId },
+        data: { role },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          role: true,
+          updatedAt: true,
+        },
+      });
+
+      // Create AdminRole record to track who granted the role and when
+      const adminRole = await tx.adminRole.create({
+        data: {
+          userId,
+          role,
+          grantedBy: adminId,
+          remarks,
+          isActive: true,
+        },
+        include: {
+          grantor: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+        },
+      });
+
+      return { updatedUser, adminRole };
     });
 
     logger.info(
@@ -67,13 +112,15 @@ export async function grantRole(req: Request, res: Response): Promise<void> {
         userId,
         oldRole: user.role,
         newRole: role,
+        remarks,
       },
       'User role granted',
     );
 
     res.json({
       message: `Role ${role} granted successfully to ${user.name}`,
-      user: updatedUser,
+      user: result.updatedUser,
+      adminRole: result.adminRole,
     });
   } catch (error) {
     if (
@@ -95,7 +142,7 @@ export async function grantRole(req: Request, res: Response): Promise<void> {
 export async function revokeRole(req: Request, res: Response): Promise<void> {
   try {
     const adminId = getAdminId(req);
-    const { userId } = req.body as { userId: string };
+    const { userId, remarks } = req.body as { userId: string; remarks?: string };
 
     if (!userId) {
       throw new ValidationError('User ID is required', 'Invalid request');
@@ -116,17 +163,36 @@ export async function revokeRole(req: Request, res: Response): Promise<void> {
       throw new ValidationError('Cannot revoke SUPER_ADMIN role', 'Invalid operation');
     }
 
-    // Revert to USER role
-    const updatedUser = await prisma.user.update({
-      where: { id: userId },
-      data: { role: UserRole.USER },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        updatedAt: true,
-      },
+    // Use a transaction to update both User and AdminRole tables
+    const result = await prisma.$transaction(async (tx) => {
+      // Revert to USER role
+      const updatedUser = await tx.user.update({
+        where: { id: userId },
+        data: { role: UserRole.USER },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          role: true,
+          updatedAt: true,
+        },
+      });
+
+      // Mark all active admin roles as revoked
+      await tx.adminRole.updateMany({
+        where: {
+          userId,
+          isActive: true,
+        },
+        data: {
+          isActive: false,
+          revokedAt: new Date(),
+          revokedBy: adminId,
+          remarks: remarks || 'Role revoked by SPT',
+        },
+      });
+
+      return { updatedUser };
     });
 
     logger.info(
@@ -135,13 +201,14 @@ export async function revokeRole(req: Request, res: Response): Promise<void> {
         userId,
         oldRole: user.role,
         newRole: UserRole.USER,
+        remarks,
       },
       'User role revoked',
     );
 
     res.json({
       message: `Role revoked successfully for ${user.name}. User is now a regular USER`,
-      user: updatedUser,
+      user: result.updatedUser,
     });
   } catch (error) {
     if (
@@ -243,5 +310,55 @@ export async function searchUsers(req: Request, res: Response): Promise<void> {
     }
     logger.error({ err: error }, 'Error searching users');
     throw new Error('Failed to search users');
+  }
+}
+
+/**
+ * Get admin role history for a user or all users
+ * @route GET /api/admin/roles/history?userId=xxx
+ */
+export async function getAdminRoleHistory(req: Request, res: Response): Promise<void> {
+  try {
+    const { userId } = req.query;
+
+    const where = userId ? { userId: userId as string } : {};
+
+    const history = await prisma.adminRole.findMany({
+      where,
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            studentId: true,
+          },
+        },
+        grantor: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        revoker: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+      orderBy: { grantedAt: 'desc' },
+      take: 100,
+    });
+
+    res.json({
+      count: history.length,
+      history,
+    });
+  } catch (error) {
+    logger.error({ err: error }, 'Error fetching admin role history');
+    throw new Error('Failed to fetch admin role history');
   }
 }

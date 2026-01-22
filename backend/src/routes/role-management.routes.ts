@@ -7,6 +7,7 @@ import {
   revokeRole,
   getAdminUsers,
   searchUsers,
+  getAdminRoleHistory,
 } from '@/controllers/role-management.controller';
 import { requireSPT } from '@/middleware/role.middleware';
 import { validateBody } from '@/middleware/validate.middleware';
@@ -22,10 +23,12 @@ const grantRoleSchema = z.object({
   role: z.enum(['ADMIN', 'JPT', 'SPT']).refine((val) => ['ADMIN', 'JPT', 'SPT'].includes(val), {
     message: 'Role must be ADMIN, JPT, or SPT',
   }),
+  remarks: z.string().optional(),
 });
 
 const revokeRoleSchema = z.object({
   userId: z.string().uuid('Invalid user ID'),
+  remarks: z.string().optional(),
 });
 
 // ==================== ROLE MANAGEMENT (SPT Only) ====================
@@ -35,6 +38,9 @@ router.get('/', requireSPT as RequestHandler, getAdminUsers);
 
 // GET /api/admin/roles/search - Search for users to grant roles to
 router.get('/search', requireSPT as RequestHandler, searchUsers);
+
+// GET /api/admin/roles/history - Get admin role grant/revoke history
+router.get('/history', requireSPT as RequestHandler, getAdminRoleHistory);
 
 // POST /api/admin/roles/grant - Grant a role to a user (SPT only)
 router.post('/grant', requireSPT as RequestHandler, validateBody(grantRoleSchema), grantRole);

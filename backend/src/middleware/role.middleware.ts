@@ -140,3 +140,50 @@ export const requireAnyRole = (roles: UserRole[]) => {
     }
   };
 };
+
+/**
+ * Middleware to check if JPT is accessing allowed attendance types (OA and PPT only)
+ * SPT and SUPER_ADMIN have unrestricted access
+ */
+export const restrictJPTAttendance = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): void => {
+  try {
+    const userRole = req.user?.role;
+    const eventType = req.body?.eventType || req.query?.eventType;
+
+    // SPT and SUPER_ADMIN have full access
+    if ([UserRole.SUPER_ADMIN, UserRole.SPT].includes(userRole as UserRole)) {
+      next();
+      return;
+    }
+
+    // JPT can only access OA and PPT attendance
+    if (userRole === UserRole.JPT) {
+      if (!eventType || !['OA', 'PPT'].includes(eventType)) {
+        logger.warn(
+          { userId: req.user?.id, role: userRole, eventType, path: req.path },
+          'Access denied: JPT can only access OA and PPT attendance',
+        );
+        throw new AuthError(
+          'JPT can only manage attendance for Online Assessments (OA) and Pre-Placement Talks (PPT)',
+          'Forbidden',
+        );
+      }
+      next();
+      return;
+    }
+
+    // Any other role shouldn't reach here, but deny access
+    throw new AuthError('Insufficient privileges', 'Forbidden');
+  } catch (error) {
+    if (error instanceof AuthError) {
+      res.status(403).json({ error: error.message });
+      return;
+    }
+    logger.error({ err: error }, 'Error in restrictJPTAttendance middleware');
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};

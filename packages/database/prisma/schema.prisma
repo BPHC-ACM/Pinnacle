@@ -58,12 +58,38 @@ model User {
   markSheets                MarkSheet[]
   applications              Application[]
   userDetails               UserDetails?
+  
+  // Admin role relations
+  adminRoles                AdminRole[]              @relation("AdminRoleUser")
+  grantedAdminRoles         AdminRole[]              @relation("AdminRoleGrantor")
+  revokedAdminRoles         AdminRole[]              @relation("AdminRoleRevoker")
 
   @@index([email])
   @@index([googleId])
   @@index([deletedAt])
   @@index([studentId])
   @@index([isFrozen])
+}
+
+model AdminRole {
+  id           String    @id @default(uuid())
+  userId       String    // The user who has been granted admin access
+  role         UserRole  // SPT or JPT
+  grantedBy    String    // ID of the SPT who granted this role
+  grantedAt    DateTime  @default(now())
+  revokedAt    DateTime? // When the role was revoked (null if active)
+  revokedBy    String?   // ID of the SPT who revoked this role
+  isActive     Boolean   @default(true)
+  remarks      String?   // Optional notes about why this role was granted/revoked
+  
+  user         User      @relation("AdminRoleUser", fields: [userId], references: [id], onDelete: Cascade)
+  grantor      User      @relation("AdminRoleGrantor", fields: [grantedBy], references: [id])
+  revoker      User?     @relation("AdminRoleRevoker", fields: [revokedBy], references: [id])
+  
+  @@unique([userId, role, isActive]) // A user can only have one active role of each type
+  @@index([userId])
+  @@index([grantedBy])
+  @@index([isActive])
 }
 
 model UserDetails {
