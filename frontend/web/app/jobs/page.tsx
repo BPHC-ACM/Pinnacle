@@ -56,6 +56,7 @@ export default function JobsPage() {
   const [positionType, setPositionType] = useState('All');
   const [status, setStatus] = useState('All');
   const [sortBy, setSortBy] = useState('Created At');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [searchQuery, setSearchQuery] = useState('');
 
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -72,11 +73,13 @@ export default function JobsPage() {
   const sectorRef = useRef('ALL_SECTORS');
   const positionTypeRef = useRef('All');
   const sortByRef = useRef('Created At');
+  const sortOrderRef = useRef<'asc' | 'desc'>('desc');
 
   searchQueryRef.current = searchQuery;
   sectorRef.current = sector;
   positionTypeRef.current = positionType;
   sortByRef.current = sortBy;
+  sortOrderRef.current = sortOrder;
 
   const fetchApplications = useCallback(async () => {
     try {
@@ -102,9 +105,9 @@ export default function JobsPage() {
       if (positionTypeRef.current !== 'All') params.append('jobType', positionTypeRef.current);
 
       const sortConfig: Record<string, { field: string; order: 'asc' | 'desc' }> = {
-        'Created At': { field: 'createdAt', order: 'desc' },
-        Deadline: { field: 'deadline', order: 'asc' },
-        'Company Name': { field: 'companyName', order: 'asc' },
+        'Created At': { field: 'createdAt', order: sortOrderRef.current },
+        Deadline: { field: 'deadline', order: sortOrderRef.current },
+        'Company Name': { field: 'companyName', order: sortOrderRef.current },
       };
 
       const config = sortConfig[sortByRef.current];
@@ -161,7 +164,7 @@ export default function JobsPage() {
 
       if (node) observer.current.observe(node);
     },
-    [loading, fetchingMore, hasMore]
+    [loading, fetchingMore, hasMore],
   );
 
   // --- Effects ---
@@ -209,7 +212,7 @@ export default function JobsPage() {
     if (!isAuthenticated) return;
     setPage(1);
     fetchJobs(1, true);
-  }, [sector, positionType, sortBy, isAuthenticated, fetchJobs]);
+  }, [sector, positionType, sortBy, sortOrder, isAuthenticated, fetchJobs]);
 
   // Pagination
   useEffect(() => {
@@ -301,14 +304,23 @@ export default function JobsPage() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="ALL_SECTORS">All Sectors</SelectItem>
-                      {Object.values(Sector).map((s) => (
-                        <SelectItem key={s} value={s}>
-                          {s
-                            .replace(/_/g, ' ')
-                            .toLowerCase()
-                            .replace(/\b\w/g, (l) => l.toUpperCase())}
-                        </SelectItem>
-                      ))}
+                      {Object.values(Sector).map((s) => {
+                        // Handle special cases for proper capitalization
+                        const displayName =
+                          s === 'IT'
+                            ? 'IT'
+                            : s === 'ECOMMERCE'
+                              ? 'E-Commerce'
+                              : s
+                                  .replace(/_/g, ' ')
+                                  .toLowerCase()
+                                  .replace(/\b\w/g, (l) => l.toUpperCase());
+                        return (
+                          <SelectItem key={s} value={s}>
+                            {displayName}
+                          </SelectItem>
+                        );
+                      })}
                     </SelectContent>
                   </Select>
                 </div>
@@ -353,16 +365,47 @@ export default function JobsPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-2">Sort by</label>
-                  <Select value={sortBy} onValueChange={setSortBy}>
-                    <SelectTrigger className="w-full bg-background border-border">
-                      <SelectValue placeholder="Sort by" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Created At">Created At</SelectItem>
-                      <SelectItem value="Company Name">Company Name</SelectItem>
-                      <SelectItem value="Deadline">Deadline</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div className="flex gap-2">
+                    <Select value={sortBy} onValueChange={setSortBy}>
+                      <SelectTrigger className="w-full bg-background border-border">
+                        <SelectValue placeholder="Sort by" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Created At">Created At</SelectItem>
+                        <SelectItem value="Company Name">Company Name</SelectItem>
+                        <SelectItem value="Deadline">Deadline</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                      className="shrink-0"
+                      title={sortOrder === 'asc' ? 'Ascending' : 'Descending'}
+                    >
+                      {sortOrder === 'asc' ? (
+                        <svg
+                          className="h-4 w-4"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
+                          <path d="M12 5v14M19 12l-7 7-7-7" />
+                        </svg>
+                      ) : (
+                        <svg
+                          className="h-4 w-4"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
+                          <path d="M12 19V5M5 12l7-7 7 7" />
+                        </svg>
+                      )}
+                    </Button>
+                  </div>
                 </div>
               </div>
 
@@ -400,7 +443,7 @@ export default function JobsPage() {
           </div>
         </div>
 
-        <div className="flex flex-1 w-full overflow-hidden border-t min-h-0">
+        <div className="flex flex-1 w-full overflow-hidden border-t min-h-150">
           {/* Theme restoration: restored scrollbar-theme and padding */}
           <div className="w-full lg:w-1/3 overflow-y-auto py-6 pr-6 pl-6 md:pl-0 space-y-4 border-r border-border scrollbar-theme">
             {loading ? (
@@ -475,7 +518,7 @@ export default function JobsPage() {
                               ) : (
                                 <span
                                   className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(
-                                    applicationStatus
+                                    applicationStatus,
                                   )}`}
                                 >
                                   {applicationStatus}
