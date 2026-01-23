@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { api } from '@/lib/api-client';
 import Image from 'next/image';
 import { Header } from '@/components/Header';
+import { toast } from 'sonner';
 
 // Icon components
 const UserIcon = ({ className }: { className?: string }) => (
@@ -190,7 +191,6 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<TabType>('personal');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // Profile data
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -214,7 +214,6 @@ export default function ProfilePage() {
     } else {
       fetchAllData();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, authLoading, router]);
 
   const fetchAllData = async () => {
@@ -240,15 +239,10 @@ export default function ProfilePage() {
       setLanguages(langRes.data.data || []);
     } catch (error) {
       console.error('Failed to fetch profile data:', error);
-      showMessage('error', 'Failed to load profile data');
+      toast.error('Failed to load profile data');
     } finally {
       setLoading(false);
     }
-  };
-
-  const showMessage = (type: 'success' | 'error', text: string) => {
-    setMessage({ type, text });
-    setTimeout(() => setMessage(null), 3000);
   };
 
   const handleUpdateProfile = async () => {
@@ -258,11 +252,11 @@ export default function ProfilePage() {
       setProfile(response.data);
       setEditingProfile(false);
       setPicturePreview(null);
-      showMessage('success', 'Profile updated successfully');
+      toast.success('Profile updated successfully');
       refreshUser();
     } catch (error) {
       console.error('Failed to update profile:', error);
-      showMessage('error', 'Failed to update profile');
+      toast.error('Failed to update profile');
     } finally {
       setSaving(false);
     }
@@ -274,13 +268,13 @@ export default function ProfilePage() {
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      showMessage('error', 'Please upload an image file');
+      toast.error('Please upload an image file');
       return;
     }
 
     // Validate file size (5MB)
     if (file.size > 5 * 1024 * 1024) {
-      showMessage('error', 'Image size must be less than 5MB');
+      toast.error('Image size must be less than 5MB');
       return;
     }
 
@@ -304,11 +298,11 @@ export default function ProfilePage() {
       });
 
       setProfileForm({ ...profileForm, picture: response.data.url });
-      showMessage('success', 'Profile picture uploaded successfully');
+      toast.success('Profile picture uploaded successfully');
       await fetchAllData();
     } catch (error) {
       console.error('Failed to upload picture:', error);
-      showMessage('error', 'Failed to upload profile picture');
+      toast.error('Failed to upload profile picture');
       setPicturePreview(null);
     } finally {
       setUploadingPicture(false);
@@ -322,11 +316,11 @@ export default function ProfilePage() {
       await api.delete('/upload/profile-picture');
       setProfileForm({ ...profileForm, picture: undefined });
       setPicturePreview(null);
-      showMessage('success', 'Profile picture deleted successfully');
+      toast.success('Profile picture deleted successfully');
       await fetchAllData();
     } catch (error) {
       console.error('Failed to delete picture:', error);
-      showMessage('error', 'Failed to delete profile picture');
+      toast.error('Failed to delete profile picture');
     }
   };
 
@@ -337,10 +331,10 @@ export default function ProfilePage() {
     try {
       await api.delete(`/user-details/${endpoint}/${id}`);
       refreshFn();
-      showMessage('success', 'Item deleted successfully');
+      toast.success('Item deleted successfully');
     } catch (error) {
       console.error('Failed to delete:', error);
-      showMessage('error', 'Failed to delete item');
+      toast.error('Failed to delete item');
     }
   };
 
@@ -651,7 +645,7 @@ export default function ProfilePage() {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => showMessage('error', 'Add education form coming soon!')}
+          onClick={() => toast.info('Add education form coming soon!')}
         >
           <PlusIcon className="h-4 w-4 mr-2" />
           Add Education
@@ -688,7 +682,7 @@ export default function ProfilePage() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => showMessage('error', 'Edit form coming soon!')}
+                    onClick={() => toast.info('Edit form coming soon!')}
                   >
                     <PencilIcon className="h-4 w-4" />
                   </Button>
@@ -715,7 +709,7 @@ export default function ProfilePage() {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => showMessage('error', 'Add experience form coming soon!')}
+          onClick={() => toast.info('Add experience form coming soon!')}
         >
           <PlusIcon className="h-4 w-4 mr-2" />
           Add Experience
@@ -752,7 +746,7 @@ export default function ProfilePage() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => showMessage('error', 'Edit form coming soon!')}
+                    onClick={() => toast.info('Edit form coming soon!')}
                   >
                     <PencilIcon className="h-4 w-4" />
                   </Button>
@@ -779,7 +773,7 @@ export default function ProfilePage() {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => showMessage('error', 'Add skill form coming soon!')}
+          onClick={() => toast.info('Add skill form coming soon!')}
         >
           <PlusIcon className="h-4 w-4 mr-2" />
           Add Skill Category
@@ -818,7 +812,7 @@ export default function ProfilePage() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => showMessage('error', 'Edit form coming soon!')}
+                    onClick={() => toast.info('Edit form coming soon!')}
                   >
                     <PencilIcon className="h-4 w-4" />
                   </Button>
@@ -845,7 +839,7 @@ export default function ProfilePage() {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => showMessage('error', 'Add project form coming soon!')}
+          onClick={() => toast.info('Add project form coming soon!')}
         >
           <PlusIcon className="h-4 w-4 mr-2" />
           Add Project
@@ -906,7 +900,7 @@ export default function ProfilePage() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => showMessage('error', 'Edit form coming soon!')}
+                    onClick={() => toast.info('Edit form coming soon!')}
                   >
                     <PencilIcon className="h-4 w-4" />
                   </Button>
@@ -933,7 +927,7 @@ export default function ProfilePage() {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => showMessage('error', 'Add certification form coming soon!')}
+          onClick={() => toast.info('Add certification form coming soon!')}
         >
           <PlusIcon className="h-4 w-4 mr-2" />
           Add Certification
@@ -974,7 +968,7 @@ export default function ProfilePage() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => showMessage('error', 'Edit form coming soon!')}
+                    onClick={() => toast.info('Edit form coming soon!')}
                   >
                     <PencilIcon className="h-4 w-4" />
                   </Button>
@@ -1001,7 +995,7 @@ export default function ProfilePage() {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => showMessage('error', 'Add language form coming soon!')}
+          onClick={() => toast.info('Add language form coming soon!')}
         >
           <PlusIcon className="h-4 w-4 mr-2" />
           Add Language
@@ -1033,7 +1027,7 @@ export default function ProfilePage() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => showMessage('error', 'Edit form coming soon!')}
+                    onClick={() => toast.info('Edit form coming soon!')}
                   >
                     <PencilIcon className="h-4 w-4" />
                   </Button>
@@ -1088,17 +1082,6 @@ export default function ProfilePage() {
           backgroundSize: '40px 40px',
         }}
       />
-
-      {/* Message Toast */}
-      {message && (
-        <div
-          className={`fixed top-20 right-6 z-50 px-4 py-3 rounded-lg shadow-lg ${
-            message.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
-          }`}
-        >
-          {message.text}
-        </div>
-      )}
 
       <main className="flex-1 max-w-7xl mx-auto w-full px-6 py-8">
         <div className="flex items-center justify-between mb-6">

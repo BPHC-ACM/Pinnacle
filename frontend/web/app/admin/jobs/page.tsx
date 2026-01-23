@@ -16,6 +16,7 @@ import {
 import { adminService } from '@/services/admin.service';
 import type { JobWithStats, JobStatus } from '@/types/admin.types';
 import { EditJobDialog } from './_components/EditJobDialog';
+import { toast } from 'sonner';
 
 export default function AdminJobsPage() {
   const router = useRouter();
@@ -52,9 +53,10 @@ export default function AdminJobsPage() {
     try {
       await adminService.pauseJob(jobId);
       fetchJobs();
+      toast.success('Job paused successfully');
     } catch (err) {
       console.error('Error pausing job:', err);
-      alert('Failed to pause job');
+      toast.error('Failed to pause job');
     }
   };
 
@@ -62,9 +64,10 @@ export default function AdminJobsPage() {
     try {
       await adminService.reopenJob(jobId);
       fetchJobs();
+      toast.success('Job reopened successfully');
     } catch (err) {
       console.error('Error reopening job:', err);
-      alert('Failed to reopen job');
+      toast.error('Failed to reopen job');
     }
   };
 
@@ -74,9 +77,10 @@ export default function AdminJobsPage() {
     try {
       await adminService.deleteJob(jobId);
       fetchJobs();
+      toast.success('Job deleted successfully');
     } catch (err) {
       console.error('Error deleting job:', err);
-      alert('Failed to delete job');
+      toast.error('Failed to delete job');
     }
   };
 

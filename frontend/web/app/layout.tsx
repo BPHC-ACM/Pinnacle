@@ -5,6 +5,8 @@ import { AuthProvider } from '@/contexts/auth-context';
 import { ThemeProvider } from '@/contexts/theme-context';
 
 import { Toaster } from '@/components/ui/toaster';
+import { Toaster as Sonner } from 'sonner';
+import { Footer } from '@/components/Footer';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -28,7 +30,9 @@ export default function RootLayout({
         <ThemeProvider defaultTheme="dark" storageKey="pinnacle-theme">
           <AuthProvider>
             <main>{children}</main>
+            <Footer />
             <Toaster />
+            <Sonner position="top-right" richColors />
           </AuthProvider>
         </ThemeProvider>
       </body>

@@ -13,6 +13,7 @@ import {
 } from '@/services/resume.service';
 import type { ResumePreviewData, ResumeData } from '@/types/resume.types';
 import { ResumePreview } from '@/components/ResumePreview';
+import { toast } from 'sonner';
 
 function ResumeBuilderContent() {
   const { user, isLoading: authLoading } = useAuth();
@@ -76,6 +77,7 @@ function ResumeBuilderContent() {
         }
       } catch (error) {
         console.error('Failed to load data:', error);
+        toast.error('Failed to load resume data');
       } finally {
         setLoading(false);
       }
@@ -107,10 +109,10 @@ function ResumeBuilderContent() {
 
       // Then generate PDF
       await generateAndDownloadResume();
-      alert('Resume saved and PDF generated successfully!');
+      toast.success('Resume saved and PDF generated successfully!');
     } catch (error) {
       console.error('Failed to generate PDF:', error);
-      alert('Failed to generate PDF. Please try again.');
+      toast.error('Failed to generate PDF. Please try again.');
     } finally {
       setGenerating(false);
     }
@@ -120,7 +122,7 @@ function ResumeBuilderContent() {
     setResumeData((prev) => ({
       ...prev,
       sections: prev.sections.map((section) =>
-        section.id === sectionId ? { ...section, enabled: !section.enabled } : section
+        section.id === sectionId ? { ...section, enabled: !section.enabled } : section,
       ),
     }));
   };
