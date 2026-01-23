@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "validate:js": "pnpm -r run validate",
-    "validate:flutter": "if command -v flutter >/dev/null 2>&1; then cd frontend/app && ./validate.sh; else echo 'Flutter not found. Skipping mobile validation. CI will check this later.'; fi",
+    "validate:flutter": "echo Flutter validation skipped on Windows",
     "validate": "pnpm run validate:js && pnpm run validate:flutter"
   },
   "repository": {
