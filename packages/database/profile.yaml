@@ -5,11 +5,23 @@ phone: '+91 9876543210'
 location: 'Surathkal, Karnataka'
 linkedin: 'https://linkedin.com/in/pranavkulkarni'
 github: 'https://github.com/pranavkulkarni'
+website: 'https://pranavkulkarni.dev'
 bio: 'Full Stack Engineer with a strong inclination towards scalable backend systems and ML-driven products.'
 summary: 'Information Technology undergraduate experienced in full-stack development, databases, and applied machine learning.'
 googleId: 'google-auth-user-45678'
 profileStatus: 'VERIFIED'
 verificationStatus: 'APPROVED'
+
+# Student-specific fields
+studentId: '2021IT045'
+branch: 'Information Technology'
+currentYear: 4
+
+# Parent details
+parentName: 'Rajesh Kulkarni'
+parentEmail: 'rajesh.kulkarni@gmail.com'
+parentPhone: '+91 9876543211'
+parentRelation: 'Father'
 
 education:
   - institution: 'National Institute of Technology Karnataka, Surathkal'
