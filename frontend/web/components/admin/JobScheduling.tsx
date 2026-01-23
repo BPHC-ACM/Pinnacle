@@ -57,7 +57,7 @@ export default function JobScheduling() {
 
   const fetchSchedule = useCallback(async () => {
     try {
-      const response = await api.get(`/api/jobs/${selectedJob}/schedule`);
+      const response = await api.get(`/jobs/${selectedJob}/schedule`);
       setSchedule({
         oaDate: response.data.oaDate
           ? new Date(response.data.oaDate).toISOString().slice(0, 16)

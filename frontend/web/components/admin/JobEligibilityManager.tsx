@@ -58,7 +58,7 @@ export default function JobEligibilityManager() {
 
   const fetchEligibility = useCallback(async () => {
     try {
-      const response = await api.get(`/api/jobs/${selectedJob}/eligibility`);
+      const response = await api.get(`/jobs/${selectedJob}/eligibility`);
       if (response.data) {
         setCriteria({
           minCgpa: response.data.minCgpa?.toString() || '',

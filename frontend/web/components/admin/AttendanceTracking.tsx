@@ -74,7 +74,7 @@ export default function AttendanceTracking() {
 
   const fetchJobApplications = useCallback(async () => {
     try {
-      const response = await api.get(`/api/jobs/${selectedJob}/applications`);
+      const response = await api.get(`/jobs/${selectedJob}/applications`);
       // Extract unique students from applications
       const uniqueStudents = new Map();
       response.data.forEach(
@@ -101,7 +101,7 @@ export default function AttendanceTracking() {
 
   const fetchExistingAttendance = useCallback(async () => {
     try {
-      const response = await api.get(`/api/jobs/${selectedJob}/attendance?eventType=${eventType}`);
+      const response = await api.get(`/jobs/${selectedJob}/attendance?eventType=${eventType}`);
       const existingRecords = new Map<string, AttendanceRecord>();
       response.data.forEach((record: { userId: string; attended: boolean; remarks?: string }) => {
         existingRecords.set(record.userId, {
@@ -146,7 +146,7 @@ export default function AttendanceTracking() {
     setLoading(true);
     try {
       const recordsArray = Array.from(attendanceRecords.values());
-      await api.post(`/api/jobs/${selectedJob}/attendance/bulk`, {
+      await api.post(`/jobs/${selectedJob}/attendance/bulk`, {
         eventType,
         attendanceRecords: recordsArray,
       });
