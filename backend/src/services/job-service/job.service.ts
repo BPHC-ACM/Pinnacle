@@ -214,6 +214,19 @@ export class JobService {
   }
 
   // Reopen a closed job (Admin)
+  async pauseJob(id: string): Promise<Job | null> {
+    const job = await prisma.job.findFirst({ where: { id, deletedAt: null } });
+    if (!job) return null;
+
+    const updated = await prisma.job.update({
+      where: { id },
+      data: { status: 'PAUSED' },
+      include: { questions: { orderBy: { order: 'asc' } } },
+    });
+    logger.info({ jobId: id }, 'Job paused');
+    return mapJobToDto(updated);
+  }
+
   async reopenJob(id: string, newDeadline?: Date): Promise<Job | null> {
     const job = await prisma.job.findFirst({ where: { id, deletedAt: null } });
     if (!job) return null;
