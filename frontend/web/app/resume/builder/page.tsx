@@ -169,20 +169,20 @@ function ResumeBuilderContent() {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-gray-600 dark:text-gray-400">Loading...</div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-muted-foreground">Loading...</div>
       </div>
     );
   }
 
   if (!previewData) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+          <h2 className="text-2xl font-bold text-foreground mb-4">
             Complete Your Profile
           </h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
+          <p className="text-muted-foreground mb-6">
             Please complete your profile before building a resume.
           </p>
           <Button onClick={() => router.push('/profile')}>Go to Profile</Button>
@@ -192,9 +192,9 @@ function ResumeBuilderContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-white dark:bg-gray-800 shadow">
+      <div className="bg-card shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex-1">
@@ -202,7 +202,7 @@ function ResumeBuilderContent() {
                 type="text"
                 value={resumeTitle}
                 onChange={(e) => setResumeTitle(e.target.value)}
-                className="text-2xl font-bold text-gray-900 dark:text-white bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-2"
+                className="text-2xl font-bold text-foreground bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-primary rounded px-2"
                 placeholder="Resume Title"
               />
             </div>
@@ -223,21 +223,21 @@ function ResumeBuilderContent() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Panel - Customization */}
           <div className="lg:col-span-1">
-            <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 sticky top-8">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            <div className="bg-card shadow rounded-lg p-6 sticky top-8">
+              <h3 className="text-lg font-semibold text-foreground mb-4">
                 Customize Resume
               </h3>
 
               {/* Sections */}
               <div className="mb-6">
-                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                <h4 className="text-sm font-medium text-foreground mb-3">
                   Sections
                 </h4>
                 <div className="space-y-2">
                   {resumeData.sections.map((section, index) => (
                     <div
                       key={section.id}
-                      className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-700 rounded"
+                      className="flex items-center gap-2 p-2 bg-muted rounded"
                     >
                       <input
                         type="checkbox"
@@ -245,20 +245,20 @@ function ResumeBuilderContent() {
                         onChange={() => toggleSection(section.id)}
                         className="rounded"
                       />
-                      <span className="flex-1 text-sm capitalize text-gray-700 dark:text-gray-300">
+                      <span className="flex-1 text-sm capitalize text-foreground">
                         {section.type}
                       </span>
                       <button
                         onClick={() => moveSectionUp(index)}
                         disabled={index === 0}
-                        className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                        className="p-1 text-muted-foreground hover:text-foreground disabled:opacity-30"
                       >
                         ↑
                       </button>
                       <button
                         onClick={() => moveSectionDown(index)}
                         disabled={index === resumeData.sections.length - 1}
-                        className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                        className="p-1 text-muted-foreground hover:text-foreground disabled:opacity-30"
                       >
                         ↓
                       </button>
@@ -272,7 +272,7 @@ function ResumeBuilderContent() {
                 {/* Experiences */}
                 {previewData.experiences.length > 0 && (
                   <div>
-                    <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <h4 className="text-sm font-medium text-foreground mb-2">
                       Select Experiences
                     </h4>
                     <div className="space-y-1 max-h-48 overflow-y-auto">
@@ -284,7 +284,7 @@ function ResumeBuilderContent() {
                             onChange={() => toggleItem('experiences', exp.id)}
                             className="mt-1"
                           />
-                          <span className="text-gray-600 dark:text-gray-400">
+                          <span className="text-muted-foreground">
                             {exp.position} at {exp.company}
                           </span>
                         </label>
@@ -296,7 +296,7 @@ function ResumeBuilderContent() {
                 {/* Education */}
                 {previewData.education.length > 0 && (
                   <div>
-                    <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <h4 className="text-sm font-medium text-foreground mb-2">
                       Select Education
                     </h4>
                     <div className="space-y-1 max-h-48 overflow-y-auto">
@@ -308,7 +308,7 @@ function ResumeBuilderContent() {
                             onChange={() => toggleItem('education', edu.id)}
                             className="mt-1"
                           />
-                          <span className="text-gray-600 dark:text-gray-400">
+                          <span className="text-muted-foreground">
                             {edu.degree} - {edu.institution}
                           </span>
                         </label>
@@ -320,7 +320,7 @@ function ResumeBuilderContent() {
                 {/* Skills */}
                 {previewData.skills.length > 0 && (
                   <div>
-                    <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <h4 className="text-sm font-medium text-foreground mb-2">
                       Select Skills
                     </h4>
                     <div className="space-y-1 max-h-48 overflow-y-auto">
@@ -332,7 +332,7 @@ function ResumeBuilderContent() {
                             onChange={() => toggleItem('skills', skill.id)}
                             className="mt-1"
                           />
-                          <span className="text-gray-600 dark:text-gray-400">{skill.category}</span>
+                          <span className="text-muted-foreground">{skill.category}</span>
                         </label>
                       ))}
                     </div>
@@ -342,7 +342,7 @@ function ResumeBuilderContent() {
                 {/* Projects */}
                 {previewData.projects.length > 0 && (
                   <div>
-                    <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <h4 className="text-sm font-medium text-foreground mb-2">
                       Select Projects
                     </h4>
                     <div className="space-y-1 max-h-48 overflow-y-auto">
@@ -354,7 +354,7 @@ function ResumeBuilderContent() {
                             onChange={() => toggleItem('projects', proj.id)}
                             className="mt-1"
                           />
-                          <span className="text-gray-600 dark:text-gray-400">{proj.title}</span>
+                          <span className="text-muted-foreground">{proj.title}</span>
                         </label>
                       ))}
                     </div>
@@ -367,10 +367,10 @@ function ResumeBuilderContent() {
           {/* Right Panel - Preview */}
           <div className="lg:col-span-2">
             <div className="mb-4">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              <h3 className="text-lg font-semibold text-foreground">
                 Resume Preview
               </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-sm text-muted-foreground">
                 This is how your resume will look
               </p>
             </div>
