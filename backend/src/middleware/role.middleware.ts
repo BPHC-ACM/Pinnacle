@@ -148,8 +148,7 @@ export const restrictJPTAttendance = (req: Request, res: Response, next: NextFun
     // Type guard and safe access for req.body.eventType
     const bodyEventType =
       req.body && typeof req.body === 'object' && 'eventType' in req.body
-        ? // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-          (req.body.eventType as string | undefined)
+        ? (req.body.eventType as string | undefined)
         : undefined;
     const eventType = bodyEventType ?? (req.query?.eventType as string | undefined);
 
