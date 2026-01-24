@@ -24,6 +24,8 @@ export interface Job {
   interviewVenue?: string;
   interviewInstructions?: string;
   selectionStatus?: 'PENDING' | 'ACCEPTED' | 'REJECTED';
+  offerDate?: Date;
+  joiningDate?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
