@@ -34,8 +34,7 @@ export default function JobScheduling() {
     pptDate: '',
     pptVenue: '',
     pptInstructions: '',
-    interviewStartDate: '',
-    interviewEndDate: '',
+    interviewDate: '',
     interviewVenue: '',
     interviewInstructions: '',
     offerDate: '',
@@ -69,11 +68,8 @@ export default function JobScheduling() {
           : '',
         pptVenue: response.data.pptVenue || '',
         pptInstructions: response.data.pptInstructions || '',
-        interviewStartDate: response.data.interviewStartDate
-          ? new Date(response.data.interviewStartDate).toISOString().slice(0, 16)
-          : '',
-        interviewEndDate: response.data.interviewEndDate
-          ? new Date(response.data.interviewEndDate).toISOString().slice(0, 16)
+        interviewDate: response.data.interviewDate
+          ? new Date(response.data.interviewDate).toISOString().slice(0, 16)
           : '',
         interviewVenue: response.data.interviewVenue || '',
         interviewInstructions: response.data.interviewInstructions || '',
@@ -118,8 +114,7 @@ export default function JobScheduling() {
         pptDate?: string;
         pptVenue?: string;
         pptInstructions?: string;
-        interviewStartDate?: string;
-        interviewEndDate?: string;
+        interviewDate?: string;
         interviewVenue?: string;
         interviewInstructions?: string;
         offerDate?: string;
@@ -134,10 +129,8 @@ export default function JobScheduling() {
       if (schedule.pptVenue) payload.pptVenue = schedule.pptVenue;
       if (schedule.pptInstructions) payload.pptInstructions = schedule.pptInstructions;
 
-      if (schedule.interviewStartDate)
-        payload.interviewStartDate = new Date(schedule.interviewStartDate).toISOString();
-      if (schedule.interviewEndDate)
-        payload.interviewEndDate = new Date(schedule.interviewEndDate).toISOString();
+      if (schedule.interviewDate)
+        payload.interviewDate = new Date(schedule.interviewDate).toISOString();
       if (schedule.interviewVenue) payload.interviewVenue = schedule.interviewVenue;
       if (schedule.interviewInstructions)
         payload.interviewInstructions = schedule.interviewInstructions;
@@ -145,7 +138,7 @@ export default function JobScheduling() {
       if (schedule.offerDate) payload.offerDate = new Date(schedule.offerDate).toISOString();
       if (schedule.joiningDate) payload.joiningDate = new Date(schedule.joiningDate).toISOString();
 
-      await api.patch(`/api/jobs/${selectedJob}/schedule`, payload);
+      await api.patch(`/jobs/${selectedJob}/schedule`, payload);
 
       toast({
         title: 'Success',
@@ -248,21 +241,13 @@ export default function JobScheduling() {
           {/* Interview Section */}
           <div className="border p-4 rounded-lg space-y-4">
             <h3 className="font-semibold text-lg">Interview</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label>Interview Start Date</Label>
+                <Label>Interview Date & Time</Label>
                 <Input
                   type="datetime-local"
-                  value={schedule.interviewStartDate}
-                  onChange={(e) => setSchedule({ ...schedule, interviewStartDate: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label>Interview End Date</Label>
-                <Input
-                  type="datetime-local"
-                  value={schedule.interviewEndDate}
-                  onChange={(e) => setSchedule({ ...schedule, interviewEndDate: e.target.value })}
+                  value={schedule.interviewDate}
+                  onChange={(e) => setSchedule({ ...schedule, interviewDate: e.target.value })}
                 />
               </div>
               <div>
@@ -286,23 +271,26 @@ export default function JobScheduling() {
             </div>
           </div>
 
-          {/* Offer & Joining */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label>Offer Date</Label>
-              <Input
-                type="datetime-local"
-                value={schedule.offerDate}
-                onChange={(e) => setSchedule({ ...schedule, offerDate: e.target.value })}
-              />
-            </div>
-            <div>
-              <Label>Joining Date</Label>
-              <Input
-                type="datetime-local"
-                value={schedule.joiningDate}
-                onChange={(e) => setSchedule({ ...schedule, joiningDate: e.target.value })}
-              />
+          {/* Offer & Joining Dates */}
+          <div className="border p-4 rounded-lg space-y-4">
+            <h3 className="font-semibold text-lg">Offer & Joining</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label>Offer Date</Label>
+                <Input
+                  type="datetime-local"
+                  value={schedule.offerDate}
+                  onChange={(e) => setSchedule({ ...schedule, offerDate: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>Joining Date</Label>
+                <Input
+                  type="datetime-local"
+                  value={schedule.joiningDate}
+                  onChange={(e) => setSchedule({ ...schedule, joiningDate: e.target.value })}
+                />
+              </div>
             </div>
           </div>
 

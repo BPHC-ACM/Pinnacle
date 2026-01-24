@@ -309,6 +309,8 @@ export class JobService {
         interviewVenue: data.interviewVenue,
         interviewInstructions: data.interviewInstructions,
         selectionStatus: data.selectionStatus,
+        offerDate: data.offerDate,
+        joiningDate: data.joiningDate,
       },
       include: { questions: true, company: true },
     });

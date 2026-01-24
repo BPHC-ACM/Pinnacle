@@ -7,40 +7,40 @@ datasource db {
 }
 
 model User {
-  id                        String                     @id @default(uuid())
-  email                     String                     @unique
-  name                      String
-  picture                   String?
-  googleId                  String                     @unique
-  phone                     String?
-  location                  String?
-  linkedin                  String?
-  github                    String?
-  website                   String?
-  bio                       String?
-  title                     String?
-  summary                   String?
-  createdAt                 DateTime                   @default(now())
-  updatedAt                 DateTime                   @updatedAt
-  deletedAt                 DateTime?
-  role                      UserRole                   @default(USER)
-  hasOnboarded              Boolean                    @default(false)
-  deviceTokens              String[]                   @default([])
-  profileStatus             ProfileStatus              @default(DRAFT)
-  verificationStatus        VerificationStatus         @default(PENDING)
-  
+  id                 String             @id @default(uuid())
+  email              String             @unique
+  name               String
+  picture            String?
+  googleId           String             @unique
+  phone              String?
+  location           String?
+  linkedin           String?
+  github             String?
+  website            String?
+  bio                String?
+  title              String?
+  summary            String?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  deletedAt          DateTime?
+  role               UserRole           @default(USER)
+  hasOnboarded       Boolean            @default(false)
+  deviceTokens       String[]           @default([])
+  profileStatus      ProfileStatus      @default(DRAFT)
+  verificationStatus VerificationStatus @default(PENDING)
+
   // Student-specific fields
-  studentId                 String?                    @unique // Roll number/Student ID
-  branch                    String?                    // e.g., "Computer Science", "Electronics"
-  currentYear               Int?                       // Current year of study
-  isFrozen                  Boolean                    @default(false) // Freeze account for placement
-  
+  studentId   String? @unique // Roll number/Student ID
+  branch      String? // e.g., "Computer Science", "Electronics"
+  currentYear Int? // Current year of study
+  isFrozen    Boolean @default(false) // Freeze account for placement
+
   // Parent details
-  parentName                String?
-  parentEmail               String?
-  parentPhone               String?
-  parentRelation            String?                    // e.g., "Father", "Mother", "Guardian"
-  
+  parentName     String?
+  parentEmail    String?
+  parentPhone    String?
+  parentRelation String? // e.g., "Father", "Mother", "Guardian"
+
   accomplishments           Accomplishment[]
   sentAnnouncements         Announcement[]
   certifications            Certification[]
@@ -58,11 +58,11 @@ model User {
   markSheets                MarkSheet[]
   applications              Application[]
   userDetails               UserDetails?
-  
+
   // Admin role relations
-  adminRoles                AdminRole[]              @relation("AdminRoleUser")
-  grantedAdminRoles         AdminRole[]              @relation("AdminRoleGrantor")
-  revokedAdminRoles         AdminRole[]              @relation("AdminRoleRevoker")
+  adminRoles        AdminRole[] @relation("AdminRoleUser")
+  grantedAdminRoles AdminRole[] @relation("AdminRoleGrantor")
+  revokedAdminRoles AdminRole[] @relation("AdminRoleRevoker")
 
   @@index([email])
   @@index([googleId])
@@ -72,20 +72,20 @@ model User {
 }
 
 model AdminRole {
-  id           String    @id @default(uuid())
-  userId       String    // The user who has been granted admin access
-  role         UserRole  // SPT or JPT
-  grantedBy    String    // ID of the SPT who granted this role
-  grantedAt    DateTime  @default(now())
-  revokedAt    DateTime? // When the role was revoked (null if active)
-  revokedBy    String?   // ID of the SPT who revoked this role
-  isActive     Boolean   @default(true)
-  remarks      String?   // Optional notes about why this role was granted/revoked
-  
-  user         User      @relation("AdminRoleUser", fields: [userId], references: [id], onDelete: Cascade)
-  grantor      User      @relation("AdminRoleGrantor", fields: [grantedBy], references: [id])
-  revoker      User?     @relation("AdminRoleRevoker", fields: [revokedBy], references: [id])
-  
+  id        String    @id @default(uuid())
+  userId    String // The user who has been granted admin access
+  role      UserRole // SPT or JPT
+  grantedBy String // ID of the SPT who granted this role
+  grantedAt DateTime  @default(now())
+  revokedAt DateTime? // When the role was revoked (null if active)
+  revokedBy String? // ID of the SPT who revoked this role
+  isActive  Boolean   @default(true)
+  remarks   String? // Optional notes about why this role was granted/revoked
+
+  user    User  @relation("AdminRoleUser", fields: [userId], references: [id], onDelete: Cascade)
+  grantor User  @relation("AdminRoleGrantor", fields: [grantedBy], references: [id])
+  revoker User? @relation("AdminRoleRevoker", fields: [revokedBy], references: [id])
+
   @@unique([userId, role, isActive]) // A user can only have one active role of each type
   @@index([userId])
   @@index([grantedBy])
@@ -344,7 +344,7 @@ model Company {
   website     String?
   description String?
   logo        String?
-  sector      Sector?   @default(OTHERS) 
+  sector      Sector?   @default(OTHERS)
   size        String?
   location    String?
   email       String?
@@ -360,39 +360,42 @@ model Company {
 }
 
 model Job {
-  id                  String              @id @default(uuid())
-  companyId           String
-  title               String
-  description         String?
-  location            String?
-  type                String?
-  salary              String?
-  deadline            DateTime?
-  status              JobStatus           @default(OPEN)
-  
-  placementCycleId    String
-  placementCycle      PlacementCycle      @relation(fields: [placementCycleId], references: [id], onDelete: Cascade)
-  
+  id          String    @id @default(uuid())
+  companyId   String
+  title       String
+  description String?
+  location    String?
+  type        String?
+  salary      String?
+  deadline    DateTime?
+  status      JobStatus @default(OPEN)
+
+  placementCycleId String
+  placementCycle   PlacementCycle @relation(fields: [placementCycleId], references: [id], onDelete: Cascade)
+
   // Scheduling fields
-  oaDate              DateTime?           // Online Assessment date
-  oaVenue             String?             // OA venue/platform
-  oaInstructions      String?             // OA instructions
-  
-  pptDate             DateTime?           // Pre-Placement Talk date
-  pptVenue            String?             // PPT venue
-  pptInstructions     String?             // PPT instructions
-  
-  interviewDate       DateTime?           // Interview date
-  interviewVenue      String?             // Interview venue/platform
-  interviewInstructions String?           // Interview instructions
-  selectionStatus     String?             @default("PENDING") // PENDING, ACCEPTED, REJECTED
-  
-  createdAt           DateTime            @default(now())
-  updatedAt           DateTime            @updatedAt
+  oaDate         DateTime? // Online Assessment date
+  oaVenue        String? // OA venue/platform
+  oaInstructions String? // OA instructions
+
+  pptDate         DateTime? // Pre-Placement Talk date
+  pptVenue        String? // PPT venue
+  pptInstructions String? // PPT instructions
+
+  interviewDate         DateTime? // Interview date
+  interviewVenue        String? // Interview venue/platform
+  interviewInstructions String? // Interview instructions
+  selectionStatus       String?   @default("PENDING") // PENDING, ACCEPTED, REJECTED
+
+  offerDate   DateTime? // Offer announcement date
+  joiningDate DateTime? // Expected joining date
+
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
   deletedAt           DateTime?
   descriptionDocument String?
   applications        Application[]
-  company             Company             @relation(fields: [companyId], references: [id])
+  company             Company            @relation(fields: [companyId], references: [id])
   questions           JobQuestion[]
   eligibilityCriteria JobEligibility[]
   attendanceRecords   AttendanceRecord[]
@@ -466,24 +469,24 @@ model Announcement {
 }
 
 model PlacementCycle {
-  id           String             @id @default(uuid())
-  
-  name         String             // e.g., "Placement Drive 2025-26"
+  id String @id @default(uuid())
+
+  name         String // e.g., "Placement Drive 2025-26"
   type         PlacementCycleType // PLACEMENT or INTERNSHIP
-  academicYear String             // e.g., "2025-2026"
-  
-  status       CycleStatus        @default(UPCOMING)
-  
-  startDate    DateTime
-  endDate      DateTime
-  
+  academicYear String // e.g., "2025-2026"
+
+  status CycleStatus @default(UPCOMING)
+
+  startDate DateTime
+  endDate   DateTime
+
   // --- RELATIONS ---
-  jobs             Job[]    // A cycle has many jobs
-  eligibleStudents User[]   // Students eligible for this cycle (Many-to-Many)
-  
-  createdAt    DateTime           @default(now())
-  updatedAt    DateTime           @updatedAt
-  
+  jobs             Job[] // A cycle has many jobs
+  eligibleStudents User[] // Students eligible for this cycle (Many-to-Many)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([status])
 }
 
@@ -491,9 +494,9 @@ model PlacementCycle {
 model MarkSheet {
   id           String   @id @default(uuid())
   userId       String
-  term         String   // e.g., "Semester 1", "Semester 2"
-  academicYear String   // e.g., "2024-2025"
-  fileUrl      String   // S3/MinIO URL to PDF
+  term         String // e.g., "Semester 1", "Semester 2"
+  academicYear String // e.g., "2024-2025"
+  fileUrl      String // S3/MinIO URL to PDF
   fileName     String
   uploadedAt   DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -505,43 +508,43 @@ model MarkSheet {
 
 // Job eligibility criteria
 model JobEligibility {
-  id                    String   @id @default(uuid())
-  jobId                 String
-  
+  id    String @id @default(uuid())
+  jobId String
+
   // CGPA criteria
-  minCgpa               Float?
-  maxActiveBacklogs     Int?     // Maximum allowed active backlogs
-  maxTotalBacklogs      Int?     // Maximum total backlogs (including cleared)
-  
+  minCgpa           Float?
+  maxActiveBacklogs Int? // Maximum allowed active backlogs
+  maxTotalBacklogs  Int? // Maximum total backlogs (including cleared)
+
   // Branch eligibility
-  allowedBranches       String[] @default([]) // Empty array means all branches
-  
+  allowedBranches String[] @default([]) // Empty array means all branches
+
   // Year eligibility
-  allowedYears          Int[]    @default([]) // e.g., [3, 4] for 3rd and 4th year
-  
+  allowedYears Int[] @default([]) // e.g., [3, 4] for 3rd and 4th year
+
   // Custom criteria
-  customCriteria        Json?    // For any additional custom rules
-  
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
-  job                   Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  customCriteria Json? // For any additional custom rules
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
 
   @@index([jobId])
 }
 
 // OA/PPT Attendance tracking
 model AttendanceRecord {
-  id           String           @id @default(uuid())
-  jobId        String
-  userId       String
-  eventType    AttendanceType
-  attended     Boolean          @default(false)
-  markedBy     String?          // Admin/JPT who marked attendance
-  markedAt     DateTime?
-  remarks      String?
-  createdAt    DateTime         @default(now())
-  updatedAt    DateTime         @updatedAt
-  job          Job              @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  id        String         @id @default(uuid())
+  jobId     String
+  userId    String
+  eventType AttendanceType
+  attended  Boolean        @default(false)
+  markedBy  String? // Admin/JPT who marked attendance
+  markedAt  DateTime?
+  remarks   String?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  job       Job            @relation(fields: [jobId], references: [id], onDelete: Cascade)
 
   @@unique([jobId, userId, eventType])
   @@index([jobId])
@@ -551,8 +554,8 @@ model AttendanceRecord {
 
 enum UserRole {
   USER
-  JPT       // Junior Placement Team - Attendance management only
-  SPT       // Senior Placement Team - Full administrative control
+  JPT // Junior Placement Team - Attendance management only
+  SPT // Senior Placement Team - Full administrative control
 }
 
 enum VerificationStatus {
@@ -648,7 +651,7 @@ enum CycleStatus {
 }
 
 enum AttendanceType {
-  OA          // Online Assessment
-  PPT         // Pre-Placement Talk
-  INTERVIEW   // Interview
+  OA // Online Assessment
+  PPT // Pre-Placement Talk
+  INTERVIEW // Interview
 }

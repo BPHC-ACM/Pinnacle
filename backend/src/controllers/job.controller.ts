@@ -127,6 +127,8 @@ export async function getJobSchedule(req: Request, res: Response): Promise<void>
     interviewVenue: job.interviewVenue,
     interviewInstructions: job.interviewInstructions,
     selectionStatus: job.selectionStatus,
+    offerDate: job.offerDate,
+    joiningDate: job.joiningDate,
   });
 }
 

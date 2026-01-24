@@ -160,6 +160,8 @@ export interface UpdateJobScheduleRequest {
   interviewVenue?: string;
   interviewInstructions?: string;
   selectionStatus?: 'PENDING' | 'ACCEPTED' | 'REJECTED';
+  offerDate?: Date;
+  joiningDate?: Date;
 }
 
 export interface BulkStatusUpdateRequest {

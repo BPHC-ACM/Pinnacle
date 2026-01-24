@@ -133,6 +133,8 @@ export interface UpdateJobScheduleRequest {
   interviewVenue?: string;
   interviewInstructions?: string;
   selectionStatus?: 'PENDING' | 'ACCEPTED' | 'REJECTED';
+  offerDate?: Date;
+  joiningDate?: Date;
 }
 
 export const updateJobScheduleSchema = z.object({
@@ -146,6 +148,8 @@ export const updateJobScheduleSchema = z.object({
   interviewVenue: z.string().max(500).optional(),
   interviewInstructions: z.string().max(2000).optional(),
   selectionStatus: z.enum(['PENDING', 'ACCEPTED', 'REJECTED']).optional(),
+  offerDate: z.coerce.date().optional(),
+  joiningDate: z.coerce.date().optional(),
 });
 
 // ========== JOB ELIGIBILITY TYPES ==========

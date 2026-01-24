@@ -69,6 +69,12 @@ export function EditJobDialog({ job, open, onOpenChange, onSuccess }: EditJobDia
     job.interviewInstructions || '',
   );
   const [selectionStatus, setSelectionStatus] = useState(job.selectionStatus || 'PENDING');
+  const [offerDate, setOfferDate] = useState(
+    job.offerDate ? new Date(job.offerDate).toISOString().slice(0, 16) : '',
+  );
+  const [joiningDate, setJoiningDate] = useState(
+    job.joiningDate ? new Date(job.joiningDate).toISOString().slice(0, 16) : '',
+  );
 
   const handleBasicSave = async () => {
     try {
@@ -110,6 +116,8 @@ export function EditJobDialog({ job, open, onOpenChange, onSuccess }: EditJobDia
         interviewVenue,
         interviewInstructions,
         selectionStatus,
+        offerDate: offerDate ? new Date(offerDate) : undefined,
+        joiningDate: joiningDate ? new Date(joiningDate) : undefined,
       });
       toast({ title: 'Success', description: 'Job schedule updated successfully' });
       onSuccess();
@@ -340,6 +348,30 @@ export function EditJobDialog({ job, open, onOpenChange, onSuccess }: EditJobDia
                   value={interviewInstructions}
                   onChange={(e) => setInterviewInstructions(e.target.value)}
                 />
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="font-medium text-sm border-b pb-2">Offer & Joining</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="offerDate">Offer Date</Label>
+                  <Input
+                    id="offerDate"
+                    type="datetime-local"
+                    value={offerDate}
+                    onChange={(e) => setOfferDate(e.target.value)}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="joiningDate">Joining Date</Label>
+                  <Input
+                    id="joiningDate"
+                    type="datetime-local"
+                    value={joiningDate}
+                    onChange={(e) => setJoiningDate(e.target.value)}
+                  />
+                </div>
               </div>
             </div>
 
