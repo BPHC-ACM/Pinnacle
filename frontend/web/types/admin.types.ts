@@ -90,6 +90,8 @@ export interface JobWithDetails {
   interviewVenue?: string;
   interviewInstructions?: string;
   selectionStatus?: 'PENDING' | 'ACCEPTED' | 'REJECTED';
+  offerDate?: string;
+  joiningDate?: string;
 }
 
 export interface JobWithStats extends JobWithDetails {
