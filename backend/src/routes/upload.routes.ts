@@ -8,6 +8,8 @@ import {
   deleteCompanyLogo,
   uploadJobDocument,
   uploadSingleImage,
+  uploadSingleLargeImage,
+  uploadMarksheet,
 } from '../controllers/upload.controller';
 
 const router = Router();
@@ -49,5 +51,13 @@ router.delete('/company-logo/:companyId', isAdmin, deleteCompanyLogo);
  * @access Private (requires admin authentication)
  */
 router.post('/job-document/:jobId', isAdmin, uploadSingleImage, uploadJobDocument);
+
+/**
+ * @route POST /api/upload/marksheet
+ * @desc Upload term-wise marksheet screenshot/image
+ * @access Private (requires JWT authentication)
+ * @body term: string, academicYear: string
+ */
+router.post('/marksheet', uploadSingleLargeImage, uploadMarksheet);
 
 export default router;

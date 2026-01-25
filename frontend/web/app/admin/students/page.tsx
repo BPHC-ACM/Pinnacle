@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/use-toast';
 import {
   Table,
   TableBody,
@@ -14,21 +15,21 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { adminService } from '@/services/admin.service';
-import type { PlacementStatus, ProfileStatus, ApplicationWithDetails } from '@/types/admin.types';
+import type { PlacementStatus, ProfileStatus, StudentUser } from '@/types/admin.types';
 
 interface Student {
   id: string;
   name: string;
   email: string;
+  rollNumber: string;
   batch: number;
   department: string;
   cgpa: number;
   placementStatus: PlacementStatus;
   profileStatus: ProfileStatus;
-  appliedJobs: number;
-  shortlisted: number;
-  interviewed: number;
-  offered: number;
+  parentName?: string;
+  parentPhone?: string;
+  isFrozen: boolean;
 }
 
 export default function StudentsPage() {
@@ -45,52 +46,56 @@ export default function StudentsPage() {
   const [cgpaMax, setCgpaMax] = useState<number>(10);
   const [page, setPage] = useState(1);
   const pageSize = 20;
+  const [frozenStudents, setFrozenStudents] = useState<Set<string>>(new Set());
+  const [deletingStudents, setDeletingStudents] = useState<Set<string>>(new Set());
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchStudents = async () => {
       try {
         setLoading(true);
-        const response = await adminService.getAllApplications({}, { page: 1, limit: 1000 });
+        const response = await adminService.getStudents({ page: 1, limit: 1000 });
 
-        // Extract unique students from applications
-        const studentMap = new Map<string, Student>();
-        response.data.forEach((app: ApplicationWithDetails) => {
-          const userId = app.user?.id || app.userId;
-          if (!studentMap.has(userId)) {
-            studentMap.set(userId, {
-              id: userId,
-              name: app.user?.name || 'N/A',
-              email: app.user?.email || 'N/A',
-              batch: 2024, // Default, you may want to extract from user profile
-              department: 'CSE', // Default, you may want to extract from user profile
-              cgpa: 0, // Default, you may want to extract from user profile
-              placementStatus: 'PLACED' as PlacementStatus,
-              profileStatus: 'COMPLETE' as ProfileStatus,
-              appliedJobs: 0,
-              shortlisted: 0,
-              interviewed: 0,
-              offered: 0,
-            });
-          }
+        const mappedStudents: Student[] = response.students.map((u: StudentUser) => {
+          // Derive placement status
+          const isPlaced = u.applications?.some((app) => app.status === 'HIRED');
 
-          const student = studentMap.get(userId)!;
-          student.appliedJobs++;
+          // Map profile status
+          let pStatus: ProfileStatus = 'INCOMPLETE';
+          if (u.profileStatus === 'VERIFIED') pStatus = 'COMPLETE';
+          if (u.profileStatus === 'SUBMITTED_FOR_REVIEW') pStatus = 'LOCKED';
 
-          if (app.status === 'SHORTLISTED') student.shortlisted++;
-          if (app.status === 'INTERVIEWING') student.interviewed++;
-          if (app.status === 'HIRED') student.offered++;
+          return {
+            id: u.id,
+            name: u.name || 'N/A',
+            email: u.email,
+            rollNumber: u.studentId || 'N/A',
+            batch: u.currentYear || 0,
+            department: u.branch || 'N/A',
+            cgpa: u.education?.[0]?.gpa ? parseFloat(u.education[0].gpa) : 0,
+            placementStatus: isPlaced ? 'PLACED' : 'UNPLACED',
+            profileStatus: pStatus,
+            parentName: u.parentName || undefined,
+            parentPhone: u.parentPhone || undefined,
+            isFrozen: u.isFrozen,
+          };
         });
 
-        setStudents(Array.from(studentMap.values()));
+        setStudents(mappedStudents);
       } catch (error) {
         console.error('Error fetching students:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to fetch students',
+          variant: 'destructive',
+        });
       } finally {
         setLoading(false);
       }
     };
 
     fetchStudents();
-  }, []);
+  }, [toast]);
 
   // Get unique values for filters
   const batches = Array.from(new Set(students.map((s) => s.batch))).sort((a, b) => b - a);
@@ -153,7 +158,7 @@ export default function StudentsPage() {
   // Toggle individual
   const toggleSelect = (id: string) => {
     setSelectedStudents((prev) =>
-      prev.includes(id) ? prev.filter((sid) => sid !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((sid) => sid !== id) : [...prev, id],
     );
   };
 
@@ -173,6 +178,63 @@ export default function StudentsPage() {
       LOCKED: 'secondary',
     };
     return <Badge variant={variants[status]}>{status}</Badge>;
+  };
+
+  const handleFreezeStudent = async (studentId: string, currentlyFrozen: boolean) => {
+    try {
+      await adminService.freezeStudent(studentId, !currentlyFrozen);
+      if (currentlyFrozen) {
+        setFrozenStudents((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(studentId);
+          return newSet;
+        });
+      } else {
+        setFrozenStudents((prev) => new Set(prev).add(studentId));
+      }
+      toast({
+        title: 'Success',
+        description: `Student ${currentlyFrozen ? 'unfrozen' : 'frozen'} successfully`,
+      });
+    } catch {
+      toast({
+        title: 'Error',
+        description: `Failed to ${currentlyFrozen ? 'unfreeze' : 'freeze'} student`,
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleDeleteStudent = async (studentId: string, studentName: string) => {
+    if (
+      !confirm(
+        `Are you sure you want to delete ${studentName}? This action can be reversed by an SPT admin.`,
+      )
+    ) {
+      return;
+    }
+
+    setDeletingStudents((prev) => new Set(prev).add(studentId));
+    try {
+      await adminService.deleteStudent(studentId);
+      setStudents((prev) => prev.filter((s) => s.id !== studentId));
+      toast({
+        title: 'Success',
+        description: 'Student deleted successfully',
+      });
+    } catch {
+      toast({
+        title: 'Error',
+        description: 'Failed to delete student',
+        variant: 'destructive',
+      });
+    } finally {
+      setDeletingStudents((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(studentId);
+        return newSet;
+      });
+    }
   };
 
   if (loading) {
@@ -377,7 +439,7 @@ export default function StudentsPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => router.push('/dev-admin/notifications')}
+                      onClick={() => router.push('/admin/notifications')}
                     >
                       Send Notification
                     </Button>
@@ -421,6 +483,7 @@ export default function StudentsPage() {
                       <TableHead>Department</TableHead>
                       <TableHead>Batch</TableHead>
                       <TableHead>CGPA</TableHead>
+                      <TableHead>Parent Info</TableHead>
                       <TableHead>Placement</TableHead>
                       <TableHead>Profile</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
@@ -446,7 +509,7 @@ export default function StudentsPage() {
                             </div>
                             <div>
                               <button
-                                onClick={() => router.push(`/dev-admin/students/${student.id}`)}
+                                onClick={() => router.push(`/admin/students/${student.id}`)}
                                 className="font-medium hover:text-primary hover:underline text-left"
                               >
                                 {student.name}
@@ -462,13 +525,27 @@ export default function StudentsPage() {
                             {student.cgpa.toFixed(2)}
                           </span>
                         </TableCell>
+                        <TableCell>
+                          <div className="flex flex-col text-xs">
+                            <span>{student.parentName || '-'}</span>
+                            <span className="text-muted-foreground">
+                              {student.parentPhone || '-'}
+                            </span>
+                          </div>
+                        </TableCell>
                         <TableCell>{getPlacementBadge(student.placementStatus)}</TableCell>
                         <TableCell>{getProfileBadge(student.profileStatus)}</TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-2">
-                            <Button variant="ghost" size="sm">
+                            <Button
+                              variant={frozenStudents.has(student.id) ? 'default' : 'outline'}
+                              size="sm"
+                              onClick={() =>
+                                handleFreezeStudent(student.id, frozenStudents.has(student.id))
+                              }
+                            >
                               <svg
-                                className="w-4 h-4"
+                                className="w-4 h-4 mr-1"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -477,19 +554,19 @@ export default function StudentsPage() {
                                   strokeLinecap="round"
                                   strokeLinejoin="round"
                                   strokeWidth={2}
-                                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                                />
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
                                 />
                               </svg>
+                              {frozenStudents.has(student.id) ? 'Unfreeze' : 'Freeze'}
                             </Button>
-                            <Button variant="ghost" size="sm">
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => handleDeleteStudent(student.id, student.name)}
+                              disabled={deletingStudents.has(student.id)}
+                            >
                               <svg
-                                className="w-4 h-4"
+                                className="w-4 h-4 mr-1"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -498,14 +575,10 @@ export default function StudentsPage() {
                                   strokeLinecap="round"
                                   strokeLinejoin="round"
                                   strokeWidth={2}
-                                  d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                                 />
                               </svg>
-                            </Button>
-                            <Button variant="ghost" size="sm">
-                              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-                              </svg>
+                              {deletingStudents.has(student.id) ? 'Deleting...' : 'Delete'}
                             </Button>
                           </div>
                         </TableCell>

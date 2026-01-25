@@ -13,9 +13,25 @@ import {
   closeJob,
   apply,
   getJobApplications,
+  updateJobSchedule,
+  getJobSchedule,
+  createJobEligibility,
+  getJobEligibility,
+  checkEligibility,
+  markAttendance,
+  bulkMarkAttendance,
+  getJobAttendance,
+  getAttendanceStats,
 } from '../controllers/job.controller';
+import { requireJPT, requireAdmin, restrictJPTAttendance } from '../middleware/role.middleware';
 import { validateBody } from '../middleware/validate.middleware';
-import { createJobSchema } from '../types/job.types';
+import {
+  createJobSchema,
+  updateJobScheduleSchema,
+  createJobEligibilitySchema,
+  markAttendanceSchema,
+  bulkMarkAttendanceSchema,
+} from '../types/job.types';
 
 const router = Router();
 
@@ -31,6 +47,47 @@ router.post(
 router.get('/', getJobs);
 router.get('/:id', getJob);
 router.patch('/:id/close', adminRateLimiter, authenticateToken, isAdmin, closeJob);
+
+// Job scheduling routes (admin only)
+router.patch(
+  '/:jobId/schedule',
+  authenticateToken,
+  isAdmin,
+  validateBody(updateJobScheduleSchema),
+  updateJobSchedule,
+);
+router.get('/:jobId/schedule', authenticateToken, getJobSchedule);
+
+// Job eligibility routes
+router.post(
+  '/:jobId/eligibility',
+  authenticateToken,
+  isAdmin,
+  validateBody(createJobEligibilitySchema),
+  createJobEligibility,
+);
+router.get('/:jobId/eligibility', authenticateToken, getJobEligibility);
+router.get('/:jobId/check-eligibility', authenticateToken, checkEligibility);
+
+// Attendance routes (JPT restricted to OA and PPT only, SPT has full access)
+router.post(
+  '/:jobId/attendance',
+  authenticateToken,
+  requireJPT,
+  restrictJPTAttendance,
+  validateBody(markAttendanceSchema),
+  markAttendance,
+);
+router.post(
+  '/:jobId/attendance/bulk',
+  authenticateToken,
+  requireJPT,
+  restrictJPTAttendance,
+  validateBody(bulkMarkAttendanceSchema),
+  bulkMarkAttendance,
+);
+router.get('/:jobId/attendance', authenticateToken, requireAdmin, getJobAttendance);
+router.get('/:jobId/attendance/stats', authenticateToken, requireAdmin, getAttendanceStats);
 
 // Application routes nested under jobs (with rate limiting to prevent spam)
 router.post('/:jobId/applications', sensitiveEndpointRateLimiter, authenticateToken, apply);

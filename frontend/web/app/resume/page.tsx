@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { getSavedResumes, deleteSavedResume, downloadResumePdf } from '@/services/resume.service';
 import type { SavedResume } from '@/types/resume.types';
+import { toast } from 'sonner';
 
 const DocumentIcon = ({ className }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -66,6 +67,7 @@ export default function ResumePage() {
         setResumes(data);
       } catch (error) {
         console.error('Failed to load resumes:', error);
+        toast.error('Failed to load resumes');
       } finally {
         setLoading(false);
       }
@@ -82,18 +84,20 @@ export default function ResumePage() {
     try {
       await deleteSavedResume(id);
       setResumes(resumes.filter((resume) => resume.id !== id));
+      toast.success('Resume deleted successfully');
     } catch (error) {
       console.error('Failed to delete resume:', error);
-      alert('Failed to delete resume. Please try again.');
+      toast.error('Failed to delete resume. Please try again.');
     }
   };
 
   const handleDownload = async (resumeId: string) => {
     try {
       await downloadResumePdf(resumeId);
+      toast.success('Resume downloaded successfully');
     } catch (error) {
       console.error('Failed to download resume:', error);
-      alert('Failed to download resume. Please try again.');
+      toast.error('Failed to download resume. Please try again.');
     }
   };
 

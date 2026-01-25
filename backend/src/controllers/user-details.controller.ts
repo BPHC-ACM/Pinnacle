@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express';
 
+import markSheetService from '../services/marksheet-service/marksheet.service';
 import userService from '../services/user-service/user.service';
 import { AuthError, ValidationError, NotFoundError } from '../types/errors.types';
 import { parsePagination } from '../types/pagination.types';
@@ -17,6 +18,7 @@ import type {
   UpdateCertificationRequest,
   CreateLanguageRequest,
   UpdateLanguageRequest,
+  UpdateParentDetailsRequest,
   CreateUserDetailsRequest,
 } from '../types/user-details.types';
 
@@ -214,6 +216,8 @@ export async function deleteLanguage(req: Request, res: Response): Promise<void>
   res.status(204).send();
 }
 
+// ========== USER DETAILS ==========
+
 export async function getUserDetails(req: Request, res: Response): Promise<void> {
   const userId = getUserId(req);
   const details = await userService.getUserDetails(userId);
@@ -228,4 +232,31 @@ export async function createUserDetails(req: Request, res: Response): Promise<vo
   res
     .status(201)
     .json(await userService.createUserDetails(userId, req.body as CreateUserDetailsRequest));
+}
+
+// ========== PARENT DETAILS ==========
+
+export async function updateParentDetails(req: Request, res: Response): Promise<void> {
+  const userId = getUserId(req);
+  res.json(await userService.updateParentDetails(userId, req.body as UpdateParentDetailsRequest));
+}
+
+// ========== MARKSHEETS ==========
+
+export async function getMyMarkSheets(req: Request, res: Response): Promise<void> {
+  const userId = getUserId(req);
+  res.json(await markSheetService.getUserMarkSheets(userId));
+}
+
+export async function getMarkSheetById(req: Request, res: Response): Promise<void> {
+  const userId = getUserId(req);
+  const id = getParamId(req);
+  res.json(await markSheetService.getMarkSheetById(id, userId));
+}
+
+export async function deleteMarkSheet(req: Request, res: Response): Promise<void> {
+  const userId = getUserId(req);
+  const id = getParamId(req);
+  await markSheetService.deleteMarkSheet(id, userId);
+  res.status(204).send();
 }

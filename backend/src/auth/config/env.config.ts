@@ -9,7 +9,7 @@ export const config = {
   googleClientId: process.env.GOOGLE_CLIENT_ID!,
   googleClientSecret: process.env.GOOGLE_CLIENT_SECRET!,
   googleRedirectUri:
-    process.env.GOOGLE_REDIRECT_URI ?? 'http://localhost:3000/auth/google/callback',
+    process.env.GOOGLE_REDIRECT_URI ?? 'http://localhost:3000/api/auth/google/callback',
 
   //jwt
   jwtSecret: process.env.JWT_SECRET!,

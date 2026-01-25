@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import AnnouncementsFeed from '@/components/AnnouncementsFeed';
+import { Header } from '@/components/Header';
 
 // Icon components
 const FileTextIcon = ({ className }: { className?: string }) => (
@@ -49,6 +50,7 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background relative">
+      <Header />
       {/* Grid background pattern */}
       <div
         className="absolute inset-0 opacity-20 pointer-events-none -z-10"
@@ -120,31 +122,6 @@ export default function Dashboard() {
           </div>
         </>
       </main>
-
-      {/* Footer */}
-      <footer className="w-full border-t border-border bg-background/80 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-6 py-6">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span>© {new Date().getFullYear()} Pinnacle. All rights reserved.</span>
-            </div>
-            <div className="flex items-center gap-6 text-sm">
-              <a
-                href="/privacy"
-                className="text-muted-foreground hover:text-foreground transition-colors underline-offset-4 hover:underline"
-              >
-                Privacy Policy
-              </a>
-              <a
-                href="/terms"
-                className="text-muted-foreground hover:text-foreground transition-colors underline-offset-4 hover:underline"
-              >
-                Terms of Service
-              </a>
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

@@ -15,6 +15,7 @@ import {
 import { api } from '@/lib/api-client';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { toast } from 'sonner';
 
 interface Question {
   id: string;
@@ -108,12 +109,13 @@ export function JobDetailPane({
       });
       setHasJustApplied(true);
       setIsApplyDialogOpen(false);
+      toast.success('Application submitted successfully!');
       if (onApplySuccess) {
         onApplySuccess();
       }
     } catch (error) {
       console.error('Failed to apply:', error);
-      // You might want to show an error toast here
+      toast.error('Failed to submit application. Please try again.');
     } finally {
       setApplying(false);
     }

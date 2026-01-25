@@ -2,7 +2,8 @@ import { z } from 'zod';
 
 export enum UserRole {
   USER = 'USER',
-  ADMIN = 'ADMIN',
+  JPT = 'JPT', // Junior Placement Team - Attendance management only
+  SPT = 'SPT', // Senior Placement Team - Full administrative control
 }
 
 export enum Sector {
@@ -46,6 +47,14 @@ export interface UserProfile {
   bio?: string;
   title?: string;
   summary?: string;
+  studentId?: string;
+  branch?: string;
+  currentYear?: number;
+  isFrozen?: boolean;
+  parentName?: string;
+  parentEmail?: string;
+  parentPhone?: string;
+  parentRelation?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -60,6 +69,13 @@ export interface UpdateUserProfileRequest {
   bio?: string;
   title?: string;
   summary?: string;
+  studentId?: string;
+  branch?: string;
+  currentYear?: number;
+  parentName?: string;
+  parentEmail?: string;
+  parentPhone?: string;
+  parentRelation?: string;
 }
 
 export interface Experience {
@@ -755,7 +771,7 @@ export const updateExtracurricularSchema = z.object({
   order: z.number().int().min(0).optional(),
 });
 
-// User Details (Personal Info)
+// ========== USER DETAILS TYPES (Personal Info) ==========
 export interface UserDetails {
   id: string;
   userId: string;
@@ -782,4 +798,61 @@ export const createUserDetailsSchema = z.object({
   address: z.string().min(1).max(1000),
   parentName: z.string().min(1).max(255),
   parentMobileNumber: z.string().min(10).max(15),
+});
+
+// ========== MARKSHEET TYPES ==========
+export interface MarkSheet {
+  id: string;
+  userId: string;
+  term: string;
+  academicYear: string;
+  fileUrl: string;
+  fileName: string;
+  uploadedAt: Date;
+  updatedAt: Date;
+}
+
+export interface UploadMarkSheetRequest {
+  term: string;
+  academicYear: string;
+  fileName: string;
+}
+
+export const uploadMarkSheetSchema = z.object({
+  term: z.string().min(1).max(100),
+  academicYear: z.string().min(1).max(20),
+  fileName: z.string().min(1).max(255),
+});
+
+// ========== PARENT DETAILS TYPES ==========
+export interface UpdateParentDetailsRequest {
+  parentName?: string;
+  parentEmail?: string;
+  parentPhone?: string;
+  parentRelation?: string;
+}
+
+export const updateParentDetailsSchema = z.object({
+  parentName: z.string().min(1).max(255).optional(),
+  parentEmail: z.string().email().optional(),
+  parentPhone: z.string().min(10).max(20).optional(),
+  parentRelation: z.string().max(50).optional(),
+});
+
+// ========== STUDENT MANAGEMENT TYPES ==========
+export interface FreezeStudentRequest {
+  userId: string;
+  isFrozen: boolean;
+  reason?: string;
+}
+
+export interface DeleteStudentRequest {
+  userId: string;
+  reason?: string;
+}
+
+export const freezeStudentSchema = z.object({
+  userId: z.string().uuid(),
+  isFrozen: z.boolean(),
+  reason: z.string().max(500).optional(),
 });

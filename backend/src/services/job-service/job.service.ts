@@ -1,5 +1,4 @@
-import { prisma, Prisma } from '@repo/database';
-import { Job, Sector } from '@repo/types';
+import { prisma, Prisma, Sector as PrismaSector } from '@repo/database';
 
 import { logger } from '../../config/logger.config';
 import type { Application } from '../../types/application.types';
@@ -9,6 +8,7 @@ import type {
   PublicJobFilters,
   UpdateJobRequest,
   JobWithStats,
+  Job,
 } from '../../types/job.types';
 import type { PaginationParams, PaginatedResponse } from '../../types/pagination.types';
 
@@ -65,7 +65,9 @@ export class JobService {
 
       if (industry && industry !== 'ALL_SECTORS') {
         where.company = {
-          sector: { equals: industry as Sector },
+          is: {
+            sector: industry as PrismaSector,
+          },
         };
       }
 
@@ -212,6 +214,19 @@ export class JobService {
   }
 
   // Reopen a closed job (Admin)
+  async pauseJob(id: string): Promise<Job | null> {
+    const job = await prisma.job.findFirst({ where: { id, deletedAt: null } });
+    if (!job) return null;
+
+    const updated = await prisma.job.update({
+      where: { id },
+      data: { status: 'PAUSED' },
+      include: { questions: { orderBy: { order: 'asc' } } },
+    });
+    logger.info({ jobId: id }, 'Job paused');
+    return mapJobToDto(updated);
+  }
+
   async reopenJob(id: string, newDeadline?: Date): Promise<Job | null> {
     const job = await prisma.job.findFirst({ where: { id, deletedAt: null } });
     if (!job) return null;
@@ -270,6 +285,38 @@ export class JobService {
         user: userMap.get(app.userId),
       })) as Application[],
     };
+  }
+
+  async updateJobSchedule(
+    jobId: string,
+    data: import('../../types/job.types').UpdateJobScheduleRequest,
+  ): Promise<Job> {
+    const job = await prisma.job.findFirst({ where: { id: jobId, deletedAt: null } });
+    if (!job) {
+      throw new Error('Job not found');
+    }
+
+    const updated = await prisma.job.update({
+      where: { id: jobId },
+      data: {
+        oaDate: data.oaDate,
+        oaVenue: data.oaVenue,
+        oaInstructions: data.oaInstructions,
+        pptDate: data.pptDate,
+        pptVenue: data.pptVenue,
+        pptInstructions: data.pptInstructions,
+        interviewDate: data.interviewDate,
+        interviewVenue: data.interviewVenue,
+        interviewInstructions: data.interviewInstructions,
+        selectionStatus: data.selectionStatus,
+        offerDate: data.offerDate,
+        joiningDate: data.joiningDate,
+      },
+      include: { questions: true, company: true },
+    });
+
+    logger.info({ jobId }, 'Job schedule updated');
+    return mapJobToDto(updated);
   }
 }
 

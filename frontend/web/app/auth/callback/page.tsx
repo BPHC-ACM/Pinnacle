@@ -3,6 +3,7 @@
 import { Suspense, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
+import { toast } from 'sonner';
 
 function CallbackContent() {
   const router = useRouter();
@@ -37,12 +38,12 @@ function CallbackContent() {
         })
         .catch((error) => {
           console.error('Auth callback error:', error);
-          alert('Authentication failed. Please try again.');
+          toast.error('Authentication failed. Please try again.');
           setTimeout(() => router.push('/'), 2000);
         });
     } else {
       console.error('No access token found in callback URL');
-      alert('No authentication token received. Please try again.');
+      toast.error('No authentication token received. Please try again.');
       setTimeout(() => router.push('/'), 2000);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

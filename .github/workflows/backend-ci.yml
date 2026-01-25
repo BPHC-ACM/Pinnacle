@@ -38,9 +38,9 @@ jobs:
       - uses: actions/setup-node@v4
         if: steps.backend-changes.outputs.changed == 'true'
         with:
-          node-version: '20'
-          cache: 'pnpm'
-          cache-dependency-path: 'backend/pnpm-lock.yaml'
+          node-version: "20"
+          cache: "pnpm"
+          cache-dependency-path: "backend/pnpm-lock.yaml"
 
       - name: Install dependencies
         if: steps.backend-changes.outputs.changed == 'true'

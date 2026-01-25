@@ -8,7 +8,6 @@ export enum Sector {
   HEALTHCARE = 'HEALTHCARE',
   CONSULTING = 'CONSULTING',
   ANALYTICS = 'ANALYTICS',
-  EDUCATION = 'EDUCATION',
   ELECTRONICS = 'ELECTRONICS',
   MECHANICS = 'MECHANICS',
   MANAGEMENT = 'MANAGEMENT',
@@ -26,13 +25,15 @@ export enum ApplicationStatus {
 
 export type JobStatus = 'OPEN' | 'CLOSED' | 'PAUSED';
 
+// --- Interfaces (DTOs) ---
+
 export interface Company {
   id: string;
   name: string;
   website?: string;
   description?: string;
   logo?: string;
-  sector?: Sector;
+  industry?: string;
   size?: string;
   location?: string;
   email?: string;
@@ -62,6 +63,16 @@ export interface Job {
   deadline?: string; // Dates are strings over JSON
   status: JobStatus;
   questions?: JobQuestion[];
+  oaDate?: string;
+  oaVenue?: string;
+  oaInstructions?: string;
+  pptDate?: string;
+  pptVenue?: string;
+  pptInstructions?: string;
+  interviewDate?: string;
+  interviewVenue?: string;
+  interviewInstructions?: string;
+  selectionStatus?: 'PENDING' | 'ACCEPTED' | 'REJECTED';
   createdAt: string; // Dates are strings over JSON
   updatedAt: string;
   company?: Company; // Often resolved in API responses

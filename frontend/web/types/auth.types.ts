@@ -1,6 +1,7 @@
 export enum UserRole {
   USER = 'USER',
-  ADMIN = 'ADMIN',
+  JPT = 'JPT', // Junior Placement Team - Attendance management only
+  SPT = 'SPT', // Senior Placement Team - Full administrative control
 }
 
 export interface User {
@@ -8,7 +9,7 @@ export interface User {
   email: string;
   name: string;
   picture?: string;
-  googleId: string;
+  googleId?: string; // Optional now as it might not be present in all contexts
   role: UserRole;
   phone?: string;
   location?: string;
@@ -18,9 +19,17 @@ export interface User {
   bio?: string;
   title?: string;
   summary?: string;
-  createdAt: string;
-  updatedAt: string;
-  hasOnboarded: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  hasOnboarded?: boolean;
+  studentId?: string;
+  branch?: string;
+  currentYear?: number;
+  isFrozen?: boolean;
+  parentName?: string;
+  parentEmail?: string;
+  parentPhone?: string;
+  parentRelation?: string;
 }
 
 export interface AuthResponse {
