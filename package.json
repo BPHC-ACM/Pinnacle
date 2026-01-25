@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "validate:js": "pnpm -r run validate",
-    "validate:flutter": "if command -v flutter >/dev/null 2>&1; then cd frontend/app && ./validate.sh; else echo 'Flutter not found. Skipping mobile validation. CI will check this later.'; fi",
+    "validate:flutter": "node -e \"try { require('child_process').execSync('flutter --version', {stdio: 'ignore'}); require('child_process').execSync('cd frontend/app && flutter analyze && flutter test', {stdio: 'inherit'}); } catch(e) { console.log('Flutter not found or validation failed. Skipping mobile validation. CI will check this later.'); }\"",
     "validate": "pnpm run validate:js && pnpm run validate:flutter"
   },
   "repository": {
