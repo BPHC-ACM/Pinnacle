@@ -621,6 +621,7 @@ enum JobStatus {
 
 enum NotificationType {
   JOB_CREATED
+  JOB_PAUSED
   JOB_UPDATED
   JOB_DEADLINE_EXTENDED
   JOB_CLOSED

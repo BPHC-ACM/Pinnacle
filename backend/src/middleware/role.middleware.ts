@@ -145,10 +145,10 @@ export const requireAnyRole = (roles: UserRole[]) => {
 export const restrictJPTAttendance = (req: Request, res: Response, next: NextFunction): void => {
   try {
     const userRole = req.user?.role as UserRole | undefined;
-    // Type guard and safe access for req.body.eventType
+    const body: unknown = req.body;
     const bodyEventType =
-      req.body && typeof req.body === 'object' && 'eventType' in req.body
-        ? (req.body.eventType as string | undefined)
+      body && typeof body === 'object' && 'eventType' in body
+        ? ((body as { eventType?: unknown }).eventType as string | undefined)
         : undefined;
     const eventType = bodyEventType ?? (req.query?.eventType as string | undefined);
 
