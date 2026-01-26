@@ -14,6 +14,8 @@ class JobsRepository {
     try {
       final response = await _apiClient.client.get('/api/jobs');
       final List<dynamic> jobsData = response.data['data'];
+      print("💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡💡");
+      print(jobsData);
 
       final Set<String> companyIds = jobsData
           .map((j) => j['companyId'] as String?)

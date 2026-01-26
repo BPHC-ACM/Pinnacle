@@ -6,7 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:printing/printing.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
-import '../../../core/components/pinnacle_header_banner.dart';
+import '../../../core/components/pinnacle_header_banner_gradient.dart';
 import '../providers/resume_builder_provider.dart';
 import '../widgets/resume_editor_tab.dart';
 import '../widgets/resume_preview_tab.dart';
@@ -88,26 +88,7 @@ class _ResumeBuilderScreenState extends ConsumerState<ResumeBuilderScreen>
                 background: Stack(
                   fit: StackFit.expand,
                   children: [
-                    Stack(
-                      children: [
-                        const PinnacleHeaderBanner(height: 280),
-                        Positioned.fill(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  Colors.transparent,
-                                  theme.scaffoldBackgroundColor,
-                                ],
-                                stops: const [0, 1],
-                                begin: AlignmentDirectional.topCenter,
-                                end: AlignmentDirectional.bottomCenter,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                    const PinnacleHeaderBannerGradient(height: 280),
                     Positioned(
                       top: 80,
                       left: 0,

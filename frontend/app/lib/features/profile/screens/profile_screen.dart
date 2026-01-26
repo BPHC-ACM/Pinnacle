@@ -7,10 +7,10 @@ import 'package:image_picker/image_picker.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
+import '../../../core/components/pinnacle_header_banner_gradient.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/components/pinnacle_button.dart';
-import '../../../../core/components/pinnacle_header_banner.dart';
 import '../../resume/screens/resume_builder_screen.dart';
 import '../models/student_profile_model.dart';
 import '../providers/profile_provider.dart';
@@ -247,26 +247,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 final opacity = (1.0 - (offset / 150.0)).clamp(0.0, 1.0);
                 return Opacity(opacity: opacity, child: child);
               },
-              child: Stack(
-                children: [
-                  const PinnacleHeaderBanner(height: 280),
-                  Positioned.fill(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Colors.transparent,
-                            theme.scaffoldBackgroundColor,
-                          ],
-                          stops: const [0, 1],
-                          begin: AlignmentDirectional.topCenter,
-                          end: AlignmentDirectional.bottomCenter,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+              child: const PinnacleHeaderBannerGradient(height: 280),
             ),
 
             // 2. Main Content
@@ -667,7 +648,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           context,
           _titleController,
           "Headline",
-          "Ex: Student at XYZ Univ",
+          "Ex: Student at BITS Pilani",
         ),
         const SizedBox(height: 16),
         Row(

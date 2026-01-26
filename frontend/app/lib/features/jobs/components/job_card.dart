@@ -80,7 +80,7 @@ class JobCard extends StatelessWidget {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Company Logo - Updated to match Job Details Screen style
+                    // Company Logo - Updated to render Image if available
                     Container(
                       width: 48,
                       height: 48,
@@ -99,16 +99,40 @@ class JobCard extends StatelessWidget {
                         ],
                       ),
                       alignment: Alignment.center,
-                      child: Text(
-                        companyName.isNotEmpty
-                            ? companyName[0].toUpperCase()
-                            : '?',
-                        style: GoogleFonts.inter(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: colorScheme.primary,
-                        ),
-                      ),
+                      child:
+                          job.company.logo != null &&
+                              job.company.logo!.isNotEmpty
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.network(
+                                job.company.logo!,
+                                width: 48,
+                                height: 48,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Text(
+                                    companyName.isNotEmpty
+                                        ? companyName[0].toUpperCase()
+                                        : '?',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: colorScheme.primary,
+                                    ),
+                                  );
+                                },
+                              ),
+                            )
+                          : Text(
+                              companyName.isNotEmpty
+                                  ? companyName[0].toUpperCase()
+                                  : '?',
+                              style: GoogleFonts.inter(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: colorScheme.primary,
+                              ),
+                            ),
                     ),
                     const SizedBox(width: 16),
                     // Title & Company

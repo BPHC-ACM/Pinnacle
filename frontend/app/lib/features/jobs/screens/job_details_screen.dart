@@ -4,10 +4,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'dart:ui';
 
+import '../../../core/components/pinnacle_header_banner_gradient.dart';
 import '../models/job_model.dart';
 import '../providers/jobs_provider.dart';
 import '../../../core/components/pinnacle_button.dart';
-import '../../../core/components/pinnacle_header_banner.dart';
 import '../../../core/theme/app_colors.dart';
 
 class JobDetailsScreen extends ConsumerStatefulWidget {
@@ -101,26 +101,7 @@ class _JobDetailsScreenState extends ConsumerState<JobDetailsScreen> {
             },
             child: Stack(
               children: [
-                Stack(
-                  children: [
-                    const PinnacleHeaderBanner(height: 280),
-                    Positioned.fill(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              Colors.transparent,
-                              theme.scaffoldBackgroundColor,
-                            ],
-                            stops: const [0, 1],
-                            begin: AlignmentDirectional.topCenter,
-                            end: AlignmentDirectional.bottomCenter,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                const PinnacleHeaderBannerGradient(height: 280),
                 Positioned.fill(
                   child: Container(
                     decoration: BoxDecoration(

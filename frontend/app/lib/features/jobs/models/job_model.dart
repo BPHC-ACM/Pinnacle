@@ -11,7 +11,7 @@ class JobModel {
   final DateTime createdAt;
   final DateTime? deadline;
   final String status;
-  final List<JobQuestion> questions; // Added questions field
+  final List<JobQuestion> questions;
 
   JobModel({
     required this.id,
@@ -26,7 +26,7 @@ class JobModel {
     required this.createdAt,
     this.deadline,
     required this.status,
-    this.questions = const [], // Default to empty list
+    this.questions = const [],
   });
 
   factory JobModel.fromJson(
@@ -66,11 +66,12 @@ class JobModel {
 class Company {
   final String id;
   final String name;
+  final String? logo;
 
-  Company({required this.id, required this.name});
+  Company({required this.id, required this.name, this.logo});
 
   factory Company.fromJson(Map<String, dynamic> json) {
-    return Company(id: json['id'], name: json['name']);
+    return Company(id: json['id'], name: json['name'], logo: json['logo']);
   }
 }
 

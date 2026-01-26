@@ -63,7 +63,7 @@ class AuthRepository {
       logger.d("AuthRepository: Sending ID token to backend...");
 
       final response = await _dio.post(
-        '/auth/google/mobile-login',
+        '/api/auth/google/mobile-login',
         data: {'idToken': idToken},
       );
 
@@ -97,7 +97,7 @@ class AuthRepository {
   // ... rest of the file (getMe, logout) remains the same
   Future<User> getMe() async {
     try {
-      final response = await _dio.get('/auth/me');
+      final response = await _dio.get('/api/auth/me');
       return User.fromJson(response.data['user']);
     } catch (e) {
       logger.e("AuthRepository: getMe failed", error: e);
@@ -107,7 +107,7 @@ class AuthRepository {
 
   Future<void> logout() async {
     try {
-      await _dio.post('/auth/logout').catchError((e) {
+      await _dio.post('/api/auth/logout').catchError((e) {
         return Response(
           requestOptions: RequestOptions(path: ''),
           statusCode: 200,

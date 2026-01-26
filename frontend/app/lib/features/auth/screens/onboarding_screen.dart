@@ -157,7 +157,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   label: "Full Name",
                   controller: _nameController,
                   icon: Icons.person_outline,
-                  hint: "Your full legal name",
                   textCapitalization: TextCapitalization.words,
                 ),
 
@@ -177,7 +176,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   label: "Permanent Address",
                   controller: _addressController,
                   icon: Icons.location_on_outlined,
-                  hint: "Your home address",
                   maxLines: 2,
                   textCapitalization: TextCapitalization.sentences,
                 ),
@@ -188,7 +186,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   label: "Parent/Guardian Name",
                   controller: _parentNameController,
                   icon: Icons.family_restroom_outlined,
-                  hint: "Father or Mother's name",
                   textCapitalization: TextCapitalization.words,
                 ),
 
@@ -198,7 +195,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   label: "Parent Mobile Number",
                   controller: _parentPhoneController,
                   icon: Icons.phone_outlined,
-                  hint: "10-digit mobile number",
                   keyboardType: TextInputType.phone,
                   validator: (value) {
                     if (value == null || value.isEmpty) return 'Required';
