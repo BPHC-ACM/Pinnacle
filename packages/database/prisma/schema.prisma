@@ -97,9 +97,24 @@ model UserDetails {
   userId             String   @unique
   name               String
   branch             String
+  
+  // Address Details
   address            String
-  parentName         String
-  parentMobileNumber String
+  city               String
+  pinCode            String
+  
+  // Father Details
+  fatherName         String
+  fatherMobileNumber String
+  fatherJobSector    String
+  fatherJobPosition  String
+
+  // Mother Details
+  motherName         String
+  motherMobileNumber String
+  motherJobSector    String
+  motherJobPosition  String
+
   user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
