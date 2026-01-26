@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "validate:js": "pnpm -r run validate",
-    "validate:flutter": "if command -v flutter >/dev/null 2>&1; then cd frontend/app && ./validate.sh; else echo 'Flutter not found. Skipping mobile validation. CI will check this later.'; fi",
+    "validate:flutter": "node -e \"const { execSync } = require('child_process'); try { execSync(process.platform === 'win32' ? 'where flutter' : 'command -v flutter', { stdio: 'ignore' }); execSync('cd frontend/app && ' + (process.platform === 'win32' ? 'bash validate.sh' : './validate.sh'), { stdio: 'inherit' }); } catch { console.log('Flutter not found. Skipping mobile validation. CI will check this later.'); }\"",
     "validate": "pnpm run validate:js && pnpm run validate:flutter"
   },
   "repository": {
