@@ -159,7 +159,7 @@ export function EducationSection({ education, onSave, onDelete, isSaving }: Educ
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1">GPA</label>
+              <label className="block text-sm font-medium text-muted-foreground mb-1">Grade</label>
               <Input value={form.gpa || ''} onChange={(e) => handleChange('gpa', e.target.value)} />
             </div>
           </div>
@@ -204,7 +204,7 @@ export function EducationSection({ education, onSave, onDelete, isSaving }: Educ
                   {edu.location && ` | ${edu.location}`}
                 </p>
                 {edu.gpa && (
-                  <p className="text-sm font-medium text-foreground mt-2">GPA: {edu.gpa}</p>
+                  <p className="text-sm font-medium text-foreground mt-2">Grade: {edu.gpa}</p>
                 )}
               </div>
             </div>

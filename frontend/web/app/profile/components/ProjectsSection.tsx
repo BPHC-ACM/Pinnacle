@@ -76,12 +76,6 @@ export function ProjectsSection({ projects, onSave, onDelete, isSaving }: Projec
     setForm((prev) => ({ ...prev, [fieldName]: e.target.value }));
   };
 
-  const handleOutcomesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const items = e.target.value.split('\n');
-
-    setForm((prev) => ({ ...prev, outcomes: items }));
-  };
-
   const handleToolKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && toolInput.trim()) {
       e.preventDefault();
@@ -194,14 +188,6 @@ export function ProjectsSection({ projects, onSave, onDelete, isSaving }: Projec
                 placeholder="Add tools/technologies and press Enter"
               />
             </div>
-
-            <textarea
-              value={(form.outcomes ?? []).join('\n')}
-              onChange={handleOutcomesChange}
-              className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground resize-none"
-              placeholder="Key Outcomes or Highlights (one per line)"
-              rows={3}
-            />
 
             <input
               value={form.referenceUrl ?? ''}

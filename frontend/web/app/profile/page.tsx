@@ -276,7 +276,7 @@ export default function ProfilePage() {
           <div className="flex flex-col lg:flex-row gap-6">
             <div className="lg:w-64 shrink-0 flex">
               <nav
-                className="space-y-1 p-2 rounded-xl border border-border bg-card w-full"
+                className="space-y-1 p-2 rounded-xl border border-border bg-card w-full h-fit"
                 style={{ backgroundColor: 'hsl(var(--card))' }}
               >
                 {tabs.map((tab) => (

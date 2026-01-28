@@ -94,11 +94,6 @@ export function ExperienceSection({
     });
   };
 
-  const handleHighlightsChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const items = e.target.value.split('\n');
-    setForm((prev) => ({ ...prev, highlights: items }));
-  };
-
   const handleSave = async () => {
     if (!validateForm()) return;
 
@@ -246,17 +241,6 @@ export function ExperienceSection({
                 onChange={(e) => handleValueChange('description', e.target.value)}
                 placeholder="A brief summary of your role."
                 rows={3}
-              />
-            </div>
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-muted-foreground mb-1">
-                Key Highlights
-              </label>
-              <Textarea
-                value={(form.highlights ?? []).join('\n')}
-                onChange={handleHighlightsChange}
-                placeholder="List your key achievements or responsibilities, one per line."
-                rows={4}
               />
             </div>
           </div>
