@@ -1,78 +1,74 @@
-email: 'f20231187@hyderabad.bits-pilani.ac.in' # Change this to your BITS Mail ID
-name: 'Pranav Kulkarni'
-phone: '+91 9876543210'
-location: 'Surathkal, Karnataka'
-linkedin: 'https://linkedin.com/in/pranavkulkarni'
-github: 'https://github.com/pranavkulkarni'
-website: 'https://pranavkulkarni.dev'
-summary: 'Final Year Information Technology undergraduate @ NITK Surathkal. Full Stack Engineer with a strong inclination towards scalable backend systems and ML-driven products. Experienced in full-stack development, databases, and applied machine learning.'
-googleId: 'google-auth-user-45678'
-profileStatus: 'VERIFIED'
-verificationStatus: 'APPROVED'
-
-# Student-specific fields
-studentId: '2021IT045'
-branch: 'Information Technology'
-currentYear: 4
-
-# Parent details
-parentName: 'Rajesh Kulkarni'
-parentEmail: 'rajesh.kulkarni@gmail.com'
-parentPhone: '+91 9876543211'
-parentRelation: 'Father'
-
-education:
-  - institution: 'National Institute of Technology Karnataka, Surathkal'
-    degree: 'B.Tech'
-    branch: 'Information Technology'
-    location: 'Surathkal, Karnataka'
-    gpa: '8.47'
-    startDate: '2021-11-01T00:00:00.000Z'
-    endDate: '2025-05-01T00:00:00.000Z'
-    rollNumber: '211IT045'
-    verificationStatus: 'APPROVED'
-  - institution: 'PACE Junior Science College'
-    degree: 'Class XII'
-    branch: 'Science (PCM)'
-    location: 'Mumbai, Maharashtra'
-    gpa: '91.2'
-    startDate: '2019-06-01T00:00:00.000Z'
-    endDate: '2021-03-01T00:00:00.000Z'
-    rollNumber: 'HSC2019PCM'
-    verificationStatus: 'APPROVED'
-
-experiences:
-  - company: 'Microsoft India'
-    position: 'Software Engineering Intern'
-    location: 'Hyderabad'
-    startDate: '2024-05-01T00:00:00.000Z'
-    endDate: '2024-08-01T00:00:00.000Z'
-    description: 'Worked on backend services for Azure DevOps, focusing on performance and reliability.'
-    verificationStatus: 'APPROVED'
-  - company: 'Groww'
-    position: 'Backend Engineering Intern'
-    location: 'Remote'
-    startDate: '2023-12-01T00:00:00.000Z'
-    endDate: '2024-02-28T00:00:00.000Z'
-    description: 'Designed REST APIs and optimized PostgreSQL queries for high-traffic services.'
-    verificationStatus: 'APPROVED'
+# Main user profile information
+email: 'f20231187@hyderabad.bits-pilani.ac.in'
+name: 'Aravind Sathesh'
 
 projects:
   - title: 'Athena: Learning Management System'
     domain: 'Web Development'
-    description: 'Built a role-based LMS used by 2,000+ students with real-time analytics.'
     tools: ['Next.js', 'Node.js', 'PostgreSQL', 'Redis']
     verificationStatus: 'APPROVED'
+    description: |
+      A scalable LMS platform designed for high-traffic educational environments.
+
+      - Architected a comprehensive <u>Role-Based Access Control (RBAC)</u> system to manage permissions for admins, instructors, and students.
+      - Scaled the application to support **2,000+ active students**, utilizing *Redis* caching to handle concurrent traffic spikes during exams.
+      - Engineered a real-time analytics dashboard using complex **PostgreSQL** aggregations to track student engagement metrics.
+      - Optimized API response times by <u>40%</u> through implementation of server-side rendering and efficient database indexing.
+
   - title: 'StockSense'
     domain: 'Machine Learning'
-    description: 'Developed an LSTM-based model to predict short-term stock trends.'
-    tools: ['Python', 'TensorFlow', 'Pandas']
+    tools: ['Python', 'TensorFlow', 'Pandas', 'NumPy']
     verificationStatus: 'APPROVED'
+    description: |
+      An AI-powered financial forecasting tool for short-term stock trends.
+
+      - Developed a predictive model utilizing **Long Short-Term Memory (LSTM)** neural networks to forecast stock price movements.
+      - Processed large-scale historical datasets using *Pandas* to engineer features like moving averages and volatility indices.
+      - Achieved high accuracy by tuning hyperparameters and preventing overfitting via <u>dropout regularization</u>.
+      - Visualized prediction confidence intervals against actual market data to validate performance on *unseen test data*.
+
   - title: 'LogStream'
-    domain: 'Systems'
-    description: 'Implemented a distributed log aggregation system inspired by Kafka.'
+    domain: 'Distributed Systems'
     tools: ['Java', 'Zookeeper', 'gRPC']
     verificationStatus: 'APPROVED'
+    description: |
+      A high-throughput distributed log aggregation system.
+
+      - Designed a <u>distributed log aggregation system</u> inspired by the architecture of **Apache Kafka**.
+      - Leveraged **gRPC** (Protobufs) for high-performance, low-latency communication between producer and consumer nodes.
+      - Integrated *Apache Zookeeper* to manage cluster coordination, handling complex tasks like <u>Leader Election</u>.
+      - Ensured system reliability and fault tolerance by implementing data replication strategies across multiple broker nodes.
+
+experiences:
+  - company: 'Microsoft'
+    position: 'Software Engineering Intern'
+    location: 'Bangalore, India'
+    startDate: '2024-05-15T00:00:00.000Z'
+    endDate: '2024-07-25T00:00:00.000Z'
+    current: false
+    verificationStatus: 'APPROVED'
+    description: |
+      Interned with the Azure Cloud functionality team focusing on backend optimization.
+
+      - Collaborated with the *Azure DevOps* team to migrate legacy microservices to **.NET 6**, resulting in a <u>20% performance boost</u>.
+      - Implemented a distributed **caching layer** using *Redis*, which reduced database read operations by **35%** during peak loads.
+      - Wrote comprehensive unit and integration tests using *xUnit*, increasing code coverage from 65% to <u>90%</u>.
+      - Participated in daily stand-ups and code reviews, adopting **Agile methodologies** for rapid feature deployment.
+
+  - company: 'HyperScale AI (Startup)'
+    position: 'Backend Developer Intern'
+    location: 'Remote'
+    startDate: '2023-06-01T00:00:00.000Z'
+    endDate: '2023-08-01T00:00:00.000Z'
+    current: false
+    verificationStatus: 'APPROVED'
+    description: |
+      Core backend development for an early-stage AI infrastructure startup.
+
+      - Architected a scalable API gateway using **Go (Golang)** capable of handling *10k+ requests per second*.
+      - Deployed containerized applications using **Docker** and orchestrated services via <u>Kubernetes</u> for auto-scaling.
+      - Automated CI/CD workflows using **GitHub Actions**, cutting deployment time by half and ensuring consistent builds.
+      - Integrated third-party **OAuth2** providers to secure user authentication and authorization flows.
 
 skills:
   - category: 'Languages'
@@ -127,11 +123,3 @@ certifications:
     date: '2023-11-18T00:00:00.000Z'
     url: 'https://oracle.com/verify'
     verificationStatus: 'APPROVED'
-
-languages:
-  - name: 'English'
-    proficiency: 'EXPERT'
-  - name: 'Kannada'
-    proficiency: 'NATIVE'
-  - name: 'Hindi'
-    proficiency: 'INTERMEDIATE'

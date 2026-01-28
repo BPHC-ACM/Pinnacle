@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { formatDateForDisplay, formatDateToYYYYMM } from './utils';
+import { MarkdownRenderer } from '@/components/MarkdownRenderer';
 
 // Mapping for user-friendly display names for the sector enum
 const SECTOR_DISPLAY_NAMES: Record<Sector, string> = {
@@ -237,7 +238,7 @@ export function ExperienceSection({
               <Textarea
                 value={form.description || ''}
                 onChange={(e) => handleValueChange('description', e.target.value)}
-                placeholder="A brief summary of your role."
+                placeholder="A brief summary of your role. Supports **bold**, *italic*, __underline__. Each line becomes a bullet point."
                 rows={3}
               />
             </div>
@@ -290,9 +291,13 @@ export function ExperienceSection({
                   {exp.location && ` | ${exp.location}`}
                 </p>
                 {exp.description && (
-                  <p className="mt-2 text-sm text-muted-foreground whitespace-pre-wrap">
-                    {exp.description}
-                  </p>
+                  <div className="mt-2">
+                    <MarkdownRenderer
+                      content={exp.description}
+                      className="text-sm text-muted-foreground"
+                      asBullets={true}
+                    />
+                  </div>
                 )}
               </div>
             </div>

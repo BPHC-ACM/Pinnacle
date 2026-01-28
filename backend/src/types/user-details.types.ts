@@ -44,10 +44,6 @@ export interface UserProfile {
   branch?: string;
   currentYear?: number;
   isFrozen?: boolean;
-  parentName?: string;
-  parentEmail?: string;
-  parentPhone?: string;
-  parentRelation?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -63,10 +59,6 @@ export interface UpdateUserProfileRequest {
   studentId?: string;
   branch?: string;
   currentYear?: number;
-  parentName?: string;
-  parentEmail?: string;
-  parentPhone?: string;
-  parentRelation?: string;
 }
 
 export interface Experience {
@@ -76,7 +68,6 @@ export interface Experience {
   position: string;
   location: string;
   sector?: Sector;
-  salaryRange?: string;
   startDate: Date;
   endDate?: Date;
   current: boolean;
@@ -91,7 +82,6 @@ export interface CreateExperienceRequest {
   position: string;
   location: string;
   sector?: Sector;
-  salaryRange?: string;
   startDate: string;
   endDate?: string;
   current?: boolean;
@@ -104,7 +94,6 @@ export interface UpdateExperienceRequest {
   position?: string;
   location?: string;
   sector?: Sector;
-  salaryRange?: string;
   startDate?: string;
   endDate?: string;
   current?: boolean;
@@ -294,7 +283,6 @@ export const createExperienceSchema = z.object({
       'OTHERS',
     ])
     .optional(),
-  salaryRange: z.string().max(100).optional(),
   startDate: z.string().regex(/^\d{4}-\d{2}$/),
   endDate: z
     .string()
@@ -325,7 +313,6 @@ export const updateExperienceSchema = z.object({
       'OTHERS',
     ])
     .optional(),
-  salaryRange: z.string().max(100).optional(),
   startDate: z
     .string()
     .regex(/^\d{4}-\d{2}$/)
@@ -872,21 +859,6 @@ export const uploadMarkSheetSchema = z.object({
   term: z.string().min(1).max(100),
   academicYear: z.string().min(1).max(20),
   fileName: z.string().min(1).max(255),
-});
-
-// ========== PARENT DETAILS TYPES ==========
-export interface UpdateParentDetailsRequest {
-  parentName?: string;
-  parentEmail?: string;
-  parentPhone?: string;
-  parentRelation?: string;
-}
-
-export const updateParentDetailsSchema = z.object({
-  parentName: z.string().min(1).max(255).optional(),
-  parentEmail: z.string().email().optional(),
-  parentPhone: z.string().min(10).max(20).optional(),
-  parentRelation: z.string().max(50).optional(),
 });
 
 // ========== STUDENT MANAGEMENT TYPES ==========

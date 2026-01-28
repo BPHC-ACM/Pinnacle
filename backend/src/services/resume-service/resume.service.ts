@@ -137,8 +137,6 @@ export class ResumeService {
         linkedin: true,
         github: true,
         website: true,
-        bio: true,
-        title: true,
         summary: true,
       },
     });
@@ -156,7 +154,6 @@ export class ResumeService {
             position: true,
             location: true,
             sector: true,
-            salaryRange: true,
             startDate: true,
             endDate: true,
             current: true,

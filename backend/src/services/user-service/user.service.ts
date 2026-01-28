@@ -53,10 +53,6 @@ export class UserService {
         summary: true,
         createdAt: true,
         updatedAt: true,
-        parentName: true,
-        parentEmail: true,
-        parentPhone: true,
-        parentRelation: true,
         markSheets: {
           orderBy: { term: 'asc' },
         },
@@ -94,21 +90,6 @@ export class UserService {
       data: {
         ...data,
         verificationStatus: 'PENDING',
-      },
-    })) as UserProfile;
-  }
-
-  async updateParentDetails(
-    userId: string,
-    data: import('../../types/user-details.types').UpdateParentDetailsRequest,
-  ): Promise<UserProfile> {
-    return (await prisma.user.update({
-      where: { id: userId },
-      data: {
-        parentName: data.parentName,
-        parentEmail: data.parentEmail,
-        parentPhone: data.parentPhone,
-        parentRelation: data.parentRelation,
       },
     })) as UserProfile;
   }

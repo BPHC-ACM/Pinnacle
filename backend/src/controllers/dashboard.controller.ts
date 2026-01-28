@@ -156,37 +156,37 @@ export async function getProfileCompletion(req: Request, res: Response): Promise
       return;
     }
 
-    // Define fields and their weights for completion calculation
-    const profileFields = [
-      { key: 'name', label: 'Name', weight: 15, value: profile.name },
-      { key: 'email', label: 'Email', weight: 15, value: profile.email },
-      { key: 'phone', label: 'Phone', weight: 10, value: profile.phone },
-      { key: 'location', label: 'Location', weight: 10, value: profile.location },
-      { key: 'title', label: 'Professional Title', weight: 10, value: profile.title },
-      { key: 'bio', label: 'Bio', weight: 10, value: profile.bio },
-      { key: 'summary', label: 'Summary', weight: 10, value: profile.summary },
-      { key: 'linkedin', label: 'LinkedIn', weight: 5, value: profile.linkedin },
-      { key: 'github', label: 'GitHub', weight: 5, value: profile.github },
-      { key: 'website', label: 'Website', weight: 5, value: profile.website },
-      { key: 'picture', label: 'Profile Picture', weight: 5, value: profile.picture },
+    // Define fields for completion calculation
+    interface CompletionField {
+      key: string;
+      label: string;
+      value: string | null | undefined;
+    }
+
+    const profileFields: CompletionField[] = [
+      { key: 'name', label: 'Name', value: profile.name },
+      { key: 'email', label: 'Email', value: profile.email },
+      { key: 'phone', label: 'Phone', value: profile.phone },
+      { key: 'location', label: 'Location', value: profile.location },
+      { key: 'summary', label: 'Summary', value: profile.summary },
+      { key: 'linkedin', label: 'LinkedIn', value: profile.linkedin },
+      { key: 'github', label: 'GitHub', value: profile.github },
+      { key: 'website', label: 'Website', value: profile.website },
+      { key: 'picture', label: 'Profile Picture', value: profile.picture },
     ];
 
     const completedFields: string[] = [];
     const missingFields: string[] = [];
-    let completedWeight = 0;
-    let totalWeight = 0;
 
     for (const field of profileFields) {
-      totalWeight += field.weight;
-      if (field.value && field.value.trim() !== '') {
-        completedWeight += field.weight;
+      if (field.value?.trim()) {
         completedFields.push(field.label);
       } else {
         missingFields.push(field.label);
       }
     }
 
-    const completionPercentage = Math.round((completedWeight / totalWeight) * 100);
+    const completionPercentage = Math.round((completedFields.length / profileFields.length) * 100);
 
     res.json({
       completionPercentage,

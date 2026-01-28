@@ -87,7 +87,6 @@ export interface Experience {
   position: string;
   location: string;
   sector: string | null;
-  salaryRange: string | null;
   startDate: string;
   endDate: string | null;
   current: boolean;

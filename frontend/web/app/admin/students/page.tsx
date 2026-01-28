@@ -27,8 +27,6 @@ interface Student {
   cgpa: number;
   placementStatus: PlacementStatus;
   profileStatus: ProfileStatus;
-  parentName?: string;
-  parentPhone?: string;
   isFrozen: boolean;
 }
 
@@ -75,8 +73,6 @@ export default function StudentsPage() {
             cgpa: u.education?.[0]?.gpa ? parseFloat(u.education[0].gpa) : 0,
             placementStatus: isPlaced ? 'PLACED' : 'UNPLACED',
             profileStatus: pStatus,
-            parentName: u.parentName || undefined,
-            parentPhone: u.parentPhone || undefined,
             isFrozen: u.isFrozen,
           };
         });
@@ -483,7 +479,6 @@ export default function StudentsPage() {
                       <TableHead>Department</TableHead>
                       <TableHead>Batch</TableHead>
                       <TableHead>CGPA</TableHead>
-                      <TableHead>Parent Info</TableHead>
                       <TableHead>Placement</TableHead>
                       <TableHead>Profile</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
@@ -524,14 +519,6 @@ export default function StudentsPage() {
                           <span className={student.cgpa >= 8 ? 'font-semibold text-green-600' : ''}>
                             {student.cgpa.toFixed(2)}
                           </span>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex flex-col text-xs">
-                            <span>{student.parentName || '-'}</span>
-                            <span className="text-muted-foreground">
-                              {student.parentPhone || '-'}
-                            </span>
-                          </div>
                         </TableCell>
                         <TableCell>{getPlacementBadge(student.placementStatus)}</TableCell>
                         <TableCell>{getProfileBadge(student.profileStatus)}</TableCell>

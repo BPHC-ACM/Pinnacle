@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Project } from './Types';
 import { Plus, Pencil, Trash, ExternalLink, X } from 'lucide-react';
+import { MarkdownRenderer } from '@/components/MarkdownRenderer';
 
 interface ProjectsSectionProps {
   projects: Project[];
@@ -158,7 +159,7 @@ export function ProjectsSection({ projects, onSave, onDelete, isSaving }: Projec
               value={form.description ?? ''}
               onChange={(e) => handleChange(e, 'description')}
               className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground resize-none"
-              placeholder="Project Description"
+              placeholder="Project Description. Supports **bold**, *italic*, __underline__. Each line becomes a bullet point."
               rows={3}
             />
             <div>
@@ -213,7 +214,13 @@ export function ProjectsSection({ projects, onSave, onDelete, isSaving }: Projec
                 <div className="flex justify-between items-start">
                   <div className="space-y-2 flex-1">
                     <h3 className="text-lg font-bold text-foreground">{project.title}</h3>
-                    <p className="text-sm text-muted-foreground">{project.description}</p>
+                    {project.description && (
+                      <MarkdownRenderer
+                        content={project.description}
+                        className="text-sm text-muted-foreground"
+                        asBullets={true}
+                      />
+                    )}
                     <div className="flex flex-wrap gap-2">
                       {(project.tools ?? []).map((tool, idx) => (
                         <span

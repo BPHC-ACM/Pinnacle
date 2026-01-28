@@ -14,7 +14,6 @@ import {
   updateEducationSchema,
   updateExperienceSchema,
   updateLanguageSchema,
-  updateParentDetailsSchema,
   updateProjectSchema,
   updateSkillSchema,
   updateUserProfileSchema,
@@ -162,15 +161,6 @@ router.patch(
 
 // DELETE /api/user-details/languages/:id - Soft delete language
 router.delete('/languages/:id', userDetailsController.deleteLanguage);
-
-// PARENT DETAILS ROUTES
-
-// PATCH /api/user-details/parent-details - Update parent details
-router.patch(
-  '/parent-details',
-  validateBody(updateParentDetailsSchema),
-  userDetailsController.updateParentDetails,
-);
 
 // MARKSHEET ROUTES
 

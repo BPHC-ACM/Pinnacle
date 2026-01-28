@@ -181,9 +181,6 @@ export interface StudentUser {
   currentYear: number | null; // Batch
   isFrozen: boolean;
   phone: string | null;
-  parentName: string | null;
-  parentEmail: string | null;
-  parentPhone: string | null;
   profileStatus: string;
   verificationStatus: string; // VerificationStatus enum
   createdAt: string;

@@ -252,12 +252,6 @@ async function main(): Promise<void> {
       branch: yamlData.branch,
       currentYear: yamlData.currentYear,
 
-      // Parent details
-      parentName: yamlData.parentName,
-      parentEmail: yamlData.parentEmail,
-      parentPhone: yamlData.parentPhone,
-      parentRelation: yamlData.parentRelation,
-
       education: yamlData.education ? { create: yamlData.education } : undefined,
       experiences: yamlData.experiences ? { create: yamlData.experiences } : undefined,
       projects: yamlData.projects ? { create: yamlData.projects } : undefined,
@@ -372,7 +366,6 @@ async function main(): Promise<void> {
       name: 'Placement Unit',
       googleId: 'admin-g-id',
       role: UserRole.SPT,
-      bio: 'Placement Unit Head',
     },
   });
 

@@ -33,12 +33,6 @@ model User {
   currentYear Int? // Current year of study
   isFrozen    Boolean @default(false) // Freeze account for placement
 
-  // Parent details
-  parentName     String?
-  parentEmail    String?
-  parentPhone    String?
-  parentRelation String? // e.g., "Father", "Mother", "Guardian"
-
   accomplishments           Accomplishment[]
   sentAnnouncements         Announcement[]
   certifications            Certification[]
@@ -136,7 +130,6 @@ model Experience {
   updatedAt          DateTime           @updatedAt
   deletedAt          DateTime?
   verificationDoc    String?
-  salaryRange        String?
   sector             Sector?
   verificationStatus VerificationStatus @default(PENDING)
   startDate          DateTime

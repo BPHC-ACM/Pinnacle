@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import type { ResumePreviewData, ResumeData } from '@/types/resume.types';
+import { renderMarkdownForResume } from './MarkdownRenderer';
 
 interface ResumePreviewProps {
   data: ResumePreviewData;
@@ -29,7 +30,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({ data, resumeData }
         while (container.scrollHeight > maxHeight && currentSize > 6) {
           currentSize -= 0.2;
           setFontSize(currentSize);
-          
+
           // Force re-render to recalculate height
           if (container.scrollHeight <= maxHeight) break;
         }
@@ -131,23 +132,33 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({ data, resumeData }
                     marginBottom: '2px',
                   }}
                 >
-                  <div style={{ fontSize: '10pt', fontWeight: 500, fontStyle: 'italic', color: '#4b5563' }}>
+                  <div
+                    style={{
+                      fontSize: '10pt',
+                      fontWeight: 500,
+                      fontStyle: 'italic',
+                      color: '#4b5563',
+                    }}
+                  >
                     {exp.company}
                   </div>
                   <div style={{ fontSize: '9.5pt', color: '#4b5563', fontStyle: 'italic' }}>
                     {exp.location}
                   </div>
                 </div>
-                {exp.highlights && exp.highlights.length > 0 && (
+                {exp.description && (
                   <ul style={{ marginTop: '2px', paddingLeft: '15px', listStyleType: 'disc' }}>
-                    {exp.highlights.map((highlight, idx) => (
-                      <li
-                        key={idx}
-                        style={{ marginBottom: '1px', fontSize: '9.5pt', color: '#1f2937' }}
-                      >
-                        {highlight}
-                      </li>
-                    ))}
+                    {exp.description
+                      .split('\n')
+                      .filter((line) => line.trim())
+                      .map((line, idx) => (
+                        <li
+                          key={idx}
+                          style={{ marginBottom: '1px', fontSize: '9.5pt', color: '#1f2937' }}
+                        >
+                          {renderMarkdownForResume(line.trim())}
+                        </li>
+                      ))}
                   </ul>
                 )}
               </div>
@@ -197,7 +208,14 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({ data, resumeData }
                     marginBottom: '2px',
                   }}
                 >
-                  <div style={{ fontSize: '10pt', fontWeight: 500, fontStyle: 'italic', color: '#4b5563' }}>
+                  <div
+                    style={{
+                      fontSize: '10pt',
+                      fontWeight: 500,
+                      fontStyle: 'italic',
+                      color: '#4b5563',
+                    }}
+                  >
                     {edu.degree} in {edu.branch}
                   </div>
                   <div style={{ fontSize: '9.5pt', color: '#4b5563', fontStyle: 'italic' }}>
@@ -211,7 +229,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({ data, resumeData }
                         key={idx}
                         style={{ marginBottom: '1px', fontSize: '9.5pt', color: '#1f2937' }}
                       >
-                        {achievement}
+                        {renderMarkdownForResume(achievement)}
                       </li>
                     ))}
                   </ul>
@@ -285,16 +303,19 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({ data, resumeData }
                     </span>
                   </div>
                 )}
-                {project.outcomes && project.outcomes.length > 0 && (
+                {project.description && (
                   <ul style={{ marginTop: '2px', paddingLeft: '15px', listStyleType: 'disc' }}>
-                    {project.outcomes.map((outcome, idx) => (
-                      <li
-                        key={idx}
-                        style={{ marginBottom: '1px', fontSize: '9.5pt', color: '#1f2937' }}
-                      >
-                        {outcome}
-                      </li>
-                    ))}
+                    {project.description
+                      .split('\n')
+                      .filter((line) => line.trim())
+                      .map((line, idx) => (
+                        <li
+                          key={idx}
+                          style={{ marginBottom: '1px', fontSize: '9.5pt', color: '#1f2937' }}
+                        >
+                          {renderMarkdownForResume(line.trim())}
+                        </li>
+                      ))}
                   </ul>
                 )}
               </div>
@@ -465,9 +486,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({ data, resumeData }
           {contactItems.map((item, idx) => (
             <React.Fragment key={idx}>
               <span>{item}</span>
-              {idx < contactItems.length - 1 && (
-                <span style={{ margin: '0 4px' }}>|</span>
-              )}
+              {idx < contactItems.length - 1 && <span style={{ margin: '0 4px' }}>|</span>}
             </React.Fragment>
           ))}
         </div>

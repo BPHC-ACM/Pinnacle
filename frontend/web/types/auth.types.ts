@@ -24,10 +24,6 @@ export interface User {
   branch?: string;
   currentYear?: number;
   isFrozen?: boolean;
-  parentName?: string;
-  parentEmail?: string;
-  parentPhone?: string;
-  parentRelation?: string;
 }
 
 export interface AuthResponse {
