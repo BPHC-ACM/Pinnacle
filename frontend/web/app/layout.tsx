@@ -7,6 +7,7 @@ import { ThemeProvider } from '@/contexts/theme-context';
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as Sonner } from 'sonner';
 import { Footer } from '@/components/Footer';
+import { Header } from '@/components/Header';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -29,6 +30,7 @@ export default function RootLayout({
       <body className="antialiased font-sans">
         <ThemeProvider defaultTheme="dark" storageKey="pinnacle-theme">
           <AuthProvider>
+            <Header />
             <main>{children}</main>
             <Footer />
             <Toaster />

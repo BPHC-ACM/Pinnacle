@@ -18,7 +18,6 @@ import type {
   UpdateCertificationRequest,
   CreateLanguageRequest,
   UpdateLanguageRequest,
-  UpdateParentDetailsRequest,
   CreateUserDetailsRequest,
 } from '../types/user-details.types';
 
@@ -232,13 +231,6 @@ export async function createUserDetails(req: Request, res: Response): Promise<vo
   res
     .status(201)
     .json(await userService.createUserDetails(userId, req.body as CreateUserDetailsRequest));
-}
-
-// ========== PARENT DETAILS ==========
-
-export async function updateParentDetails(req: Request, res: Response): Promise<void> {
-  const userId = getUserId(req);
-  res.json(await userService.updateParentDetails(userId, req.body as UpdateParentDetailsRequest));
 }
 
 // ========== MARKSHEETS ==========

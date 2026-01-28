@@ -7,21 +7,16 @@ export enum UserRole {
 }
 
 export enum Sector {
-  ALL_SECTORS = 'ALL_SECTORS',
-  ANALYTICS = 'ANALYTICS',
-  CONSULTING = 'CONSULTING',
-  COMPUTER_SCIENCE_SOFTWARE_IT = 'COMPUTER_SCIENCE_SOFTWARE_IT',
-  E_COMMERCE = 'E_COMMERCE',
-  EDUCATION = 'EDUCATION',
-  ENGINEERING_TECHNOLOGY = 'ENGINEERING_TECHNOLOGY',
-  FINANCE_BFSI = 'FINANCE_BFSI',
-  FMCG = 'FMCG',
+  IT = 'IT',
+  FINANCE = 'FINANCE',
+  ECOMMERCE = 'ECOMMERCE',
   HEALTHCARE = 'HEALTHCARE',
-  MEDIA_ENTERTAINMENT = 'MEDIA_ENTERTAINMENT',
-  RESEARCH_DEVELOPMENT = 'RESEARCH_DEVELOPMENT',
-  TELECOM = 'TELECOM',
-  ENERGY = 'ENERGY',
-  MANUFACTURING_TECHNOLOGY = 'MANUFACTURING_TECHNOLOGY',
+  CONSULTING = 'CONSULTING',
+  ANALYTICS = 'ANALYTICS',
+  EDUCATION = 'EDUCATION',
+  ELECTRONICS = 'ELECTRONICS',
+  MECHANICS = 'MECHANICS',
+  MANAGEMENT = 'MANAGEMENT',
   OTHERS = 'OTHERS',
 }
 
@@ -44,17 +39,11 @@ export interface UserProfile {
   linkedin?: string;
   github?: string;
   website?: string;
-  bio?: string;
-  title?: string;
   summary?: string;
   studentId?: string;
   branch?: string;
   currentYear?: number;
   isFrozen?: boolean;
-  parentName?: string;
-  parentEmail?: string;
-  parentPhone?: string;
-  parentRelation?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -66,16 +55,10 @@ export interface UpdateUserProfileRequest {
   linkedin?: string;
   github?: string;
   website?: string;
-  bio?: string;
-  title?: string;
   summary?: string;
   studentId?: string;
   branch?: string;
   currentYear?: number;
-  parentName?: string;
-  parentEmail?: string;
-  parentPhone?: string;
-  parentRelation?: string;
 }
 
 export interface Experience {
@@ -85,12 +68,10 @@ export interface Experience {
   position: string;
   location: string;
   sector?: Sector;
-  salaryRange?: string;
   startDate: Date;
   endDate?: Date;
   current: boolean;
   description?: string;
-  highlights: string[];
   order: number;
   createdAt: Date;
   updatedAt: Date;
@@ -101,12 +82,10 @@ export interface CreateExperienceRequest {
   position: string;
   location: string;
   sector?: Sector;
-  salaryRange?: string;
   startDate: string;
   endDate?: string;
   current?: boolean;
   description?: string;
-  highlights?: string[];
   order?: number;
 }
 
@@ -115,12 +94,10 @@ export interface UpdateExperienceRequest {
   position?: string;
   location?: string;
   sector?: Sector;
-  salaryRange?: string;
   startDate?: string;
   endDate?: string;
   current?: boolean;
   description?: string;
-  highlights?: string[];
   order?: number;
 }
 
@@ -199,7 +176,6 @@ export interface Project {
   domain: string;
   tools: string[];
   description: string;
-  outcomes: string[];
   referenceUrl?: string;
   order: number;
   createdAt: Date;
@@ -211,7 +187,6 @@ export interface CreateProjectRequest {
   domain: string;
   tools?: string[];
   description: string;
-  outcomes?: string[];
   referenceUrl?: string;
   order?: number;
 }
@@ -221,7 +196,6 @@ export interface UpdateProjectRequest {
   domain?: string;
   tools?: string[];
   description?: string;
-  outcomes?: string[];
   referenceUrl?: string;
   order?: number;
 }
@@ -286,8 +260,6 @@ export const updateUserProfileSchema = z.object({
   linkedin: z.string().url().or(z.literal('')).nullable().optional(),
   github: z.string().url().or(z.literal('')).nullable().optional(),
   website: z.string().url().or(z.literal('')).nullable().optional(),
-  bio: z.string().max(1000).nullable().optional(),
-  title: z.string().max(255).nullable().optional(),
   summary: z.string().max(2000).nullable().optional(),
 });
 
@@ -298,25 +270,19 @@ export const createExperienceSchema = z.object({
   location: z.string().min(1).max(255),
   sector: z
     .enum([
-      'ALL_SECTORS',
-      'ANALYTICS',
-      'CONSULTING',
-      'COMPUTER_SCIENCE_SOFTWARE_IT',
-      'E_COMMERCE',
-      'EDUCATION',
-      'ENGINEERING_TECHNOLOGY',
-      'FINANCE_BFSI',
-      'FMCG',
+      'IT',
+      'FINANCE',
+      'ECOMMERCE',
       'HEALTHCARE',
-      'MEDIA_ENTERTAINMENT',
-      'RESEARCH_DEVELOPMENT',
-      'TELECOM',
-      'ENERGY',
-      'MANUFACTURING_TECHNOLOGY',
+      'CONSULTING',
+      'ANALYTICS',
+      'EDUCATION',
+      'ELECTRONICS',
+      'MECHANICS',
+      'MANAGEMENT',
       'OTHERS',
     ])
     .optional(),
-  salaryRange: z.string().max(100).optional(),
   startDate: z.string().regex(/^\d{4}-\d{2}$/),
   endDate: z
     .string()
@@ -325,7 +291,6 @@ export const createExperienceSchema = z.object({
     .optional(),
   current: z.boolean().optional(),
   description: z.string().max(2000).optional(),
-  highlights: z.array(z.string().max(500)).optional(),
   order: z.number().int().min(0).optional(),
 });
 
@@ -335,25 +300,19 @@ export const updateExperienceSchema = z.object({
   location: z.string().min(1).max(255).optional(),
   sector: z
     .enum([
-      'ALL_SECTORS',
-      'ANALYTICS',
-      'CONSULTING',
-      'COMPUTER_SCIENCE_SOFTWARE_IT',
-      'E_COMMERCE',
-      'EDUCATION',
-      'ENGINEERING_TECHNOLOGY',
-      'FINANCE_BFSI',
-      'FMCG',
+      'IT',
+      'FINANCE',
+      'ECOMMERCE',
       'HEALTHCARE',
-      'MEDIA_ENTERTAINMENT',
-      'RESEARCH_DEVELOPMENT',
-      'TELECOM',
-      'ENERGY',
-      'MANUFACTURING_TECHNOLOGY',
+      'CONSULTING',
+      'ANALYTICS',
+      'EDUCATION',
+      'ELECTRONICS',
+      'MECHANICS',
+      'MANAGEMENT',
       'OTHERS',
     ])
     .optional(),
-  salaryRange: z.string().max(100).optional(),
   startDate: z
     .string()
     .regex(/^\d{4}-\d{2}$/)
@@ -365,7 +324,6 @@ export const updateExperienceSchema = z.object({
     .optional(),
   current: z.boolean().optional(),
   description: z.string().max(2000).optional(),
-  highlights: z.array(z.string().max(500)).optional(),
   order: z.number().int().min(0).optional(),
 });
 
@@ -428,7 +386,6 @@ export const createProjectSchema = z.object({
   domain: z.string().min(1).max(255),
   tools: z.array(z.string().max(100)).optional(),
   description: z.string().min(1).max(5000),
-  outcomes: z.array(z.string().max(500)).optional(),
   referenceUrl: z.string().url().optional().or(z.literal('')),
   order: z.number().int().min(0).optional(),
 });
@@ -438,7 +395,6 @@ export const updateProjectSchema = z.object({
   domain: z.string().min(1).max(255).optional(),
   tools: z.array(z.string().max(100)).optional(),
   description: z.string().min(1).max(5000).optional(),
-  outcomes: z.array(z.string().max(500)).optional(),
   referenceUrl: z.string().url().optional().or(z.literal('')),
   order: z.number().int().min(0).optional(),
 });
@@ -903,21 +859,6 @@ export const uploadMarkSheetSchema = z.object({
   term: z.string().min(1).max(100),
   academicYear: z.string().min(1).max(20),
   fileName: z.string().min(1).max(255),
-});
-
-// ========== PARENT DETAILS TYPES ==========
-export interface UpdateParentDetailsRequest {
-  parentName?: string;
-  parentEmail?: string;
-  parentPhone?: string;
-  parentRelation?: string;
-}
-
-export const updateParentDetailsSchema = z.object({
-  parentName: z.string().min(1).max(255).optional(),
-  parentEmail: z.string().email().optional(),
-  parentPhone: z.string().min(10).max(20).optional(),
-  parentRelation: z.string().max(50).optional(),
 });
 
 // ========== STUDENT MANAGEMENT TYPES ==========

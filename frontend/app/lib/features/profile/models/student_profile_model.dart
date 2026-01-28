@@ -126,7 +126,6 @@ class Experience {
   final bool current;
   final String? description;
   final String? sector;
-  final String? salaryRange;
   final List<String> highlights;
   final VerificationStatus verificationStatus;
 
@@ -140,7 +139,6 @@ class Experience {
     this.current = false,
     this.description,
     this.sector,
-    this.salaryRange,
     this.highlights = const [],
     this.verificationStatus = VerificationStatus.PENDING,
   });
@@ -156,7 +154,6 @@ class Experience {
       current: json['current'] ?? false,
       description: json['description'],
       sector: json['sector'],
-      salaryRange: json['salaryRange'],
       highlights:
           (json['highlights'] as List?)?.map((e) => e.toString()).toList() ??
           [],

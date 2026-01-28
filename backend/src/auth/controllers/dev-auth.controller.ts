@@ -42,8 +42,6 @@ export const devLogin = async (req: Request, res: Response): Promise<void> => {
             googleId: 'dev-admin-google-id',
             role: 'SPT',
             phone: '+1234567890',
-            bio: 'Senior Placement Team - Full administrative control',
-            title: 'SPT Coordinator',
           },
         });
       } else if (!['SPT', 'JPT'].includes(dbUser.role)) {

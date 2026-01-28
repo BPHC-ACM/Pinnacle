@@ -112,11 +112,6 @@ export const generateResumePDF = (resumeData: ResumeData): Promise<Buffer> => {
         if (exp.description) {
           doc.text(`• ${exp.description}`, { indent: 10 });
         }
-        if (exp.highlights && exp.highlights.length > 0) {
-          exp.highlights.forEach((highlight) => {
-            doc.text(`• ${highlight}`, { indent: 10 });
-          });
-        }
         doc.moveDown(0.5);
       });
       doc.moveDown(0.5);
@@ -158,12 +153,6 @@ export const generateResumePDF = (resumeData: ResumeData): Promise<Buffer> => {
 
         if (project.description) {
           doc.font('Helvetica').text(project.description);
-        }
-
-        if (project.outcomes && project.outcomes.length > 0) {
-          project.outcomes.forEach((outcome) => {
-            doc.text(`• ${outcome}`, { indent: 10 });
-          });
         }
         doc.moveDown(0.5);
       });

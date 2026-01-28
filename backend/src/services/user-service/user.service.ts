@@ -50,15 +50,9 @@ export class UserService {
         linkedin: true,
         github: true,
         website: true,
-        bio: true,
-        title: true,
         summary: true,
         createdAt: true,
         updatedAt: true,
-        parentName: true,
-        parentEmail: true,
-        parentPhone: true,
-        parentRelation: true,
         markSheets: {
           orderBy: { term: 'asc' },
         },
@@ -100,21 +94,6 @@ export class UserService {
     })) as UserProfile;
   }
 
-  async updateParentDetails(
-    userId: string,
-    data: import('../../types/user-details.types').UpdateParentDetailsRequest,
-  ): Promise<UserProfile> {
-    return (await prisma.user.update({
-      where: { id: userId },
-      data: {
-        parentName: data.parentName,
-        parentEmail: data.parentEmail,
-        parentPhone: data.parentPhone,
-        parentRelation: data.parentRelation,
-      },
-    })) as UserProfile;
-  }
-
   // Experience
   async getExperiences(
     userId: string,
@@ -148,7 +127,6 @@ export class UserService {
         userId,
         startDate: parseDate(startDate),
         endDate: parseOptionalDate(endDate),
-        highlights: data.highlights ?? [],
         current: data.current ?? false,
         order: data.order ?? 0,
       },
@@ -370,7 +348,6 @@ export class UserService {
         ...data,
         userId,
         tools: data.tools ?? [],
-        outcomes: data.outcomes ?? [],
         order: data.order ?? 0,
       },
     })) as Project;

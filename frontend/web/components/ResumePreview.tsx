@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import type { ResumePreviewData, ResumeData } from '@/types/resume.types';
-import Image from 'next/image';
+import { renderMarkdownForResume } from './MarkdownRenderer';
 
 interface ResumePreviewProps {
   data: ResumePreviewData;
@@ -30,7 +30,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({ data, resumeData }
         while (container.scrollHeight > maxHeight && currentSize > 6) {
           currentSize -= 0.2;
           setFontSize(currentSize);
-          
+
           // Force re-render to recalculate height
           if (container.scrollHeight <= maxHeight) break;
         }
@@ -79,8 +79,6 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({ data, resumeData }
     return `${start} – ${end}`;
   };
 
-  const primaryColor = resumeData?.styling?.primaryColor || '#111827';
-
   const renderSection = (section: { type: string; enabled: boolean }) => {
     if (!section.enabled) return null;
 
@@ -91,12 +89,12 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({ data, resumeData }
           <div key="experience" style={{ marginBottom: '12px' }}>
             <h3
               style={{
-                fontSize: '10pt',
+                fontSize: '11pt',
                 fontWeight: 700,
-                color: primaryColor,
-                borderBottom: `1px solid #d1d5db`,
+                color: '#000',
+                borderBottom: `1px solid #000`,
                 paddingBottom: '2px',
-                marginBottom: '8px',
+                marginBottom: '6px',
                 textTransform: 'uppercase',
                 letterSpacing: '0.5px',
               }}
@@ -134,23 +132,33 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({ data, resumeData }
                     marginBottom: '2px',
                   }}
                 >
-                  <div style={{ fontWeight: 500, fontStyle: 'italic', color: '#4b5563' }}>
+                  <div
+                    style={{
+                      fontSize: '10pt',
+                      fontWeight: 500,
+                      fontStyle: 'italic',
+                      color: '#4b5563',
+                    }}
+                  >
                     {exp.company}
                   </div>
-                  <div style={{ fontSize: '9pt', color: '#4b5563', fontStyle: 'italic' }}>
+                  <div style={{ fontSize: '9.5pt', color: '#4b5563', fontStyle: 'italic' }}>
                     {exp.location}
                   </div>
                 </div>
-                {exp.highlights && exp.highlights.length > 0 && (
+                {exp.description && (
                   <ul style={{ marginTop: '2px', paddingLeft: '15px', listStyleType: 'disc' }}>
-                    {exp.highlights.map((highlight, idx) => (
-                      <li
-                        key={idx}
-                        style={{ marginBottom: '1px', fontSize: '9.5pt', color: '#1f2937' }}
-                      >
-                        {highlight}
-                      </li>
-                    ))}
+                    {exp.description
+                      .split('\n')
+                      .filter((line) => line.trim())
+                      .map((line, idx) => (
+                        <li
+                          key={idx}
+                          style={{ marginBottom: '1px', fontSize: '9.5pt', color: '#1f2937' }}
+                        >
+                          {renderMarkdownForResume(line.trim())}
+                        </li>
+                      ))}
                   </ul>
                 )}
               </div>
@@ -164,12 +172,12 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({ data, resumeData }
           <div key="education" style={{ marginBottom: '12px' }}>
             <h3
               style={{
-                fontSize: '10pt',
+                fontSize: '11pt',
                 fontWeight: 700,
-                color: primaryColor,
-                borderBottom: `1px solid #d1d5db`,
+                color: '#000',
+                borderBottom: `1px solid #000`,
                 paddingBottom: '2px',
-                marginBottom: '8px',
+                marginBottom: '6px',
                 textTransform: 'uppercase',
                 letterSpacing: '0.5px',
               }}
@@ -200,10 +208,17 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({ data, resumeData }
                     marginBottom: '2px',
                   }}
                 >
-                  <div style={{ fontWeight: 500, fontStyle: 'italic', color: '#4b5563' }}>
+                  <div
+                    style={{
+                      fontSize: '10pt',
+                      fontWeight: 500,
+                      fontStyle: 'italic',
+                      color: '#4b5563',
+                    }}
+                  >
                     {edu.degree} in {edu.branch}
                   </div>
-                  <div style={{ fontSize: '9pt', color: '#4b5563', fontStyle: 'italic' }}>
+                  <div style={{ fontSize: '9.5pt', color: '#4b5563', fontStyle: 'italic' }}>
                     {edu.gpa ? `GPA: ${edu.gpa}` : edu.location}
                   </div>
                 </div>
@@ -214,7 +229,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({ data, resumeData }
                         key={idx}
                         style={{ marginBottom: '1px', fontSize: '9.5pt', color: '#1f2937' }}
                       >
-                        {achievement}
+                        {renderMarkdownForResume(achievement)}
                       </li>
                     ))}
                   </ul>
@@ -230,12 +245,12 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({ data, resumeData }
           <div key="projects" style={{ marginBottom: '12px' }}>
             <h3
               style={{
-                fontSize: '10pt',
+                fontSize: '11pt',
                 fontWeight: 700,
-                color: primaryColor,
-                borderBottom: `1px solid #d1d5db`,
+                color: '#000',
+                borderBottom: `1px solid #000`,
                 paddingBottom: '2px',
-                marginBottom: '8px',
+                marginBottom: '6px',
                 textTransform: 'uppercase',
                 letterSpacing: '0.5px',
               }}
@@ -278,7 +293,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({ data, resumeData }
                   <div style={{ marginBottom: '2px' }}>
                     <span
                       style={{
-                        fontSize: '9pt',
+                        fontSize: '9.5pt',
                         fontWeight: 500,
                         fontStyle: 'italic',
                         color: '#4b5563',
@@ -288,16 +303,19 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({ data, resumeData }
                     </span>
                   </div>
                 )}
-                {project.outcomes && project.outcomes.length > 0 && (
+                {project.description && (
                   <ul style={{ marginTop: '2px', paddingLeft: '15px', listStyleType: 'disc' }}>
-                    {project.outcomes.map((outcome, idx) => (
-                      <li
-                        key={idx}
-                        style={{ marginBottom: '1px', fontSize: '9.5pt', color: '#1f2937' }}
-                      >
-                        {outcome}
-                      </li>
-                    ))}
+                    {project.description
+                      .split('\n')
+                      .filter((line) => line.trim())
+                      .map((line, idx) => (
+                        <li
+                          key={idx}
+                          style={{ marginBottom: '1px', fontSize: '9.5pt', color: '#1f2937' }}
+                        >
+                          {renderMarkdownForResume(line.trim())}
+                        </li>
+                      ))}
                   </ul>
                 )}
               </div>
@@ -311,12 +329,12 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({ data, resumeData }
           <div key="skills" style={{ marginBottom: '12px' }}>
             <h3
               style={{
-                fontSize: '10pt',
+                fontSize: '11pt',
                 fontWeight: 700,
-                color: primaryColor,
-                borderBottom: `1px solid #d1d5db`,
+                color: '#000',
+                borderBottom: `1px solid #000`,
                 paddingBottom: '2px',
-                marginBottom: '8px',
+                marginBottom: '6px',
                 textTransform: 'uppercase',
                 letterSpacing: '0.5px',
               }}
@@ -351,12 +369,12 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({ data, resumeData }
           <div key="certifications" style={{ marginBottom: '12px' }}>
             <h3
               style={{
-                fontSize: '10pt',
+                fontSize: '11pt',
                 fontWeight: 700,
-                color: primaryColor,
-                borderBottom: `1px solid #d1d5db`,
+                color: '#000',
+                borderBottom: `1px solid #000`,
                 paddingBottom: '2px',
-                marginBottom: '8px',
+                marginBottom: '6px',
                 textTransform: 'uppercase',
                 letterSpacing: '0.5px',
               }}
@@ -386,12 +404,12 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({ data, resumeData }
           <div key="languages" style={{ marginBottom: '12px' }}>
             <h3
               style={{
-                fontSize: '10pt',
+                fontSize: '11pt',
                 fontWeight: 700,
-                color: primaryColor,
-                borderBottom: `1px solid #d1d5db`,
+                color: '#000',
+                borderBottom: `1px solid #000`,
                 paddingBottom: '2px',
-                marginBottom: '8px',
+                marginBottom: '6px',
                 textTransform: 'uppercase',
                 letterSpacing: '0.5px',
               }}
@@ -430,10 +448,10 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({ data, resumeData }
         margin: '20px auto',
         padding: '12mm 15mm',
         boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-        fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+        fontFamily: '"Times New Roman", Times, serif',
         fontSize: `${fontSize}pt`,
         lineHeight: 1.4,
-        color: '#1f2937',
+        color: '#000',
         position: 'relative',
         overflow: 'hidden',
         boxSizing: 'border-box',
@@ -443,79 +461,34 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({ data, resumeData }
       {/* Header */}
       <div
         style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          borderBottom: `2px solid ${primaryColor}`,
-          paddingBottom: '10px',
-          marginBottom: '15px',
+          textAlign: 'center',
+          marginBottom: '12px',
         }}
       >
-        <div style={{ flex: 1, paddingRight: '20px' }}>
-          <h1
-            style={{
-              fontSize: '24pt',
-              fontWeight: 700,
-              color: primaryColor,
-              lineHeight: 1,
-              textTransform: 'uppercase',
-              letterSpacing: '-0.5px',
-              marginBottom: '2px',
-            }}
-          >
-            {profile.name}
-          </h1>
-          {profile.title && (
-            <h2
-              style={{
-                fontSize: '11pt',
-                fontWeight: 500,
-                color: '#1f2937',
-                marginBottom: '6px',
-                textTransform: 'uppercase',
-                letterSpacing: '1px',
-              }}
-            >
-              {profile.title}
-            </h2>
-          )}
-          <div
-            style={{
-              fontSize: '9pt',
-              color: '#4b5563',
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: 0,
-              lineHeight: 1.4,
-            }}
-          >
-            {contactItems.map((item, idx) => (
-              <React.Fragment key={idx}>
-                <span>{item}</span>
-                {idx < contactItems.length - 1 && (
-                  <span style={{ margin: '0 6px', color: '#9ca3af' }}>•</span>
-                )}
-              </React.Fragment>
-            ))}
-          </div>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-          {profile.picture && (
-            <Image
-              src={profile.picture}
-              alt={profile.name}
-              width={80}
-              height={80}
-              style={{ objectFit: 'cover', borderRadius: '4px', border: '1px solid #e5e7eb' }}
-            />
-          )}
-          <Image
-            src="https://upload.wikimedia.org/wikipedia/en/thumb/d/d3/BITS_Pilani-Logo.svg/250px-BITS_Pilani-Logo.svg.png"
-            alt="BITS Logo"
-            width={80}
-            height={50}
-            style={{ height: '50px', width: 'auto', opacity: 0.9 }}
-          />
+        <h1
+          style={{
+            fontSize: '20pt',
+            fontWeight: 700,
+            color: '#000',
+            lineHeight: 1.2,
+            marginBottom: '4px',
+          }}
+        >
+          {profile.name}
+        </h1>
+        <div
+          style={{
+            fontSize: '9pt',
+            color: '#000',
+            lineHeight: 1.3,
+          }}
+        >
+          {contactItems.map((item, idx) => (
+            <React.Fragment key={idx}>
+              <span>{item}</span>
+              {idx < contactItems.length - 1 && <span style={{ margin: '0 4px' }}>|</span>}
+            </React.Fragment>
+          ))}
         </div>
       </div>
 

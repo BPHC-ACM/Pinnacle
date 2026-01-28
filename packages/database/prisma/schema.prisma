@@ -17,8 +17,6 @@ model User {
   linkedin           String?
   github             String?
   website            String?
-  bio                String?
-  title              String?
   summary            String?
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
@@ -34,12 +32,6 @@ model User {
   branch      String? // e.g., "Computer Science", "Electronics"
   currentYear Int? // Current year of study
   isFrozen    Boolean @default(false) // Freeze account for placement
-
-  // Parent details
-  parentName     String?
-  parentEmail    String?
-  parentPhone    String?
-  parentRelation String? // e.g., "Father", "Mother", "Guardian"
 
   accomplishments           Accomplishment[]
   sentAnnouncements         Announcement[]
@@ -133,13 +125,11 @@ model Experience {
   location           String
   current            Boolean            @default(false)
   description        String?
-  highlights         String[]           @default([])
   order              Int                @default(0)
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
   deletedAt          DateTime?
   verificationDoc    String?
-  salaryRange        String?
   sector             Sector?
   verificationStatus VerificationStatus @default(PENDING)
   startDate          DateTime
@@ -202,7 +192,6 @@ model Project {
   verificationStatus VerificationStatus @default(PENDING)
   description        String
   domain             String
-  outcomes           String[]           @default([])
   referenceUrl       String?
   title              String
   tools              String[]           @default([])
@@ -297,7 +286,6 @@ model PositionOfResponsibility {
   location           String?
   current            Boolean            @default(false)
   description        String?
-  highlights         String[]           @default([])
   order              Int                @default(0)
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt

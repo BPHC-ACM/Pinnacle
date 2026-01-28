@@ -87,12 +87,10 @@ export interface Experience {
   position: string;
   location: string;
   sector: string | null;
-  salaryRange: string | null;
   startDate: string;
   endDate: string | null;
   current: boolean;
   description: string | null;
-  highlights: string[];
   order: number;
 }
 
@@ -123,7 +121,6 @@ export interface Project {
   description: string | null;
   domain: string;
   tools: string[];
-  outcomes: string[];
   startDate: string | null;
   endDate: string | null;
   referenceUrl: string | null;

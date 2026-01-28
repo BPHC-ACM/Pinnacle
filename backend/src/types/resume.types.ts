@@ -69,8 +69,6 @@ export interface ResumePreviewData {
     linkedin: string | null;
     github: string | null;
     website: string | null;
-    bio: string | null;
-    title: string | null;
     summary: string | null;
   };
   experiences: {
@@ -79,12 +77,10 @@ export interface ResumePreviewData {
     position: string;
     location: string;
     sector: string | null;
-    salaryRange: string | null;
     startDate: Date;
     endDate: Date | null;
     current: boolean;
     description: string | null;
-    highlights: string[];
     order: number;
   }[];
   education: {
@@ -113,7 +109,6 @@ export interface ResumePreviewData {
     domain: string;
     tools: string[];
     description: string;
-    outcomes: string[];
     referenceUrl: string | null;
     order: number;
   }[];

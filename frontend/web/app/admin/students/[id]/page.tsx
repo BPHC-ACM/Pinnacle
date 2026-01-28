@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { api } from '@/lib/api-client';
 import { useToast } from '@/components/ui/use-toast';
 import Image from 'next/image';
+import { MarkdownRenderer } from '@/components/MarkdownRenderer';
 
 interface UserProfile {
   id: string;
@@ -28,10 +29,6 @@ interface UserProfile {
   projects?: Project[];
   certifications?: Certification[];
   languages?: Language[];
-  parentName?: string;
-  parentEmail?: string;
-  parentPhone?: string;
-  parentRelation?: string;
   markSheets?: MarkSheet[];
 }
 
@@ -53,7 +50,6 @@ interface Experience {
   endDate?: string;
   current: boolean;
   description?: string;
-  highlights: string[];
 }
 
 interface Education {
@@ -82,7 +78,7 @@ interface Project {
   technologies: string[];
   url?: string;
   repoUrl?: string;
-  highlights: string[];
+  description?: string;
 }
 
 interface Certification {
@@ -300,31 +296,6 @@ export default function StudentProfilePage() {
               <p className="text-muted-foreground">{profile.bio}</p>
             </div>
           )}
-
-          {/* Parent Details */}
-          {(profile.parentName || profile.parentEmail || profile.parentPhone) && (
-            <div className="pt-4 border-t">
-              <h3 className="font-semibold mb-4">Parent / Guardian Details</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="text-muted-foreground block mb-1">Name</span>
-                  <span className="font-medium">{profile.parentName || '-'}</span>
-                </div>
-                <div>
-                  <span className="text-muted-foreground block mb-1">Relation</span>
-                  <span className="font-medium">{profile.parentRelation || '-'}</span>
-                </div>
-                <div>
-                  <span className="text-muted-foreground block mb-1">Email</span>
-                  <span className="font-medium">{profile.parentEmail || '-'}</span>
-                </div>
-                <div>
-                  <span className="text-muted-foreground block mb-1">Phone</span>
-                  <span className="font-medium">{profile.parentPhone || '-'}</span>
-                </div>
-              </div>
-            </div>
-          )}
         </CardContent>
       </Card>
 
@@ -385,16 +356,13 @@ export default function StudentProfilePage() {
                     </Badge>
                   </div>
                   {exp.description && (
-                    <p className="text-sm text-muted-foreground mb-2">{exp.description}</p>
-                  )}
-                  {exp.highlights && exp.highlights.length > 0 && (
-                    <ul className="list-disc list-inside space-y-1 text-sm">
-                      {exp.highlights.map((highlight, idx) => (
-                        <li key={idx} className="text-muted-foreground">
-                          {highlight}
-                        </li>
-                      ))}
-                    </ul>
+                    <div className="mb-2">
+                      <MarkdownRenderer
+                        content={exp.description}
+                        className="text-sm text-muted-foreground"
+                        asBullets={true}
+                      />
+                    </div>
                   )}
                 </div>
               ))}
@@ -520,14 +488,14 @@ export default function StudentProfilePage() {
                       </a>
                     )}
                   </div>
-                  {project.highlights && project.highlights.length > 0 && (
-                    <ul className="list-disc list-inside space-y-1 text-sm">
-                      {project.highlights.map((highlight, idx) => (
-                        <li key={idx} className="text-muted-foreground">
-                          {highlight}
-                        </li>
-                      ))}
-                    </ul>
+                  {project.description && (
+                    <div className="mt-2">
+                      <MarkdownRenderer
+                        content={project.description}
+                        className="text-sm text-muted-foreground"
+                        asBullets={true}
+                      />
+                    </div>
                   )}
                 </div>
               ))}
