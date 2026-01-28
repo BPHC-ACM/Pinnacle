@@ -35,7 +35,6 @@ class _PinnacleHeaderBannerState extends State<PinnacleHeaderBanner>
 
   @override
   Widget build(BuildContext context) {
-
     // "Brighter like the linear gradient": using the primary/tertiary gradient
     // as the background for the grid to maintain vibrancy.
     return Container(

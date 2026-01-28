@@ -111,40 +111,32 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               controller: _scrollController,
               physics: const BouncingScrollPhysics(),
               slivers: [
-                // Transparent App Bar with Title/Logout
                 SliverAppBar(
                   expandedHeight: 80.0,
                   backgroundColor: Colors.transparent,
                   surfaceTintColor: Colors.transparent,
                   pinned: true,
                   elevation: 0,
-                  centerTitle: true,
-                  // title: Text(
-                  //   "Dashboard",
-                  //   style: GoogleFonts.inter(
-                  //     fontWeight: FontWeight.w600,
-                  //     color: Colors.white,
+                  // centerTitle: true,
+                  // actions: [
+                  //   IconButton(
+                  //     onPressed: () => ref.read(authProvider.notifier).logout(),
+                  //     tooltip: "Logout",
+                  //     icon: Container(
+                  //       padding: const EdgeInsets.all(8),
+                  //       decoration: BoxDecoration(
+                  //         color: Colors.black.withValues(alpha: .2),
+                  //         shape: BoxShape.circle,
+                  //       ),
+                  //       child: const Icon(
+                  //         LucideIcons.logOut,
+                  //         color: Colors.white,
+                  //         size: 18,
+                  //       ),
+                  //     ),
                   //   ),
-                  // ),
-                  actions: [
-                    IconButton(
-                      onPressed: () => ref.read(authProvider.notifier).logout(),
-                      tooltip: "Logout",
-                      icon: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: .2),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          LucideIcons.logOut,
-                          color: Colors.white,
-                          size: 18,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                  ],
+                  //   const SizedBox(width: 16),
+                  // ],
                 ),
 
                 // Content List

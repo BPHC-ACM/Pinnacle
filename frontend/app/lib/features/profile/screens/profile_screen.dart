@@ -7,16 +7,18 @@ import 'package:image_picker/image_picker.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
-import '../../../core/components/pinnacle_header_banner_gradient.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/components/pinnacle_button.dart';
+import '../../../../core/components/pinnacle_header_banner.dart';
+import '../../notifications/providers/notification_provider.dart';
+import '../../notifications/screens/notifications_sheet.dart';
 import '../../resume/screens/resume_builder_screen.dart';
 import '../models/student_profile_model.dart';
 import '../providers/profile_provider.dart';
 import '../widgets/verification_badge.dart';
 import '../widgets/add_edit_item_sheet.dart';
-import '../widgets/profile_section_card.dart'; // Ensure this is imported
+import '../widgets/profile_section_card.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -26,11 +28,9 @@ class ProfileScreen extends ConsumerStatefulWidget {
 }
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
-  // State for Inline Editing (Personal Info)
   bool _isEditingPersonal = false;
   bool _isSavingPersonal = false;
 
-  // Controllers
   late TextEditingController _titleController;
   late TextEditingController _bioController;
   late TextEditingController _phoneController;
@@ -52,6 +52,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     _linkedinController = TextEditingController();
     _githubController = TextEditingController();
     _websiteController = TextEditingController();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(notificationProvider.notifier).loadNotifications();
+    });
   }
 
   @override
@@ -129,7 +133,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile == null) return;
-
     if (!mounted) return;
 
     final messenger = ScaffoldMessenger.of(context);
@@ -153,7 +156,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       );
     } catch (e) {
       if (!mounted) return;
-
       messenger.showSnackBar(
         SnackBar(
           content: Text('Error updating profile picture: $e'),
@@ -163,13 +165,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     }
   }
 
-  // --- Sheet Handlers ---
-
   void _openAddSheet(ItemType type) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      useRootNavigator: true, // Hides bottom nav by pushing to root navigator
+      useRootNavigator: true,
       backgroundColor: Colors.transparent,
       builder: (_) => AddEditItemSheet(type: type),
     );
@@ -179,10 +179,20 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      useRootNavigator: true, // Hides bottom nav by pushing to root navigator
+      useRootNavigator: true,
       backgroundColor: Colors.transparent,
       builder: (_) =>
           AddEditItemSheet(type: type, itemId: id, initialData: data),
+    );
+  }
+
+  void _openNotifications() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useRootNavigator: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => const NotificationsSheet(),
     );
   }
 
@@ -227,6 +237,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final profileState = ref.watch(profileProvider);
+    final notificationState = ref.watch(notificationProvider);
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -236,7 +247,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         error: (err, stack) => Center(child: Text('Error: $err')),
         data: (profile) => Stack(
           children: [
-            // 1. Animated Header
             AnimatedBuilder(
               animation: _scrollController,
               builder: (context, child) {
@@ -247,10 +257,29 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 final opacity = (1.0 - (offset / 150.0)).clamp(0.0, 1.0);
                 return Opacity(opacity: opacity, child: child);
               },
-              child: const PinnacleHeaderBannerGradient(height: 280),
+              child: Stack(
+                children: [
+                  const PinnacleHeaderBanner(height: 280),
+                  Positioned.fill(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.transparent,
+                            theme.scaffoldBackgroundColor,
+                          ],
+                          stops: const [0, 1],
+                          begin: AlignmentDirectional.topCenter,
+                          end: AlignmentDirectional.bottomCenter,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
 
-            // 2. Main Content
+            // Content
             CustomScrollView(
               controller: _scrollController,
               physics: const BouncingScrollPhysics(),
@@ -289,7 +318,30 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     ),
                   ),
                   actions: [
-                    if (!_isEditingPersonal)
+                    if (!_isEditingPersonal) ...[
+                      // Notifications Button
+                      IconButton(
+                        onPressed: _openNotifications,
+                        icon: Badge(
+                          isLabelVisible: notificationState.unreadCount > 0,
+                          label: Text('${notificationState.unreadCount}'),
+                          backgroundColor: AppColors.primary500,
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.2),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              LucideIcons.bell,
+                              color: Colors.white,
+                              size: 18,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      // Logout Button
                       IconButton(
                         onPressed: () =>
                             ref.read(authProvider.notifier).logout(),
@@ -306,7 +358,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           ),
                         ),
                       ),
-                    const SizedBox(width: 16),
+                      const SizedBox(width: 16),
+                    ],
                   ],
                 ),
                 SliverPadding(
@@ -319,9 +372,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       _buildPersonalActionButtons(profile),
                       const SizedBox(height: 40),
 
-                      // --- Grouped Sections ---
-
-                      // Experience
                       ProfileSectionCard(
                         key: const PageStorageKey('experience_section'),
                         title: "Experience",
@@ -338,8 +388,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             )
                             .toList(),
                       ),
-
-                      // Education
                       ProfileSectionCard(
                         key: const PageStorageKey('education_section'),
                         title: "Education",
@@ -357,7 +405,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             .toList(),
                       ),
 
-                      // Skills
                       ProfileSectionCard(
                         key: const PageStorageKey('skills_section'),
                         title: "Skills",
@@ -375,7 +422,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             .toList(),
                       ),
 
-                      // Projects
                       ProfileSectionCard(
                         key: const PageStorageKey('projects_section'),
                         title: "Projects",
@@ -393,7 +439,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             .toList(),
                       ),
 
-                      // Certifications
                       ProfileSectionCard(
                         key: const PageStorageKey('certifications_section'),
                         title: "Certifications",
@@ -411,7 +456,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             .toList(),
                       ),
 
-                      // Languages
                       ProfileSectionCard(
                         key: const PageStorageKey('languages_section'),
                         title: "Languages",
@@ -447,15 +491,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       onPressed: onTap,
       icon: const Icon(LucideIcons.plus, size: 20),
       style: IconButton.styleFrom(
-        // foregroundColor: AppColors.primary500,
-        // backgroundColor: AppColors.neutral800,
         foregroundColor: Theme.of(context).colorScheme.primary,
         backgroundColor: Theme.of(context).colorScheme.outline,
       ),
     );
   }
-
-  // --- Visual Components ---
 
   Widget _buildFloatingHeaderCard(
     BuildContext context,
@@ -477,7 +517,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       ),
       child: Column(
         children: [
-          // Avatar with Edit Button
           Stack(
             children: [
               Container(
@@ -511,7 +550,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       )
                     : null,
               ),
-              // Edit Icon Button
               Positioned(
                 bottom: 0,
                 right: 0,
@@ -648,7 +686,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           context,
           _titleController,
           "Headline",
-          "Ex: Student at BITS Pilani",
+          "Ex: Student at XYZ Univ",
         ),
         const SizedBox(height: 16),
         Row(
@@ -734,7 +772,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       );
     }
 
-    // CHANGED: Split into two buttons (Edit Profile & Resume Builder)
     return Row(
       children: [
         Expanded(
@@ -752,8 +789,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             variant: ButtonVariant.primary,
             icon: const Icon(LucideIcons.fileText, size: 16),
             onPressed: () {
-              // IMPORTANT: rootNavigator: true ensures the resume builder
-              // covers the bottom navigation bar.
               Navigator.of(context, rootNavigator: true).push(
                 MaterialPageRoute(
                   builder: (context) => const ResumeBuilderScreen(),
@@ -765,8 +800,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       ],
     );
   }
-
-  // --- Item Renderers (Rows inside ProfileSectionCard) ---
 
   Widget _buildEducationItem(BuildContext context, Education edu, bool isLast) {
     return _buildRowItem(
@@ -838,7 +871,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       body: proj.description,
       verificationStatus: proj.verificationStatus,
       isLast: isLast,
-      // Removed footer chip
       onEdit: () => _openEditSheet(ItemType.project, proj.id, {
         'title': proj.title,
         'domain': proj.domain,
@@ -851,7 +883,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ref.read(profileProvider.notifier).removeProject,
         proj.id,
       ),
-      // Moved view logic here
       onView: (proj.referenceUrl != null && proj.referenceUrl!.isNotEmpty)
           ? () => launchUrlString(proj.referenceUrl!)
           : null,
@@ -873,7 +904,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       meta: "Issued: ${_formatDate(cert.date)}",
       verificationStatus: cert.verificationStatus,
       isLast: isLast,
-      // Removed footer chip
       onEdit: () => _openEditSheet(ItemType.certification, cert.id, {
         'name': cert.name,
         'issuer': cert.issuer,
@@ -884,7 +914,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ref.read(profileProvider.notifier).removeCertification,
         cert.id,
       ),
-      // Moved view logic here
       onView: (cert.url != null && cert.url!.isNotEmpty)
           ? () => launchUrlString(cert.url!)
           : null,
@@ -1011,8 +1040,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  // --- Helper Widgets ---
-
   Widget _buildRowItem(
     BuildContext context, {
     required IconData icon,
@@ -1025,8 +1052,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     Widget? footer,
     VoidCallback? onEdit,
     VoidCallback? onDelete,
-    VoidCallback? onView, // New: Callback for view action
-    IconData? viewIcon, // New: Icon for view action
+    VoidCallback? onView,
+    IconData? viewIcon,
     required bool isLast,
   }) {
     final theme = Theme.of(context);
@@ -1038,7 +1065,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // --- 1. Icon Box & Verification Badge Column ---
               Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -1058,10 +1084,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   ],
                 ],
               ),
-
               const SizedBox(width: 16),
-
-              // --- 2. Content ---
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -1110,16 +1133,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   ],
                 ),
               ),
-
-              // --- 3. Actions ---
               const SizedBox(width: 8),
               Column(
                 children: [
                   if (onEdit != null)
-                    _buildActionIcon(
-                      icon: LucideIcons.pencil,
-                      onTap: onEdit,
-                    ),
+                    _buildActionIcon(icon: LucideIcons.pencil, onTap: onEdit),
                   if (onDelete != null) ...[
                     _buildActionIcon(
                       icon: LucideIcons.trash2,
@@ -1127,7 +1145,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       onTap: onDelete,
                     ),
                   ],
-                  // Added View Icon here
                   if (onView != null) ...[
                     _buildActionIcon(
                       icon: viewIcon ?? LucideIcons.externalLink,
@@ -1163,8 +1180,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       ),
     );
   }
-
-  // --- Simple Utilities ---
 
   Widget _buildIconText(BuildContext context, IconData icon, String text) {
     return Row(
