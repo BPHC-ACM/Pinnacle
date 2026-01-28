@@ -777,28 +777,109 @@ export interface UserDetails {
   userId: string;
   name: string;
   branch: string;
+
+  // Address
   address: string;
-  parentName: string;
-  parentMobileNumber: string;
+  city: string;
+  pinCode: string;
+
+  // Father
+  fatherName: string;
+  fatherMobileNumber: string;
+  fatherJobSector: string;
+  fatherJobPosition: string;
+
+  // Mother
+  motherName: string;
+  motherMobileNumber: string;
+  motherJobSector: string;
+  motherJobPosition: string;
+
   createdAt: Date;
   updatedAt: Date;
 }
 
 export interface CreateUserDetailsRequest {
   name: string;
-  branch: string;
-  address: string;
-  parentName: string;
-  parentMobileNumber: string;
+  idNumber: string;
+  degreeType: string; // 'single' or 'dual'
+  branch?: string; // For single degree
+  beBranch?: string; // For dual degree - B.E. branch
+  mscBranch?: string; // For dual degree - M.Sc. branch
+
+  // Address
+  addressLine1: string;
+  addressLine2: string;
+  city: string;
+  pinCode: string;
+
+  // Father
+  fatherName: string;
+  fatherMobileNumber: string;
+  fatherJobSector: string;
+  fatherJobPosition: string;
+
+  // Mother
+  motherName: string;
+  motherMobileNumber: string;
+  motherJobSector: string;
+  motherJobPosition: string;
 }
 
-export const createUserDetailsSchema = z.object({
-  name: z.string().min(1).max(255),
-  branch: z.string().min(1).max(255),
-  address: z.string().min(1).max(1000),
-  parentName: z.string().min(1).max(255),
-  parentMobileNumber: z.string().min(10).max(15),
-});
+export const createUserDetailsSchema = z
+  .object({
+    name: z.string().min(1).max(255),
+    idNumber: z
+      .string()
+      .length(13, 'ID Number must be exactly 13 characters')
+      .regex(/^[0-9]{4}[A-Z][0-9][A-Z]{2}[0-9]{4}[A-Z]$/, 'Invalid ID format'),
+    degreeType: z.enum(['single', 'dual']),
+    branch: z.string().optional(),
+    beBranch: z.string().optional(),
+    mscBranch: z.string().optional(),
+
+    // Address
+    addressLine1: z.string().min(1).max(500),
+    addressLine2: z.string().min(1).max(500),
+    city: z.string().min(1).max(100),
+    pinCode: z.string().regex(/^\d{6}$/, 'Invalid PIN code'),
+
+    // Father
+    fatherName: z.string().min(1).max(255),
+    fatherMobileNumber: z.string().min(10).max(15),
+    fatherJobSector: z.string().min(1).max(100),
+    fatherJobPosition: z.string().min(1).max(100),
+
+    // Mother
+    motherName: z.string().min(1).max(255),
+    motherMobileNumber: z.string().min(10).max(15),
+    motherJobSector: z.string().min(1).max(100),
+    motherJobPosition: z.string().min(1).max(100),
+  })
+  .refine(
+    (data) => {
+      if (data.degreeType === 'single') {
+        return !!data.branch;
+      }
+      return true;
+    },
+    {
+      message: 'Branch is required for single degree',
+      path: ['branch'],
+    },
+  )
+  .refine(
+    (data) => {
+      if (data.degreeType === 'dual') {
+        return !!data.beBranch && !!data.mscBranch;
+      }
+      return true;
+    },
+    {
+      message: 'Both B.E. and M.Sc. branches are required for dual degree',
+      path: ['beBranch'],
+    },
+  );
 
 // ========== MARKSHEET TYPES ==========
 export interface MarkSheet {

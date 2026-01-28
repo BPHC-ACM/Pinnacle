@@ -445,7 +445,7 @@ export default function JobsPage() {
 
         <div className="flex flex-1 w-full overflow-hidden border-t min-h-150">
           {/* Theme restoration: restored scrollbar-theme and padding */}
-          <div className="w-full lg:w-1/3 overflow-y-auto py-6 pr-6 pl-6 md:pl-0 space-y-4 border-r border-border scrollbar-theme">
+          <div className="w-full lg:w-1/3 overflow-y-auto py-6 pr-6 pl-6 md:pl-1 space-y-4 border-r border-border scrollbar-theme">
             {loading ? (
               Array.from({ length: 5 }).map((_, i) => <JobCardSkeleton key={i} />)
             ) : filteredJobs.length === 0 ? (
