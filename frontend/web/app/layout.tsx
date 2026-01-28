@@ -3,7 +3,10 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/contexts/auth-context';
 import { ThemeProvider } from '@/contexts/theme-context';
-import { Header } from '@/components/Header';
+
+import { Toaster } from '@/components/ui/toaster';
+import { Toaster as Sonner } from 'sonner';
+import { Footer } from '@/components/Footer';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -26,8 +29,10 @@ export default function RootLayout({
       <body className="antialiased font-sans">
         <ThemeProvider defaultTheme="dark" storageKey="pinnacle-theme">
           <AuthProvider>
-            <Header />
-            <main className="pt-18">{children}</main>
+            <main>{children}</main>
+            <Footer />
+            <Toaster />
+            <Sonner position="top-right" richColors />
           </AuthProvider>
         </ThemeProvider>
       </body>

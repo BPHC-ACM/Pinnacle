@@ -1,13 +1,13 @@
 import PDFDocument from 'pdfkit';
 
-import { logger } from '../../../config/logger.config';
+import { logger } from '../../config/logger.config';
 import {
   type UserProfile,
   type Experience,
   type Education,
   type Project,
   type Skill,
-} from '../../../types/user-details.types';
+} from '../../types/user-details.types';
 
 interface ResumeData {
   profile: UserProfile;

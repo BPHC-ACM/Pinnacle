@@ -4,19 +4,20 @@ import { authenticateToken, sensitiveEndpointRateLimiter } from '../auth/middlew
 import * as userDetailsController from '../controllers/user-details.controller';
 import { validateBody } from '../middleware/validate.middleware';
 import {
-  updateUserProfileSchema,
-  createExperienceSchema,
-  updateExperienceSchema,
-  createEducationSchema,
-  updateEducationSchema,
-  createSkillSchema,
-  updateSkillSchema,
-  createProjectSchema,
-  updateProjectSchema,
   createCertificationSchema,
-  updateCertificationSchema,
+  createEducationSchema,
+  createExperienceSchema,
   createLanguageSchema,
+  createProjectSchema,
+  createSkillSchema,
+  updateCertificationSchema,
+  updateEducationSchema,
+  updateExperienceSchema,
   updateLanguageSchema,
+  updateParentDetailsSchema,
+  updateProjectSchema,
+  updateSkillSchema,
+  updateUserProfileSchema,
   createUserDetailsSchema,
 } from '../types/user-details.types';
 
@@ -161,5 +162,25 @@ router.patch(
 
 // DELETE /api/user-details/languages/:id - Soft delete language
 router.delete('/languages/:id', userDetailsController.deleteLanguage);
+
+// PARENT DETAILS ROUTES
+
+// PATCH /api/user-details/parent-details - Update parent details
+router.patch(
+  '/parent-details',
+  validateBody(updateParentDetailsSchema),
+  userDetailsController.updateParentDetails,
+);
+
+// MARKSHEET ROUTES
+
+// GET /api/user-details/marksheets - Get all marksheets
+router.get('/marksheets', userDetailsController.getMyMarkSheets);
+
+// GET /api/user-details/marksheets/:id - Get specific marksheet
+router.get('/marksheets/:id', userDetailsController.getMarkSheetById);
+
+// DELETE /api/user-details/marksheets/:id - Delete marksheet
+router.delete('/marksheets/:id', userDetailsController.deleteMarkSheet);
 
 export default router;

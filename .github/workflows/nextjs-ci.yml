@@ -40,9 +40,9 @@ jobs:
         if: steps.frontend-changes.outputs.changed == 'true'
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'pnpm'
-          cache-dependency-path: 'pnpm-lock.yaml'
+          node-version: "20"
+          cache: "pnpm"
+          cache-dependency-path: "pnpm-lock.yaml"
 
       - name: Install dependencies
         if: steps.frontend-changes.outputs.changed == 'true'

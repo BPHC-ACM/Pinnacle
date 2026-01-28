@@ -14,8 +14,10 @@ export const authService = {
   },
 
   // Initiate Google login (redirect to backend)
-  loginWithGoogle: (): void => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-    window.location.href = `${apiUrl}/api/auth/google`;
+  loginWithGoogle: async (): Promise<void> => {
+    const response = await api.get('/auth/google/login');
+    if (response.data.authUrl) {
+      window.location.href = response.data.authUrl;
+    }
   },
 };

@@ -15,6 +15,8 @@ import {
 } from '@/components/ui/table';
 import { adminService } from '@/services/admin.service';
 import type { JobWithStats, JobStatus } from '@/types/admin.types';
+import { EditJobDialog } from './_components/EditJobDialog';
+import { toast } from 'sonner';
 
 export default function AdminJobsPage() {
   const router = useRouter();
@@ -51,9 +53,10 @@ export default function AdminJobsPage() {
     try {
       await adminService.pauseJob(jobId);
       fetchJobs();
+      toast.success('Job paused successfully');
     } catch (err) {
       console.error('Error pausing job:', err);
-      alert('Failed to pause job');
+      toast.error('Failed to pause job');
     }
   };
 
@@ -61,9 +64,10 @@ export default function AdminJobsPage() {
     try {
       await adminService.reopenJob(jobId);
       fetchJobs();
+      toast.success('Job reopened successfully');
     } catch (err) {
       console.error('Error reopening job:', err);
-      alert('Failed to reopen job');
+      toast.error('Failed to reopen job');
     }
   };
 
@@ -73,9 +77,10 @@ export default function AdminJobsPage() {
     try {
       await adminService.deleteJob(jobId);
       fetchJobs();
+      toast.success('Job deleted successfully');
     } catch (err) {
       console.error('Error deleting job:', err);
-      alert('Failed to delete job');
+      toast.error('Failed to delete job');
     }
   };
 
@@ -93,6 +98,9 @@ export default function AdminJobsPage() {
     const config = variants[status];
     return <Badge variant={config.variant}>{config.label}</Badge>;
   };
+
+  const [editJob, setEditJob] = useState<JobWithStats | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   return (
     <div className="space-y-6">
@@ -173,6 +181,16 @@ export default function AdminJobsPage() {
                         <div className="flex justify-end gap-2">
                           <Button
                             size="sm"
+                            variant="default"
+                            onClick={() => {
+                              setEditJob(job);
+                              setEditDialogOpen(true);
+                            }}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            size="sm"
                             variant="outline"
                             onClick={() => router.push(`/admin/jobs/${job.id}/applications`)}
                           >
@@ -237,6 +255,18 @@ export default function AdminJobsPage() {
           )}
         </CardContent>
       </Card>
+
+      {editJob && (
+        <EditJobDialog
+          job={editJob}
+          open={editDialogOpen}
+          onOpenChange={setEditDialogOpen}
+          onSuccess={() => {
+            setEditDialogOpen(false);
+            fetchJobs();
+          }}
+        />
+      )}
     </div>
   );
 }

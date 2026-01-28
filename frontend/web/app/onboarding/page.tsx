@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { toast } from 'sonner';
 
 // Validation Schema
 const onboardingSchema = z.object({
@@ -86,11 +87,11 @@ export default function OnboardingPage() {
 
       // Refresh user context to update hasOnboarded status
       await refreshUser();
-      
+
       router.push('/dashboard');
     } catch (error) {
       console.error('Onboarding error:', error);
-      alert('Failed to save details. Please try again.');
+      toast.error('Failed to save details. Please try again.');
     } finally {
       setIsSubmitting(false);
     }

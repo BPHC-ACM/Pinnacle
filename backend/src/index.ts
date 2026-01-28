@@ -14,6 +14,7 @@ import { generalApiRateLimiter } from './auth/middleware/rate-limit.middleware';
 import authRoutes from './auth/routes/auth.routes';
 import { logger } from './config/logger.config';
 import errorHandler from './middleware/error-handler';
+import adminStudentRoutes from './routes/admin-student.routes';
 import adminRoutes from './routes/admin.routes';
 import announcementRoutes from './routes/announcement.routes';
 import applicationRoutes from './routes/application.routes';
@@ -21,9 +22,10 @@ import companyRoutes from './routes/company.routes';
 import dashboardRoutes from './routes/dashboard.routes';
 import jobRoutes from './routes/job.routes';
 import notificationRoutes from './routes/notification.routes';
+import resumeRoutes from './routes/resume.routes';
+import roleManagementRoutes from './routes/role-management.routes';
 import uploadRoutes from './routes/upload.routes';
 import userDetailsRoutes from './routes/user-details.routes';
-import resumeRoutes from './services/resume-service/routes/resume.routes';
 import { initializeStorage } from './services/storage-service/storage-init';
 
 // Load environment variables
@@ -79,7 +81,7 @@ app.use('/api', generalApiRateLimiter);
 app.set('trust proxy', 1);
 
 // Routes
-app.use('/auth', authRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api/user-details', userDetailsRoutes);
 app.use('/api/companies', companyRoutes);
 app.use('/api/resume', resumeRoutes);
@@ -89,6 +91,8 @@ app.use('/api/applications', applicationRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/admin', adminStudentRoutes);
+app.use('/api/admin/roles', roleManagementRoutes);
 app.use('/api/announcements', announcementRoutes);
 
 // API Documentation endpoint (via Swagger UI)

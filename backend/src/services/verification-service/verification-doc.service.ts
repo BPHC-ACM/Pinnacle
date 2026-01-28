@@ -70,7 +70,7 @@ interface UploadDocArgs<T extends ItemType> {
 
 interface GetDocArgs<T extends ItemType> {
   requestingUserId: string;
-  requestingUserRole: 'ADMIN' | 'USER';
+  requestingUserRole: 'JPT' | 'SPT' | 'USER';
   itemType: T;
   itemId: string;
 }
@@ -136,7 +136,7 @@ async function getDocument<T extends ItemType>({
     throw new NotFoundError(`${itemType} not found`, 'Item not found');
   }
 
-  if (item.userId !== requestingUserId && requestingUserRole !== 'ADMIN') {
+  if (item.userId !== requestingUserId && !['JPT', 'SPT'].includes(requestingUserRole)) {
     throw new ForbiddenError('Access denied', 'Access denied');
   }
 

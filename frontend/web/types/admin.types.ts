@@ -80,6 +80,18 @@ export interface JobWithDetails {
     question: string;
     required: boolean;
   }[];
+  oaDate?: string;
+  oaVenue?: string;
+  oaInstructions?: string;
+  pptDate?: string;
+  pptVenue?: string;
+  pptInstructions?: string;
+  interviewDate?: string;
+  interviewVenue?: string;
+  interviewInstructions?: string;
+  selectionStatus?: 'PENDING' | 'ACCEPTED' | 'REJECTED';
+  offerDate?: string;
+  joiningDate?: string;
 }
 
 export interface JobWithStats extends JobWithDetails {
@@ -133,10 +145,25 @@ export interface UpdateJobRequest {
   description?: string;
   companyId?: string;
   status?: JobStatus;
-  deadline?: string;
+  deadline?: Date;
   salary?: string;
   location?: string;
   type?: string;
+}
+
+export interface UpdateJobScheduleRequest {
+  oaDate?: Date;
+  oaVenue?: string;
+  oaInstructions?: string;
+  pptDate?: Date;
+  pptVenue?: string;
+  pptInstructions?: string;
+  interviewDate?: Date;
+  interviewVenue?: string;
+  interviewInstructions?: string;
+  selectionStatus?: 'PENDING' | 'ACCEPTED' | 'REJECTED';
+  offerDate?: Date;
+  joiningDate?: Date;
 }
 
 export interface BulkStatusUpdateRequest {
@@ -145,6 +172,32 @@ export interface BulkStatusUpdateRequest {
 }
 
 // Student Management Types
+export interface StudentUser {
+  id: string;
+  email: string;
+  name: string | null;
+  studentId: string | null;
+  branch: string | null; // Department
+  currentYear: number | null; // Batch
+  isFrozen: boolean;
+  phone: string | null;
+  parentName: string | null;
+  parentEmail: string | null;
+  parentPhone: string | null;
+  profileStatus: string;
+  verificationStatus: string; // VerificationStatus enum
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+  education?: {
+    gpa: string | null;
+    degree: string;
+  }[];
+  applications?: {
+    status: string;
+  }[];
+}
+
 export interface Student {
   id: string;
   rollNumber: string;

@@ -10,6 +10,7 @@ import {
   getMe,
   googleMobileLogin,
 } from '../controllers/auth.controller';
+import { devLogin } from '../controllers/dev-auth.controller';
 import { authenticateToken } from '../middleware/auth.middleware';
 import { authRateLimiter } from '../middleware/rate-limit.middleware';
 
@@ -20,6 +21,9 @@ router.get('/google/login', authRateLimiter, googleLogin);
 router.get('/google/callback', authRateLimiter, googleCallback);
 router.post('/refresh', authRateLimiter, refreshAccessToken);
 router.post('/google/mobile-login', authRateLimiter, googleMobileLogin);
+
+// Development only - simple login without Google OAuth
+router.post('/dev-login', authRateLimiter, devLogin);
 
 // Protected route (requires JWT)
 router.get('/me', authenticateToken, getMe);

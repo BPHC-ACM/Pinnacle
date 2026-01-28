@@ -110,12 +110,17 @@ async function main(): Promise<void> {
 
   // 1. CLEANUP
   console.log('Cleaning existing data...');
-  // Delete primarily tables first to avoid foreign key constraints during delete
+  // Delete tables in correct order to avoid foreign key constraints
+  await prisma.attendanceRecord.deleteMany();
+  await prisma.jobEligibility.deleteMany();
+  await prisma.markSheet.deleteMany();
   await prisma.notification.deleteMany();
   await prisma.announcement.deleteMany();
   await prisma.application.deleteMany();
   await prisma.jobQuestion.deleteMany();
   await prisma.job.deleteMany();
+  await prisma.placementCycle.deleteMany();
+  await prisma.company.deleteMany();
   await prisma.resumeFile.deleteMany();
   await prisma.resume.deleteMany();
   await prisma.experience.deleteMany();
@@ -128,8 +133,8 @@ async function main(): Promise<void> {
   await prisma.extracurricular.deleteMany();
   await prisma.positionOfResponsibility.deleteMany();
   await prisma.course.deleteMany();
-  await prisma.placementCycle.deleteMany();
-  await prisma.company.deleteMany();
+  await prisma.userDetails.deleteMany();
+  await prisma.adminRole.deleteMany();
   await prisma.user.deleteMany();
 
   // 2. PLACEMENT CYCLES
@@ -222,8 +227,12 @@ async function main(): Promise<void> {
   const yamlData = loadYamlUser();
   console.log(`Creating Main User: ${yamlData.email}`);
 
-  const mainUser = await prisma.user.create({
-    data: {
+  const mainUser = await prisma.user.upsert({
+    where: { email: yamlData.email },
+
+    update: {},
+
+    create: {
       email: yamlData.email,
       name: yamlData.name,
       googleId: yamlData.googleId || `google-auth-${Date.now()}`,
@@ -232,12 +241,24 @@ async function main(): Promise<void> {
       location: yamlData.location,
       linkedin: yamlData.linkedin,
       github: yamlData.github,
+      website: yamlData.website,
       bio: yamlData.bio,
       title: yamlData.title,
       summary: yamlData.summary,
       profileStatus: (yamlData.profileStatus as ProfileStatus) || ProfileStatus.VERIFIED,
       verificationStatus:
         (yamlData.verificationStatus as VerificationStatus) || VerificationStatus.APPROVED,
+
+      // Student-specific fields
+      studentId: yamlData.studentId,
+      branch: yamlData.branch,
+      currentYear: yamlData.currentYear,
+
+      // Parent details
+      parentName: yamlData.parentName,
+      parentEmail: yamlData.parentEmail,
+      parentPhone: yamlData.parentPhone,
+      parentRelation: yamlData.parentRelation,
 
       education: yamlData.education ? { create: yamlData.education } : undefined,
       experiences: yamlData.experiences ? { create: yamlData.experiences } : undefined,
@@ -344,12 +365,15 @@ async function main(): Promise<void> {
 
   // 6. ADMIN USER
   console.log('Creating Admin...');
-  const adminUser = await prisma.user.create({
-    data: {
+
+  const adminUser = await prisma.user.upsert({
+    where: { email: 'admin@pinnacle.com' },
+    update: {},
+    create: {
       email: 'admin@pinnacle.com',
       name: 'Placement Unit',
       googleId: 'admin-g-id',
-      role: UserRole.ADMIN,
+      role: UserRole.SPT,
       bio: 'Placement Unit Head',
     },
   });
