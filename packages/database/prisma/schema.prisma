@@ -96,10 +96,30 @@ model UserDetails {
   id                 String   @id @default(uuid())
   userId             String   @unique
   name               String
-  branch             String
-  address            String
-  parentName         String
-  parentMobileNumber String
+  idNumber           String   // Student ID number (13 chars)
+  degreeType         String   // 'single' or 'dual'
+  branch             String?  // For single degree
+  beBranch           String?  // For dual degree - B.E. branch
+  mscBranch          String?  // For dual degree - M.Sc. branch
+  
+  // Address Details
+  addressLine1       String
+  addressLine2       String
+  city               String
+  pinCode            String
+  
+  // Father Details
+  fatherName         String
+  fatherMobileNumber String
+  fatherJobSector    String
+  fatherJobPosition  String
+
+  // Mother Details
+  motherName         String
+  motherMobileNumber String
+  motherJobSector    String
+  motherJobPosition  String
+
   user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
