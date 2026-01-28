@@ -340,7 +340,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 8),
                       // Logout Button
                       IconButton(
                         onPressed: () =>
