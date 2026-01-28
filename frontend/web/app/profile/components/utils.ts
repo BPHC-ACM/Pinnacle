@@ -7,7 +7,7 @@ export const formatDateForDisplay = (date: Date | string | null | undefined): st
     const dateObj = typeof date === 'string' ? parseISO(date) : date;
     return format(dateObj, 'MMMM yyyy');
   } catch (error) {
-    console.error('Invalid date value for formatting:', date);
+    console.error('Invalid date value for formatting:', date, '\nError:', error);
     return 'Invalid Date';
   }
 };
@@ -18,7 +18,7 @@ export const formatDateToYYYYMM = (date: Date | string | null | undefined): stri
     const dateObj = typeof date === 'string' ? parseISO(date) : date;
     return format(dateObj, 'yyyy-MM');
   } catch (error) {
-    console.error('Invalid date value for API formatting:', date);
+    console.error('Invalid date value for API formatting:', date, '\nError:', error);
     return undefined;
   }
 };

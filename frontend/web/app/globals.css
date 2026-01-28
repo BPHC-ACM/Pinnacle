@@ -213,27 +213,14 @@
     border-color: hsl(var(--border));
   }
 
-  /* Force remove all borders and shadows from header and main */
-  header,
-  header *,
-  header::before,
-  header::after,
-  main,
-  main::before,
-  main::after {
-    border: none !important;
-    border-top: none !important;
-    border-bottom: none !important;
-    border-left: none !important;
-    border-right: none !important;
-    box-shadow: none !important;
-    outline: none !important;
-  }
-
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family:
+      'Inter',
+      system-ui,
+      -apple-system,
+      sans-serif;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   }
 

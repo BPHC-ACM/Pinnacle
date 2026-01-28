@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api-client';
+import { toast } from 'sonner';
 
 import {
   User,
@@ -43,7 +44,6 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<TabType>('personal');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [experiences, setExperiences] = useState<Experience[]>([]);
@@ -60,13 +60,7 @@ export default function ProfilePage() {
     } else {
       fetchAllData();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, authLoading, router]);
-
-  const showMessage = (type: 'success' | 'error', text: string) => {
-    setMessage({ type, text });
-    setTimeout(() => setMessage(null), 3000);
-  };
 
   const fetchAllData = async () => {
     setLoading(true);
@@ -89,7 +83,7 @@ export default function ProfilePage() {
       setLanguages(langRes.data.data || []);
     } catch (error) {
       console.error('Failed to fetch profile data:', error);
-      showMessage('error', 'Failed to load profile data');
+      toast.error('Failed to load profile data');
     } finally {
       setLoading(false);
     }
@@ -100,11 +94,11 @@ export default function ProfilePage() {
     try {
       const response = await api.patch('/user-details/profile', form);
       setProfile(response.data);
-      showMessage('success', 'Profile updated successfully');
+      toast.success('Profile updated successfully');
       refreshUser();
     } catch (error) {
       console.error('Update failed:', error);
-      showMessage('error', 'Update failed: Check your input formats');
+      toast.error('Update failed: Check your input formats');
     } finally {
       setSaving(false);
     }
@@ -117,22 +111,22 @@ export default function ProfilePage() {
       await api.post('/upload/profile-picture', formData, {
         headers: { 'Content-Type': undefined },
       });
-      showMessage('success', 'Profile picture uploaded');
+      toast.success('Profile picture uploaded');
       await fetchAllData();
     } catch (error) {
       console.error('Failed to upload picture:', error);
-      showMessage('error', 'Failed to upload profile picture');
+      toast.error('Failed to upload profile picture');
     }
   };
 
   const handleDeletePicture = async () => {
     try {
       await api.delete('/upload/profile-picture');
-      showMessage('success', 'Profile picture deleted');
+      toast.success('Profile picture deleted');
       await fetchAllData();
     } catch (error) {
       console.error('Failed to delete picture:', error);
-      showMessage('error', 'Failed to delete profile picture');
+      toast.error('Failed to delete profile picture');
     }
   };
 
@@ -143,13 +137,13 @@ export default function ProfilePage() {
     try {
       await api[method](url, data);
       await fetchAllData();
-      showMessage('success', `${endpoint.slice(0, -1)} ${id ? 'updated' : 'added'} successfully!`);
+      toast.success(`${endpoint.slice(0, -1)} ${id ? 'updated' : 'added'} successfully!`);
     } catch (error: unknown) {
       if (error instanceof Error) {
         console.error(error.message);
-        showMessage('error', error.message);
+        toast.error(error.message);
       } else {
-        showMessage('error', 'Failed to save item');
+        toast.error('Failed to save item');
       }
     } finally {
       setSaving(false);
@@ -160,10 +154,10 @@ export default function ProfilePage() {
     try {
       await api.delete(`/user-details/${endpoint}/${id}`);
       await fetchAllData();
-      showMessage('success', 'Item deleted successfully');
+      toast.success('Item deleted successfully');
     } catch (error) {
       console.error('Failed to delete:', error);
-      showMessage('error', 'Failed to delete item');
+      toast.error('Failed to delete item');
     }
   };
 
@@ -262,16 +256,6 @@ export default function ProfilePage() {
           backgroundSize: '40px 40px',
         }}
       />
-
-      {message && (
-        <div
-          className={`fixed top-20 right-6 z-50 px-4 py-3 rounded-lg shadow-lg ${
-            message.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
-          }`}
-        >
-          {message.text}
-        </div>
-      )}
 
       <main className="flex-1 max-w-7xl mx-auto w-full px-6 py-8">
         <div className="flex items-center justify-between mb-6">
