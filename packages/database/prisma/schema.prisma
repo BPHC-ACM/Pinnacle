@@ -96,10 +96,15 @@ model UserDetails {
   id                 String   @id @default(uuid())
   userId             String   @unique
   name               String
-  branch             String
+  idNumber           String   // Student ID number (13 chars)
+  degreeType         String   // 'single' or 'dual'
+  branch             String?  // For single degree
+  beBranch           String?  // For dual degree - B.E. branch
+  mscBranch          String?  // For dual degree - M.Sc. branch
   
   // Address Details
-  address            String
+  addressLine1       String
+  addressLine2       String
   city               String
   pinCode            String
   

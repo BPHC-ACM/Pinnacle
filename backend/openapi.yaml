@@ -134,22 +134,77 @@ components:
         id: { type: string, format: uuid }
         userId: { type: string, format: uuid }
         name: { type: string }
-        branch: { type: string }
-        address: { type: string }
-        parentName: { type: string }
-        parentMobileNumber: { type: string }
+        idNumber:
+          {
+            type: string,
+            minLength: 13,
+            maxLength: 13,
+            pattern: '^[0-9]{4}[A-Z][0-9][A-Z]{2}[0-9]{4}[A-Z]$',
+          }
+        degreeType: { type: string, enum: [single, dual] }
+        branch: { type: string, nullable: true }
+        beBranch: { type: string, nullable: true }
+        mscBranch: { type: string, nullable: true }
+        addressLine1: { type: string }
+        addressLine2: { type: string }
+        city: { type: string }
+        pinCode: { type: string, pattern: '^\d{6}$' }
+        fatherName: { type: string }
+        fatherMobileNumber: { type: string, minLength: 10, maxLength: 15 }
+        fatherJobSector: { type: string }
+        fatherJobPosition: { type: string }
+        motherName: { type: string }
+        motherMobileNumber: { type: string, minLength: 10, maxLength: 15 }
+        motherJobSector: { type: string }
+        motherJobPosition: { type: string }
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
 
     CreateUserDetailsRequest:
       type: object
-      required: [name, branch, address, parentName, parentMobileNumber]
+      required:
+        [
+          name,
+          idNumber,
+          degreeType,
+          addressLine1,
+          addressLine2,
+          city,
+          pinCode,
+          fatherName,
+          fatherMobileNumber,
+          fatherJobSector,
+          fatherJobPosition,
+          motherName,
+          motherMobileNumber,
+          motherJobSector,
+          motherJobPosition,
+        ]
       properties:
-        name: { type: string }
-        branch: { type: string }
-        address: { type: string }
-        parentName: { type: string }
-        parentMobileNumber: { type: string }
+        name: { type: string, minLength: 1, maxLength: 255 }
+        idNumber:
+          {
+            type: string,
+            minLength: 13,
+            maxLength: 13,
+            pattern: '^[0-9]{4}[A-Z][0-9][A-Z]{2}[0-9]{4}[A-Z]$',
+          }
+        degreeType: { type: string, enum: [single, dual] }
+        branch: { type: string, nullable: true }
+        beBranch: { type: string, nullable: true }
+        mscBranch: { type: string, nullable: true }
+        addressLine1: { type: string, minLength: 1, maxLength: 500 }
+        addressLine2: { type: string, minLength: 1, maxLength: 500 }
+        city: { type: string, minLength: 1, maxLength: 100 }
+        pinCode: { type: string, pattern: '^\d{6}$' }
+        fatherName: { type: string, minLength: 1, maxLength: 255 }
+        fatherMobileNumber: { type: string, minLength: 10, maxLength: 15 }
+        fatherJobSector: { type: string, minLength: 1, maxLength: 100 }
+        fatherJobPosition: { type: string, minLength: 1, maxLength: 100 }
+        motherName: { type: string, minLength: 1, maxLength: 255 }
+        motherMobileNumber: { type: string, minLength: 10, maxLength: 15 }
+        motherJobSector: { type: string, minLength: 1, maxLength: 100 }
+        motherJobPosition: { type: string, minLength: 1, maxLength: 100 }
 
 security:
   - bearerAuth: []
