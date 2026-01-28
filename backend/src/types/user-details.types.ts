@@ -39,8 +39,6 @@ export interface UserProfile {
   linkedin?: string;
   github?: string;
   website?: string;
-  bio?: string;
-  title?: string;
   summary?: string;
   studentId?: string;
   branch?: string;
@@ -61,8 +59,6 @@ export interface UpdateUserProfileRequest {
   linkedin?: string;
   github?: string;
   website?: string;
-  bio?: string;
-  title?: string;
   summary?: string;
   studentId?: string;
   branch?: string;
@@ -85,7 +81,6 @@ export interface Experience {
   endDate?: Date;
   current: boolean;
   description?: string;
-  highlights: string[];
   order: number;
   createdAt: Date;
   updatedAt: Date;
@@ -101,7 +96,6 @@ export interface CreateExperienceRequest {
   endDate?: string;
   current?: boolean;
   description?: string;
-  highlights?: string[];
   order?: number;
 }
 
@@ -115,7 +109,6 @@ export interface UpdateExperienceRequest {
   endDate?: string;
   current?: boolean;
   description?: string;
-  highlights?: string[];
   order?: number;
 }
 
@@ -194,7 +187,6 @@ export interface Project {
   domain: string;
   tools: string[];
   description: string;
-  outcomes: string[];
   referenceUrl?: string;
   order: number;
   createdAt: Date;
@@ -206,7 +198,6 @@ export interface CreateProjectRequest {
   domain: string;
   tools?: string[];
   description: string;
-  outcomes?: string[];
   referenceUrl?: string;
   order?: number;
 }
@@ -216,7 +207,6 @@ export interface UpdateProjectRequest {
   domain?: string;
   tools?: string[];
   description?: string;
-  outcomes?: string[];
   referenceUrl?: string;
   order?: number;
 }
@@ -281,8 +271,6 @@ export const updateUserProfileSchema = z.object({
   linkedin: z.string().url().or(z.literal('')).nullable().optional(),
   github: z.string().url().or(z.literal('')).nullable().optional(),
   website: z.string().url().or(z.literal('')).nullable().optional(),
-  bio: z.string().max(1000).nullable().optional(),
-  title: z.string().max(255).nullable().optional(),
   summary: z.string().max(2000).nullable().optional(),
 });
 
@@ -315,7 +303,6 @@ export const createExperienceSchema = z.object({
     .optional(),
   current: z.boolean().optional(),
   description: z.string().max(2000).optional(),
-  highlights: z.array(z.string().max(500)).optional(),
   order: z.number().int().min(0).optional(),
 });
 
@@ -350,7 +337,6 @@ export const updateExperienceSchema = z.object({
     .optional(),
   current: z.boolean().optional(),
   description: z.string().max(2000).optional(),
-  highlights: z.array(z.string().max(500)).optional(),
   order: z.number().int().min(0).optional(),
 });
 
@@ -413,7 +399,6 @@ export const createProjectSchema = z.object({
   domain: z.string().min(1).max(255),
   tools: z.array(z.string().max(100)).optional(),
   description: z.string().min(1).max(5000),
-  outcomes: z.array(z.string().max(500)).optional(),
   referenceUrl: z.string().url().optional().or(z.literal('')),
   order: z.number().int().min(0).optional(),
 });
@@ -423,7 +408,6 @@ export const updateProjectSchema = z.object({
   domain: z.string().min(1).max(255).optional(),
   tools: z.array(z.string().max(100)).optional(),
   description: z.string().min(1).max(5000).optional(),
-  outcomes: z.array(z.string().max(500)).optional(),
   referenceUrl: z.string().url().optional().or(z.literal('')),
   order: z.number().int().min(0).optional(),
 });

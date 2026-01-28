@@ -16,8 +16,6 @@ export interface User {
   linkedin?: string;
   github?: string;
   website?: string;
-  bio?: string;
-  title?: string;
   summary?: string;
   createdAt?: string;
   updatedAt?: string;

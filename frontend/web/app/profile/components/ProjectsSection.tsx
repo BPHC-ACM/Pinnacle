@@ -17,7 +17,6 @@ const initialFormState: Partial<Project> = {
   description: '',
   domain: '',
   tools: [],
-  outcomes: [],
   referenceUrl: '',
 };
 
@@ -34,7 +33,6 @@ export function ProjectsSection({ projects, onSave, onDelete, isSaving }: Projec
       ...form,
       referenceUrl: form.referenceUrl || undefined,
       tools: form.tools ?? [],
-      outcomes: form.outcomes ?? [],
     };
 
     await onSave(editingId, dataToSend);
@@ -58,7 +56,6 @@ export function ProjectsSection({ projects, onSave, onDelete, isSaving }: Projec
     setForm({
       ...project,
       tools: project.tools ?? [],
-      outcomes: project.outcomes ?? [],
     });
     setIsAdding(false);
   };
@@ -228,13 +225,6 @@ export function ProjectsSection({ projects, onSave, onDelete, isSaving }: Projec
                       ))}
                     </div>
 
-                    {(project.outcomes ?? []).length > 0 && (
-                      <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1 pt-2">
-                        {project.outcomes!.map(
-                          (outcome, i) => outcome && <li key={i}>{outcome}</li>,
-                        )}
-                      </ul>
-                    )}
                     <div className="flex gap-4 pt-2">
                       {project.referenceUrl && (
                         <a

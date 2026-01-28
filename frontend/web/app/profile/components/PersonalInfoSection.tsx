@@ -16,7 +16,6 @@ interface PersonalInfoSectionProps {
 
 const formFields = [
   { name: 'name', label: 'Full Name', type: 'text', placeholder: '' },
-  { name: 'title', label: 'Job Title', type: 'text', placeholder: 'e.g., Software Engineer' },
   { name: 'phone', label: 'Phone', type: 'tel', placeholder: '+91 1234567890' },
   { name: 'location', label: 'Location', type: 'text', placeholder: 'e.g., Hyderabad, India' },
   {
@@ -183,24 +182,14 @@ export function PersonalInfoSection({
               </div>
             ))}
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-muted-foreground mb-1">Bio</label>
-              <textarea
-                value={form.bio || ''}
-                onChange={(e) => handleChange(e, 'bio')}
-                placeholder="Write a short bio about yourself..."
-                rows={3}
-                className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
-              />
-            </div>
-            <div className="md:col-span-2">
               <label className="block text-sm font-medium text-muted-foreground mb-1">
-                About Me
+                Summary
               </label>
               <textarea
                 value={form.summary || ''}
                 onChange={(e) => handleChange(e, 'summary')}
                 placeholder="Write a brief summary about yourself, your interests, and career goals..."
-                rows={4}
+                rows={5}
                 className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
               />
             </div>
@@ -220,7 +209,6 @@ export function PersonalInfoSection({
             )}
             <div>
               <h3 className="text-2xl font-bold text-foreground">{profile?.name}</h3>
-              {profile?.title && <p className="text-muted-foreground">{profile.title}</p>}
               <p className="text-sm text-muted-foreground">{profile?.email}</p>
             </div>
           </div>
@@ -253,17 +241,12 @@ export function PersonalInfoSection({
               ))}
           </div>
 
-          {[
-            { label: 'Bio', value: profile?.bio },
-            { label: 'About Me', value: profile?.summary },
-          ]
-            .filter((item) => item.value)
-            .map(({ label, value }) => (
-              <div key={label}>
-                <span className="text-sm text-muted-foreground">{label}:</span>
-                <p className="text-foreground mt-1">{value}</p>
-              </div>
-            ))}
+          {profile?.summary && (
+            <div>
+              <span className="text-sm text-muted-foreground">Summary:</span>
+              <p className="text-foreground whitespace-pre-wrap">{profile.summary}</p>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -53,7 +53,6 @@ interface Experience {
   endDate?: string;
   current: boolean;
   description?: string;
-  highlights: string[];
 }
 
 interface Education {
@@ -82,7 +81,6 @@ interface Project {
   technologies: string[];
   url?: string;
   repoUrl?: string;
-  highlights: string[];
 }
 
 interface Certification {

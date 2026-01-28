@@ -32,8 +32,6 @@ export interface UserProfile {
   linkedin?: string;
   github?: string;
   website?: string;
-  bio?: string;
-  title?: string;
   summary?: string;
 }
 
@@ -47,7 +45,6 @@ export interface Experience {
   endDate?: Date;
   current: boolean;
   description?: string;
-  highlights: string[];
 }
 
 export interface Education {
@@ -76,7 +73,6 @@ export interface Project {
   tools: string[];
   description: string;
   domain: string;
-  outcomes: string[];
   referenceUrl?: string;
 }
 

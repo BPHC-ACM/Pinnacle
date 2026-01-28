@@ -53,7 +53,6 @@ const initialFormState: Partial<Experience> = {
   endDate: undefined,
   current: false,
   description: '',
-  highlights: [],
   sector: undefined, // Reinstate sector
 };
 
@@ -101,7 +100,6 @@ export function ExperienceSection({
       ...form,
       startDate: formatDateToYYYYMM(form.startDate),
       endDate: form.current ? undefined : formatDateToYYYYMM(form.endDate),
-      highlights: form.highlights ?? [],
     };
 
     await onSave(editingId, payload);
@@ -120,7 +118,7 @@ export function ExperienceSection({
 
   const handleEdit = (exp: Experience) => {
     setEditingId(exp.id);
-    setForm({ ...exp, highlights: exp.highlights ?? [] });
+    setForm({ ...exp });
     setIsAdding(false);
   };
 
@@ -295,13 +293,6 @@ export function ExperienceSection({
                   <p className="mt-2 text-sm text-muted-foreground whitespace-pre-wrap">
                     {exp.description}
                   </p>
-                )}
-                {(exp.highlights ?? []).length > 0 && (
-                  <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1 pt-2">
-                    {exp.highlights.map(
-                      (highlight, i) => highlight && <li key={i}>{highlight}</li>,
-                    )}
-                  </ul>
                 )}
               </div>
             </div>

@@ -92,7 +92,6 @@ export interface Experience {
   endDate: string | null;
   current: boolean;
   description: string | null;
-  highlights: string[];
   order: number;
 }
 
@@ -123,7 +122,6 @@ export interface Project {
   description: string | null;
   domain: string;
   tools: string[];
-  outcomes: string[];
   startDate: string | null;
   endDate: string | null;
   referenceUrl: string | null;

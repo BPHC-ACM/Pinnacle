@@ -242,8 +242,6 @@ async function main(): Promise<void> {
       linkedin: yamlData.linkedin,
       github: yamlData.github,
       website: yamlData.website,
-      bio: yamlData.bio,
-      title: yamlData.title,
       summary: yamlData.summary,
       profileStatus: (yamlData.profileStatus as ProfileStatus) || ProfileStatus.VERIFIED,
       verificationStatus:

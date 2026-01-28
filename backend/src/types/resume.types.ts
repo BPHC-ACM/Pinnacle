@@ -84,7 +84,6 @@ export interface ResumePreviewData {
     endDate: Date | null;
     current: boolean;
     description: string | null;
-    highlights: string[];
     order: number;
   }[];
   education: {
@@ -113,7 +112,6 @@ export interface ResumePreviewData {
     domain: string;
     tools: string[];
     description: string;
-    outcomes: string[];
     referenceUrl: string | null;
     order: number;
   }[];

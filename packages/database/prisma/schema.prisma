@@ -17,8 +17,6 @@ model User {
   linkedin           String?
   github             String?
   website            String?
-  bio                String?
-  title              String?
   summary            String?
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
@@ -133,7 +131,6 @@ model Experience {
   location           String
   current            Boolean            @default(false)
   description        String?
-  highlights         String[]           @default([])
   order              Int                @default(0)
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
@@ -202,7 +199,6 @@ model Project {
   verificationStatus VerificationStatus @default(PENDING)
   description        String
   domain             String
-  outcomes           String[]           @default([])
   referenceUrl       String?
   title              String
   tools              String[]           @default([])
@@ -297,7 +293,6 @@ model PositionOfResponsibility {
   location           String?
   current            Boolean            @default(false)
   description        String?
-  highlights         String[]           @default([])
   order              Int                @default(0)
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
